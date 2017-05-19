@@ -8,9 +8,9 @@
  * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
  */
 
-if (!defined("WHMCS")) {
-    die("This file cannot be accessed directly");
-}
+// if (!defined("WHMCS")) {
+//     die("This file cannot be accessed directly");
+// }
 
 function ispapissl_MetaData()
 {
