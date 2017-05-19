@@ -1,0 +1,15 @@
+ISPAPI SSL Certificate Module for WHMCS
+______________________________________________________________________________
+
+Changelog
+______________________________________________________________________________
+
+v7.0.0 - 2017-05-19
+ - New release compatible with WHMCS 7.
+
+v6.0.0 - 2015-11-10
+ - New release compatible with WHMCS 6 and new PHP versions
+
+______________________________________________________________________________
+(c)2017 HEXONET GmbH, Talstrasse 27, DE-66424 Homburg - support@hexonet.net
+https://wiki.hexonet.net/wiki/WHMCS_Modules
