@@ -1,0 +1,14 @@
+addons/*
+admin/*
+autoload.php
+fraud/*
+gateways/*
+index.php
+notifications/*
+registrars/*
+reports/*
+security/*
+social/*
+support/*
+widgets/*
+
