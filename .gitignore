@@ -12,6 +12,9 @@ addons/ispapissl_addon-modified/*
 addons/mailchimp/*
 addons/paypal_addon/*
 addons/staffboard/*
+addons/ispapidomaincheck/
+addons/ispapidpi/
+
 
 admin/*
 autoload.php
