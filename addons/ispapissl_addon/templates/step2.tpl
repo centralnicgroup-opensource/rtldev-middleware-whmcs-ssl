@@ -1,7 +1,11 @@
 <link rel="stylesheet" href="../modules/addons/ispapissl_addon/ispapissl_addon.css">
 <form action="addonmodules.php?module=ispapissl_addon" method="POST">
     {if isset($smarty.post.import)}
-      <div class='infobox'><strong><span class='title'>Update successful!</span></strong><br>Your products list has been updated successfully.</div><br>
+        {if !isset($smarty.post.checkboxcertificate)}
+            <div class='errorbox'><strong><span class='title'>ERROR!</span></strong><br>Please select a SSL Certificate</div><br>
+        {else}
+        <div class='infobox'><strong><span class='title'>Update successful!</span></strong><br>Your products list has been updated successfully.</div><br>
+        {/if}
     {/if}
 
     <h2>Bulk Price update</h2>

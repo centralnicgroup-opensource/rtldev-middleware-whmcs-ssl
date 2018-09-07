@@ -4,8 +4,8 @@ namespace ISPAPISSL;
 use ISPAPISSL\Helper;
 
 /**
- * PHP Class which loads the required registrars for the HP Domainchecker module.
- *
+ * PHP Class which loads the required registrars
+ * 
  * @copyright  2018 HEXONET GmbH
  */
 class LoadRegistrars
@@ -36,11 +36,6 @@ class LoadRegistrars
 	private function loadISPAPIRegistrars(){
 		foreach($this->getAllConfiguredRegistrars() as $registrar){
 			$this->loadSingleISPAPIRegistrar($registrar);
-		}
-		//if no registrar configured in the pricelist, then try to add hexonet and ispapi
-		if(empty($this->registrars)){
-			$this->loadSingleISPAPIRegistrar("hexonet");
-			$this->loadSingleISPAPIRegistrar("ispapi");
 		}
 	}
 

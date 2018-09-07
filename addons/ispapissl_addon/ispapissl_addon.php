@@ -10,7 +10,9 @@ require_once(dirname(__FILE__)."/../../servers/ispapissl/lib/Helper.class.php");
 
 
 $module_version = "1.0";
-
+/*
+ * Configuration of the addon module.
+ */
 function ispapissl_addon_config($params) {
     global $module_version;
     $configarray = array(
@@ -23,19 +25,27 @@ function ispapissl_addon_config($params) {
     return $configarray;
 }
 
+/*
+ * This function will be called with the activation of the add-on module.
+ */
 function ispapissl_addon_activate() {
 	return array('status'=>'success','description'=>'Installed');
 }
 
+/*
+ * This function will be called with the deactivation of the add-on module.
+*/
 function ispapissl_addon_deactivate() {
 	return array('status'=>'success','description'=>'Uninstalled');
 }
 
+/*
+ * Module interface functionality
+ */
 function ispapissl_addon_output($vars){
 
-    // load all the ISPAPI registrars
+    //load all the ISPAPI registrars
     $ispapi_registrars = new LoadRegistrars();
-
     $_SESSION["ispapi_registrar"] = $ispapi_registrars->getLoadedRegistars();
     
     if(empty($_SESSION["ispapi_registrar"])){
@@ -47,9 +57,9 @@ function ispapissl_addon_output($vars){
     $smarty->compile_dir = $GLOBALS['templates_compiledir'];
     $smarty->caching = false;
 
-    // Display all the product groups that user has
+    //display all the product groups that user has
     $product_groups = Helper::SQLCall("SELECT * FROM tblproductgroups", array(), "fetchall");
-    // Check if user has any product groups. if not create one and display it
+    //check if user has any product groups. if not create one and display it
     if($product_groups){
         $smarty->assign('product_groups', $product_groups);
     }
@@ -117,6 +127,7 @@ function ispapissl_addon_output($vars){
         //check of the product group is selected by user if not show a error message
         if(empty($_SESSION['selectedproductgroup'])){
             echo "<div class='errorbox'><strong><span class='title'>ERROR!</span></strong><br>Please select a product group</div><br>";
+            $smarty->display(dirname(__FILE__).'/templates/step1.tpl');
         }
         else{
             $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
@@ -140,7 +151,7 @@ function ispapissl_addon_output($vars){
 
         }
         else{
-            // $smarty->assign('selected_product_group', $selected_product_group);
+            //$smarty->assign('selected_product_group', $selected_product_group);
             $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
             $smarty->assign('certificates_and_prices', $certificates_and_prices);
             $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
@@ -149,28 +160,26 @@ function ispapissl_addon_output($vars){
 
     }
     elseif(isset($_POST['import'])){
-
+        //to collect new prices, certificates and (new) currency
+        if(isset($_POST["checkboxcertificate"])){
+            import_button();
+        }
         $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
         $smarty->assign('certificates_and_prices', $certificates_and_prices);
         $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
         //to display checked items even after button click
-        $smarty->assign('post-checkbox-certificate', $_POST['checkboxcertificate']);
-        //to diplay success message
-        $smarty->assign('post-import', $_POST['import']);
+        $smarty->assign('post-checkboxcertificate', $_POST['checkboxcertificate']);
 
         $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
-
-        //to collect new prices, certificated and (new) currency
-        import_button();
-
     }
     else{
         $smarty->display(dirname(__FILE__).'/templates/step1.tpl');
     }
-
 }
 
-//helping functions
+/*
+ * Helper functions
+ */
 function array_keys_to_lowerCase(&$array)
 {
     $array=array_change_key_case($array,CASE_LOWER);
@@ -196,17 +205,21 @@ function calculate_profitmargin($certificates_and_prices, $profit_margin){
     return $certificates_and_new_prices;
 }
 
-// prepare an array from POST values with certificates and the new price for importing
+/*
+ * To import selected SSL certificates/products 
+ */
 function import_button(){
+    //prepare an array from POST values with certificates and the new price for importing
 
-    // load all the ISPAPI registrars
+    //load all the ISPAPI registrars
     $ispapi_registrars = new LoadRegistrars();
     $_SESSION["ispapi_registrar"] = $ispapi_registrars->getLoadedRegistars();
 
     $selected_product_group = $_POST['SelectedProductGroup'];
-    //
+    
     $certificate_match_pattern = "/(.*)_saleprice/";
 
+    //POST values and checked items of ssl certificates are different. POST's are seperated by _ underscore where checked items not.
     $certificates_and_new_prices = []; //will have all the certificates which have new prices
     foreach($_POST as $key=>$value){
         if(preg_match($certificate_match_pattern,$key,$match)){
@@ -235,13 +248,13 @@ function import_button(){
         $i++;
         $certificates_and_new_prices[$key]['currency'] = $currencies['currency'][$i];
     }
-    // POST value automatically replace space with _. therefore I have to call this function again
+    //POST value automatically replace space with _. therefore I have to call this:
     array_keys_to_lowerCase($certificates_and_new_prices);
-
-    // import only checked certificates - unset/remove all other certificates from $certificates_and_new_prices
+ 
+    //import only checked certificates - unset/remove all other certificates from $certificates_and_new_prices
     foreach($certificates_and_new_prices as $key => $val)
     {
-        if(array_search($key, $_POST['checkbox-certificate']) === false)
+        if(array_search($key, $_POST['checkboxcertificate']) === false)
         {
             unset($certificates_and_new_prices[$key]);
         }
@@ -250,18 +263,20 @@ function import_button(){
     importproducts($certificates_and_new_prices, $selected_product_group);
 }
 
+/*
+ * Save imported SSL certificates/products 
+ */
 function importproducts($certificates_and_prices, $selected_product_group) {
-
     //get the id of selected product group
     $product_group_id = Helper::SQLCall("SELECT id FROM tblproductgroups WHERE name=? LIMIT 1", array($selected_product_group), "fetch");
 
     foreach ($certificates_and_prices as $ssl_certificate => $price) {
 
-        // check if the product already exists under the selected product group
+        //check if the product already exists under the selected product group
         $data_tblproducts = Helper::SQLCall("SELECT * FROM tblproducts WHERE name=? AND gid=?", array($ssl_certificate, $product_group_id['id']), "fetch");
 
         if(empty($data_tblproducts)){
-            // insert the product if it does not exists
+            //insert the product if it does not exists
             $insert_stmt = Helper::SQLCall("INSERT INTO tblproducts (type, gid, name, paytype, autosetup, servertype, configoption1, configoption2, configoption3) VALUES ('other', ?, ?, 'recurring', 'payment', ?, ?, ?, '1')", array($product_group_id['id'], $ssl_certificate, $price['Servertype'], $price['Certificateclass'], $price['Registrar']), "execute");
             //ID of the inserted product to insert/update pricing (relid in tblpricing)
             //product_group_id = relid
@@ -269,14 +284,14 @@ function importproducts($certificates_and_prices, $selected_product_group) {
 
             $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', ?, '-1', '-1')", array($price['Currency'],$product_id['id'], $price['Newprice']), "execute");
         }else{
-            // the product exists then with which currency - there is possibility to store price of a product with as many currency as possible (if currencies configured in WHMCS)
+            //the product exists then with which currency - there is possibility to store price of a product with as many currency as possible (if currencies configured in WHMCS)
             $data_tblpricing = Helper::SQLCall("SELECT * FROM tblpricing WHERE relid=?", array($data_tblproducts['id']), "fetchall");
             //if the currency exists in the $data_tblpricing then update it with new price
             if(in_array($price['Currency'], array_column($data_tblpricing, 'currency'))) { // search value in the array
                 $update_stmt = Helper::SQLCall("UPDATE tblpricing SET annually=? WHERE relid=? AND currency=?", array($price['Newprice'], $data_tblproducts['id'], $price['Currency']), "execute");
             }else{
                 //if the currency does not exists, then insert it with new price with same relid
-                $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', ?, '-1', '-1')", array($price['Currency'],$product_id['id'], $price['Newprice']), "execute");
+                $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', ?, '-1', '-1')", array($price['Currency'],$data_tblproducts['id'], $price['Newprice']), "execute");
             }
         }
        
