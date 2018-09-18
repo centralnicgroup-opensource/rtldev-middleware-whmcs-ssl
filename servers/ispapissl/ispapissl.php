@@ -31,14 +31,10 @@ function ispapissl_ConfigOptions()
     $data = Helper::SQLCall("SELECT * FROM tblemailtemplates WHERE name='SSL Certificate Configuration Required'", array(), "fetchall");
 
     if(empty($data)){
-
-        // TODO adding variables in the text of the column causes the problem 
-        # $test = Helper::SQLCall("INSERT INTO tblemailtemplates (type, name, subject, message, fromname, fromemail, disabled, custom, language, copyto, plaintext) VALUES ('product', 'SSL Certificate Configuration Required', 'SSL Certificate Configuration Required', '<p>Dear {$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>`$ssl_configuration_link`</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>`$signature`</p>', '', '', '', '', '', '', '0')", array(), "execute");
-
-        full_query('INSERT INTO `tblemailtemplates` (`type` ,`name` ,`subject` ,`message` ,`fromname` ,`fromemail` ,`disabled` ,`custom` ,`language` ,`copyto` ,`plaintext` )VALUES (\'product\', \'SSL Certificate Configuration Required\', \'SSL Certificate Configuration Required\', \'<p>Dear {$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{$signature}</p>\', \'\', \'\', \'\', \'\', \'\', \'\', \'0\')');
+        Helper::SQLCall("INSERT INTO tblemailtemplates (type, name, subject, message, fromname, fromemail, disabled, custom, language, copyto, plaintext) VALUES ('product', 'SSL Certificate Configuration Required', 'SSL Certificate Configuration Required', '<p>Dear {\$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{\$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{\$signature}</p>', '', '', '', '', '', '', '0')", array(), "execute");
     }
 
-    //load all the ISPAPI registrars
+    //load all the ISPAPI registrars (Ispapi, Hexonet)
     $ispapi_registrars = new LoadRegistrars();
     $registrars = $ispapi_registrars->getLoadedRegistars();
 
@@ -195,9 +191,6 @@ function ispapissl_sslstepone($params) {
             }
 
             if (!$cert_allowconfig) {
-                //TODO
-                //update_query('tblsslorders', array('completiondate' => 'now()', 'status' => 'Completed'), array('serviceid' => $params['serviceid'], 'status' => array('sqltype' => 'NEQ', 'value' => 'Completed')));
-                
                 Helper::SQLCall("UPDATE tblsslorders SET completiondate=now(), status='Completed' WHERE serviceid=?", array($params['serviceid']), "execute");
             } else {
                 Helper::SQLCall("UPDATE tblsslorders SET completiondate='', status='Awaiting Configuration' WHERE serviceid=?", array($params['serviceid']), "execute");
@@ -218,7 +211,7 @@ function ispapissl_sslsteptwo($params) {
 
     try {
         include(dirname( __FILE__ ).DIRECTORY_SEPARATOR.'ispapissl-config.php');
-        //collect orderid and customer's contact data 
+        //orderid and customer's contact data 
         $orderid = $params['remoteid'];
         $cert_id = $_SESSION['enomsslcert'][$orderid]['id'];
         $webservertype = $params['servertype'];
@@ -238,7 +231,7 @@ function ispapissl_sslsteptwo($params) {
         $faxnumber = $params['faxnumber'];
 
         $values = array();
-        //parse CSR submittet by the customer 
+        //parse CSR submitted by the customer 
         $csr_command = array( 'COMMAND' => 'ParseSSLCertCSR', 'CSR' => explode('
 ', $params['csr'] ));
 
@@ -300,7 +293,7 @@ function ispapissl_sslsteptwo($params) {
                     $approverdomain = $sld.'.'.$tld;
                 }
             }
-            //to choose approver email by the customer to which the mail will be sent
+            //to choose email by the customer to which approver email will be sent
             $approvers = array('admin', 'administrator', 'hostmaster', 'root', 'webmaster', 'postmaster');
             foreach ($approvers as $approver) {
                 $values['approveremails'][] = $approver.'@'.$approverdomain;
@@ -329,7 +322,7 @@ function ispapissl_sslsteptwo($params) {
             $command[$contacttype.'COUNTRY'] = $params['country'];
             $command[$contacttype.'PHONE'] = $params['phonenumber'];
             $command[$contacttype.'FAX'] = $params['faxnumber'];
-        }
+        }        
 
         $response = Helper::APICall($registrar, $command);
 
@@ -389,9 +382,6 @@ function ispapissl_sslstepthree($params) {
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
         }
         //update the status of the order at WHMCS
-        // TODO
-        //update_query('tblsslorders', array('completiondate' => 'now()', 'status' => 'Completed'), array('serviceid' => $params['serviceid'], 'status' => array('sqltype' => 'NEQ', 'value' => 'Completed')));
-
         Helper::SQLCall("UPDATE tblsslorders SET completiondate=now(), status='Completed' WHERE serviceid=?", array($params['serviceid']), "execute");
 
     } catch (Exception $e) {
@@ -544,34 +534,27 @@ function ispapissl_ClientArea($params) {
             continue;
         }
     }
-    //provide user a possibility to resend approver email to selected email id
-    // TODO -tests
-    #echo "<pre>"; print_r($_REQUEST); echo "</pre>";
+    //provide user a possibility to resend approver email to selected email id 
     //when user enters a approver email in the text box:
     if (isset($_REQUEST['sslresendcertapproveremail']) && isset($_REQUEST['approveremail'])) {
-        #echo "1";
         $ispapissl['approveremail'] = $_REQUEST['approveremail'];
-        #mail("tseelamkurthi@hexonet.net", "REQUESTsslresendcertapproveremailANDapproveremail", print_r($_REQUEST,true));
         $resend_command = array('COMMAND' => 'ResendSSLCertEmail', 'SSLCERTID' => $cert_id, 'EMAIL' => $_REQUEST['approveremail']);
 
         $resend_response = Helper::APICall($registrar, $resend_command);
 
         if ($resend_response['CODE'] == 200) {
-            unset($_REQUEST[sslresendcertapproveremail]); //TODO
+            unset($_REQUEST[sslresendcertapproveremail]);
             $ispapissl['successmessage'] = 'Successfully resent the approver email';
         } else {
             $ispapissl['errormessage'] = $resend_response['DESCRIPTION'];
         }
     }
+
     //when user chooses from the listed approver emails 
-    // TODO -tests
     if (isset($_REQUEST['sslresendcertapproveremail'])) {
-        #echo "2";
-        #mail("tseelamkurthi@hexonet.net", "REQUESTsslresendcertapproveremail", print_r($_REQUEST,true));
         $ispapissl['sslresendcertapproveremail'] = 1;
         $ispapissl['approveremails'] = array();
         $appemail_command = array('COMMAND' => 'QuerySSLCertDCVEmailAddressList', 'SSLCERTID' => $cert_id);
-        #mail("tseelamkurthi@hexonet.net", "appemail_command", print_r($appemail_command,true));
         
         if ($resend_response['CODE'] == 200) {
             $ispapissl['successmessage'] = $resend_response['DESCRIPTION'];
@@ -580,8 +563,6 @@ function ispapissl_ClientArea($params) {
         }
 
         $appemail_response = Helper::APICall($registrar, $appemail_command);
-        #mail("tseelamkurthi@hexonet.net", "appemail_response", print_r($appemail_response,true));
-
         if (isset($appemail_response['PROPERTY']['EMAIL'])) {
             $ispapissl['approveremails'] = $appemail_response['PROPERTY']['EMAIL'];
         } else {
@@ -611,6 +592,7 @@ function ispapissl_ClientArea($params) {
                 }
             }
         }
+        
     }
     //display status and other details of the configured ssl certificates on clientarea
     $templateFile = "ispapissl-clientarea.tpl";
@@ -627,32 +609,11 @@ global $ispapissl_module_version;
 $ispapissl_module_version = '7.0.0';
 
 
-//I need following comments for later when I come back to work
 // sample CSR - https://www.digicert.com/order/sample-csr.php
 
-//'Reqest Cancellation' button by default from WHMCS on product details page in client area.
-//to remove this button -> Setup > General Settings > Other and disable the Show Cancellation Link option.
-//More info -https://docs.whmcs.com/Products_Management
-
-//its good to provide this functionality - $_REQUEST['sslresendcertapproveremail'] because when the configuration finished and customer 
-//did not set the email forwarding yet, 
-//then he can set and click on this option to receive the approver email 
-//Modified the tpl file 
-// The follwoing part is missing in the tpl file: Now added 
-#<form method="POST">
-#<input type="text" name="approveremail"/><br><br>
-#<input type="submit" class="btn btn-primary" name="sslresendcertapproveremail" value="Resend Approveremail"/><br>
-#</form>
-#todo modifying more and testing of the tpl file code 
-
-
-
 #Regarding your TODO's comments:
- #   TODO Where is this option $_REQUEST['sslresendcertapproveremail'] - could not find it? //IMO never triggered => Please grep for sslresendcertapproveremail in the template file. If this button is not displayed, please check why.
-
-  #  TODO adding variables in the text of the column causes the problem => Please check if there is not a solution to escape those variables.
-
   #  Line 297 of ispapissl.php in the CreateSSLCert command there is a SERVERSOFTWARE parameter which is not mentioned in our API documentation.
-
-  #  Maybe you can add some code comments in ispapissl.php
-  #  Please use one single styling for the comments. Sometimes your comments are starting with an upper case after the //, sometimes with a lower case, sometimes with a space. Please take the following file as example: https://gitlab.hexonet.net/hexonet-middleware/ispapi_whmcs-domaincheckaddon_v7/blob/master/modules/addons/ispapidomaincheck/lib/DomainCheck.class.php
+    #without this parameter the command fails in the module. Gives 505 error.
+    #Asked in BACKEND (Uwe)
+    #https://gitlab.hexonet.net/back-end-team/api-docs/commit/cfb809388e8335b31e483eb9baa5393b89aef737
+    #sending cert via email. Therefore this parameter is needed in the module.

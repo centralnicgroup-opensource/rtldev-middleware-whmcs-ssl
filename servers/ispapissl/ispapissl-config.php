@@ -1,6 +1,8 @@
 <?php
 
-/* Map WHMCS SSL Server IDs to ISPAPI SERVERSOFTWARE Parameter */
+//map WHMCS SSL Server IDs to ISPAPI SERVERSOFTWARE Parameter 
+//SERVERSOFTWARE | 0 | Web server software; INTERNAL because it is only relevant in case the CA sends the cert by email to the customer; 
+//the default value is `OTHER`; possible values:<br>`APACHESSL`<br>`APACHESSLEAY`<br>`APACHE2`<br>`IIS`<br>`OTHER` | TEXT or NULL
 $ispapissl_server_map = array(
 	"1000" => "APACHESSL",
 	"1001" => "APACHESSL",

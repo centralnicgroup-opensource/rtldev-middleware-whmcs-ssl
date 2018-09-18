@@ -1,5 +1,8 @@
 
  <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails">
+    {if $ispapissl.errormessage}
+        <div class="alert alert-warning text-center">{$ispapissl.errormessage}</div><br />
+    {/if}
     <input type="hidden" name="id" value="{$ispapissl.id}" />
     <input type="submit" class="btn btn-primary" name="sslresendcertapproveremail" value="Resend Approveremail"/><br>
 
@@ -12,11 +15,10 @@
         <label> Or </label>
         <p>
             {foreach from=$ispapissl.approveremails item=approveremail key=num}
-                <input type="radio" name="approveremail" value="{$approveremail}"{if $num eq 0} checked{/if} />
+                <input type="radio" class="radio-button" name="approveremails" value="{$approveremail}"{if $num eq 0} checked{/if} />
                 {$approveremail}<br />
             {/foreach}
         </p>
-
         <table align="center">
             <tr>
                 <td><input type="submit" value="{$LANG.clientareabacklink}" class="button" /></td>
@@ -26,9 +28,8 @@
 </form>
     {else}
         {if $ispapissl.successmessage}
-                <div class='infobox'><br>Approver email has been sent successfully.</div><br>
+            <br><div class='alert alert-success text-center'>Approver email has been resent successfully.</div>
         {/if}
-        {if $ispapissl.errormessage}<div class="errorbox">{$ispapissl.errormessage}</div><br />{/if}
 
         {if $ispapissl.status}
             <h2>{$LANG.sslcertinfo}</h2>
@@ -93,8 +94,4 @@
             {/if}
         {/if}
     {/if}
-
-
   
-
-
