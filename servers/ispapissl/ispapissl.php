@@ -13,7 +13,7 @@
 // }
 
 global $module_version;
-$module_version = "7.0.0";
+$module_version = "7.1.0";
 
 function ispapissl_MetaData()
 {
