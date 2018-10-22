@@ -12,6 +12,9 @@
 //     die("This file cannot be accessed directly");
 // }
 
+global $module_version;
+$module_version = "7.0.0";
+
 function ispapissl_MetaData()
 {
     return array(
@@ -21,7 +24,7 @@ function ispapissl_MetaData()
 
 function ispapissl_ConfigOptions()
 {
-    include(dirname( __FILE__ ).DIRECTORY_SEPARATOR.'ispapissl-config.php');
+    include(dirname(__FILE__).DIRECTORY_SEPARATOR.'ispapissl-config.php');
     $result = select_query('tblemailtemplates', 'COUNT(*)', array( 'name' => 'SSL Certificate Configuration Required'));
     $data = mysql_fetch_array($result);
     if (!$data[0]) {
@@ -58,49 +61,50 @@ function ispapissl_ConfigOptions()
 function ispapissl_CreateAccount(array $params)
 {
     try {
-        include(dirname( __FILE__ ).DIRECTORY_SEPARATOR.'ispapissl-config.php');
-		$result = select_query('tblsslorders', 'COUNT(*)', array('serviceid' => $params['serviceid']));
-		$data = mysql_fetch_array( $result );
-		if ($data[0]) {
+        include(dirname(__FILE__).DIRECTORY_SEPARATOR.'ispapissl-config.php');
+        $result = select_query('tblsslorders', 'COUNT(*)', array('serviceid' => $params['serviceid']));
+        $data = mysql_fetch_array($result);
+        if ($data[0]) {
             throw new Exception("An SSL Order already exists for this order");
-		}
+        }
 
-		if ($params['configoptions']['Certificate Type']) {
-			$certtype = $params['configoptions']['Certificate Type'];
-		} else {
-			$certtype = $params['configoption3'];
-		}
+        if ($params['configoptions']['Certificate Type']) {
+            $certtype = $params['configoptions']['Certificate Type'];
+        } else {
+            $certtype = $params['configoption3'];
+        }
 
-		if ($params['configoptions']['Years']) {
-			$certyears = $params['configoptions']['Years'];
-		} else {
-			$certyears = $params['configoption4'];
-		}
+        if ($params['configoptions']['Years']) {
+            $certyears = $params['configoptions']['Years'];
+        } else {
+            $certyears = $params['configoption4'];
+        }
 
-		$command = array( 'ORDER' => 'CREATE',
+        $command = array( 'ORDER' => 'CREATE',
                           'COMMAND' => 'CreateSSLCert',
                           'SSLCERTCLASS' => $ispapissl_cert_map[$certtype],
                           'PERIOD' => $certyears );
 
-		$response = ispapissl_call($command, ispapissl_config( $params ));
+        $response = ispapissl_call($command, ispapissl_config($params));
 
-		if($response['CODE'] != 200 ) {
+        if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
-		}
+        }
 
-		$orderid = $response['PROPERTY']['ORDERID'][0];
-		$sslorderid = insert_query('tblsslorders',
-                                    array( 'userid' => $params['clientsdetails']['userid'],
+        $orderid = $response['PROPERTY']['ORDERID'][0];
+        $sslorderid = insert_query(
+            'tblsslorders',
+            array( 'userid' => $params['clientsdetails']['userid'],
                                            'serviceid' => $params['serviceid'],
                                            'remoteid' => $orderid,
                                            'module' => 'ispapissl',
                                            'certtype' => $certtype,
-                                           'status' => 'Awaiting Configuration'));
-		global $CONFIG;
-		$sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($sslorderid);
-		$sslconfigurationlink = '<a href="'.$sslconfigurationlink.'">'.$sslconfigurationlink.'</a>';
-		sendmessage('SSL Certificate Configuration Required', $params['serviceid'], array('ssl_configuration_link' => $sslconfigurationlink));
-
+            'status' => 'Awaiting Configuration')
+        );
+        global $CONFIG;
+        $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($sslorderid);
+        $sslconfigurationlink = '<a href="'.$sslconfigurationlink.'">'.$sslconfigurationlink.'</a>';
+        sendmessage('SSL Certificate Configuration Required', $params['serviceid'], array('ssl_configuration_link' => $sslconfigurationlink));
     } catch (Exception $e) {
         logModuleCall(
             'ispapissl',
@@ -114,11 +118,13 @@ function ispapissl_CreateAccount(array $params)
     return 'success';
 }
 
-function ispapissl_AdminCustomButtonArray() {
+function ispapissl_AdminCustomButtonArray()
+{
     return array( 'Cancel' => 'cancel', 'Resend Configuration Email' => 'resend' );
 }
 
-function ispapissl_cancel($params) {
+function ispapissl_cancel($params)
+{
     try {
         $result = select_query('tblsslorders', 'COUNT(*)', array('serviceid' => $params['serviceid'], 'status' => 'Awaiting Configuration'));
         $data = mysql_fetch_array($result);
@@ -126,20 +132,21 @@ function ispapissl_cancel($params) {
             throw new Exception('No incomplete SSL Order exists for this order');
         }
         update_query('tblsslorders', array('status' => 'Cancelled'), array('serviceid' => $params['serviceid']));
-     } catch (Exception $e) {
-         logModuleCall(
-             'provisioningmodule',
-             __FUNCTION__,
-             $params,
-             $e->getMessage(),
-             $e->getTraceAsString()
-         );
-         return $e->getMessage();
-     }
+    } catch (Exception $e) {
+        logModuleCall(
+            'provisioningmodule',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+        return $e->getMessage();
+    }
      return 'success';
 }
 
-function ispapissl_resend($params) {
+function ispapissl_resend($params)
+{
     try {
         $result = select_query('tblsslorders', 'id', array('serviceid' => $params['serviceid']));
         $data = mysql_fetch_array($result);
@@ -151,23 +158,24 @@ function ispapissl_resend($params) {
         $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($id);
         $sslconfigurationlink = '<a href="'.$sslconfigurationlink.'">'.$sslconfigurationlink.'</a>';
         sendmessage('SSL Certificate Configuration Required', $params['serviceid'], array('ssl_configuration_link' => $sslconfigurationlink));
-     } catch (Exception $e) {
-         logModuleCall(
-             'provisioningmodule',
-             __FUNCTION__,
-             $params,
-             $e->getMessage(),
-             $e->getTraceAsString()
-         );
-         return $e->getMessage();
-     }
+    } catch (Exception $e) {
+        logModuleCall(
+            'provisioningmodule',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+        return $e->getMessage();
+    }
      return 'success';
 }
 
 
-function ispapissl_sslstepone($params) {
+function ispapissl_sslstepone($params)
+{
     try {
-        include(dirname( __FILE__ ).DIRECTORY_SEPARATOR.'ispapissl-config.php');
+        include(dirname(__FILE__).DIRECTORY_SEPARATOR.'ispapissl-config.php');
         $orderid = $params['remoteid'];
 
         if (!$_SESSION['ispapisslcert'][$orderid]['id']) {
@@ -205,9 +213,10 @@ function ispapissl_sslstepone($params) {
     }
 }
 
-function ispapissl_sslsteptwo($params) {
+function ispapissl_sslsteptwo($params)
+{
     try {
-        include(dirname( __FILE__ ).DIRECTORY_SEPARATOR.'ispapissl-config.php');
+        include(dirname(__FILE__).DIRECTORY_SEPARATOR.'ispapissl-config.php');
 
         $orderid = $params['remoteid'];
         $cert_id = $_SESSION['enomsslcert'][$orderid]['id'];
@@ -229,20 +238,20 @@ function ispapissl_sslsteptwo($params) {
 
         $values = array();
         $csr_command = array( 'COMMAND' => 'ParseSSLCertCSR', 'CSR' => explode('
-', $params['csr'] ));
+', $params['csr']));
         $csr_response = ispapissl_call($csr_command, ispapissl_config($params));
 
-        if ($csr_response['CODE'] != 200 ) {
+        if ($csr_response['CODE'] != 200) {
             throw new Exception($csr_response['CODE'].' '.$csr_response['DESCRIPTION']);
         }
 
-        $values['displaydata']['Domain'] = htmlspecialchars( $csr_response['PROPERTY']['CN'][0] );
-        $values['displaydata']['Organization'] = htmlspecialchars( $csr_response['PROPERTY']['O'][0] );
-        $values['displaydata']['Organization Unit'] = htmlspecialchars( $csr_response['PROPERTY']['OU'][0] );
-        $values['displaydata']['Email'] = htmlspecialchars( $csr_response['PROPERTY']['EMAILADDRESS'][0] );
-        $values['displaydata']['Locality'] = htmlspecialchars( $csr_response['PROPERTY']['L'][0] );
-        $values['displaydata']['State'] = htmlspecialchars( $csr_response['PROPERTY']['ST'][0] );
-        $values['displaydata']['Country'] = htmlspecialchars( $csr_response['PROPERTY']['C'][0] );
+        $values['displaydata']['Domain'] = htmlspecialchars($csr_response['PROPERTY']['CN'][0]);
+        $values['displaydata']['Organization'] = htmlspecialchars($csr_response['PROPERTY']['O'][0]);
+        $values['displaydata']['Organization Unit'] = htmlspecialchars($csr_response['PROPERTY']['OU'][0]);
+        $values['displaydata']['Email'] = htmlspecialchars($csr_response['PROPERTY']['EMAILADDRESS'][0]);
+        $values['displaydata']['Locality'] = htmlspecialchars($csr_response['PROPERTY']['L'][0]);
+        $values['displaydata']['State'] = htmlspecialchars($csr_response['PROPERTY']['ST'][0]);
+        $values['displaydata']['Country'] = htmlspecialchars($csr_response['PROPERTY']['C'][0]);
         $values['approveremails'] = array();
 
         if ($params['configoptions']['Certificate Type']) {
@@ -258,13 +267,13 @@ function ispapissl_sslsteptwo($params) {
         }
 
         $appemail_command = array('COMMAND' => 'QuerySSLCertDCVEmailAddressList', 'SSLCERTCLASS' => $ispapissl_cert_map[$certtype], 'CSR' => explode('
-', $params['csr'] ) );
+', $params['csr']) );
         $appemail_response = ispapissl_call($appemail_command, ispapissl_config($params));
 
         if (isset($appemail_response['PROPERTY']['EMAIL'])) {
             $values['approveremails'] = $appemail_response['PROPERTY']['EMAIL'];
         } else {
-            $approverdomain = explode('.', preg_replace( '/^\*\./', '', $csr_response['PROPERTY']['CN'][0]));
+            $approverdomain = explode('.', preg_replace('/^\*\./', '', $csr_response['PROPERTY']['CN'][0]));
 
             if (count($approverdomain) < 2) {
                 throw new Exception("Invalid CN in CSR");
@@ -277,7 +286,7 @@ function ispapissl_sslsteptwo($params) {
                 $sld = array_pop($approverdomain);
                 $dom = array_pop($approverdomain);
 
-                if (preg_match( '/^([a-z][a-z]|com|net|org|biz|info)$/i', $sld)) {
+                if (preg_match('/^([a-z][a-z]|com|net|org|biz|info)$/i', $sld)) {
                     $approverdomain = $dom.'.'.$sld.'.'.$tld;
                 } else {
                     $approverdomain = $sld.'.'.$tld;
@@ -319,8 +328,7 @@ function ispapissl_sslsteptwo($params) {
         if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
         }
-        update_query( 'tblhosting', array('domain' => $csr_response['PROPERTY']['CN'][0] ), array('id' => $params['serviceid']));
-
+        update_query('tblhosting', array('domain' => $csr_response['PROPERTY']['CN'][0] ), array('id' => $params['serviceid']));
     } catch (Exception $e) {
         logModuleCall(
             'provisioningmodule',
@@ -334,9 +342,10 @@ function ispapissl_sslsteptwo($params) {
     return $values;
 }
 
-function ispapissl_sslstepthree($params) {
-    try{
-        include(dirname( __FILE__ ).DIRECTORY_SEPARATOR.'ispapissl-config.php');
+function ispapissl_sslstepthree($params)
+{
+    try {
+        include(dirname(__FILE__).DIRECTORY_SEPARATOR.'ispapissl-config.php');
         $orderid = $params['remoteid'];
 
         if ($params['configoptions']['Certificate Type']) {
@@ -364,7 +373,6 @@ function ispapissl_sslstepthree($params) {
         }
 
         update_query('tblsslorders', array('completiondate' => 'now()', 'status' => 'Completed'), array('serviceid' => $params['serviceid'], 'status' => array('sqltype' => 'NEQ', 'value' => 'Completed')));
-
     } catch (Exception $e) {
         logModuleCall(
             'provisioningmodule',
@@ -377,7 +385,8 @@ function ispapissl_sslstepthree($params) {
     }
 }
 
-function ispapissl_ClientArea($params) {
+function ispapissl_ClientArea($params)
+{
     $result = select_query('tblsslorders', 'id, remoteid, status', array('serviceid' => $params['serviceid']));
     $data = mysql_fetch_array($result);
     $params['remoteid'] = $data['remoteid'];
@@ -421,8 +430,8 @@ function ispapissl_ClientArea($params) {
             ++$i;
         }
 
-        $csr = implode( '
-', $csr );
+        $csr = implode('
+', $csr);
 
         if (strlen($csr)) {
             $ispapissl['config']['csr'] = htmlspecialchars($csr);
@@ -437,7 +446,7 @@ function ispapissl_ClientArea($params) {
         }
     }
 
-    if (isset( $response['PROPERTY']['LASTRESPONSE']) && strlen($response['PROPERTY']['LASTRESPONSE'][0])) {
+    if (isset($response['PROPERTY']['LASTRESPONSE']) && strlen($response['PROPERTY']['LASTRESPONSE'][0])) {
         $order_response = ispapissl_parse_response(urldecode($response['PROPERTY']['LASTRESPONSE'][0]));
 
         if (isset($order_response['PROPERTY']['SSLCERTID'])) {
@@ -446,20 +455,20 @@ function ispapissl_ClientArea($params) {
             $status_response = ispapissl_call($status_command, ispapissl_config($params));
 
             if (isset($status_response['PROPERTY']['CSR'])) {
-                $csr = implode( '
-', $status_response['PROPERTY']['CSR'] );
+                $csr = implode('
+', $status_response['PROPERTY']['CSR']);
                 $ispapissl['config']['csr'] = htmlspecialchars($csr);
             }
 
             if (isset($status_response['PROPERTY']['CRT'])) {
-                $crt = implode( '
-', $status_response['PROPERTY']['CRT'] );
+                $crt = implode('
+', $status_response['PROPERTY']['CRT']);
                 $ispapissl['crt'] = htmlspecialchars($crt);
             }
 
             if (isset($status_response['PROPERTY']['CACRT'])) {
-                $cacrt = implode( '
-', $status_response['PROPERTY']['CACRT'] );
+                $cacrt = implode('
+', $status_response['PROPERTY']['CACRT']);
                 $ispapissl['cacrt'] = htmlspecialchars($cacrt);
             }
 
@@ -491,7 +500,7 @@ function ispapissl_ClientArea($params) {
         }
     }
 
-    if (!isset( $ispapissl['config']['servertype'] )) {
+    if (!isset($ispapissl['config']['servertype'])) {
         $ispapissl['config']['servertype'] = '1002';
     }
 
@@ -561,7 +570,8 @@ function ispapissl_ClientArea($params) {
 }
 
 
-function ispapissl_config($params) {
+function ispapissl_config($params)
+{
     $config = array();
     $config['entity'] = '54cd';
     $config['url'] = 'https://coreapi.1api.net/api/call.cgi';
@@ -573,30 +583,32 @@ function ispapissl_config($params) {
     return $config;
 }
 
-function ispapissl_call(&$command, $config) {
+function ispapissl_call(&$command, $config)
+{
     return ispapissl_parse_response(ispapissl_call_raw($command, $config));
 }
 
-function ispapissl_call_raw(&$command, $config) {
-    global $ispapi_module_version;
+function ispapissl_call_raw(&$command, $config)
+{
+    global $module_version;
     $args = array(  );
     $url = $config['url'];
-    if (isset( $config['login'] )) {
+    if (isset($config['login'])) {
         $args['s_login'] = $config['login'];
     }
-    if (isset( $config['password'] )) {
+    if (isset($config['password'])) {
         $args['s_pw'] = $config['password'];
     }
-    if (isset( $config['user'] )) {
+    if (isset($config['user'])) {
         $args['s_user'] = $config['user'];
     }
-    if (isset( $config['entity'] )) {
+    if (isset($config['entity'])) {
         $args['s_entity'] = $config['entity'];
     }
-    $args['s_command'] = ispapissl_encode_command( $command );
-    $config['curl'] = curl_init( $url );
+    $args['s_command'] = ispapissl_encode_command($command);
+    $config['curl'] = curl_init($url);
 
-    if ($config['curl'] === FALSE) {
+    if ($config['curl'] === false) {
         return '[RESPONSE]
 CODE=423
 API access error: curl_init failed
@@ -619,13 +631,14 @@ EOF
         curl_setopt($config['curl'], CURLOPT_PROXY, $config['proxy']);
     }
 
-    curl_setopt($ch, CURLOPT_USERAGENT, 'ISPAPISSL/'.$ispapissl_module_version.' WHMCS/'. $GLOBALS['CONFIG']['Version'].' PHP/'.phpversion().' ('.php_uname('s').')' );
+    curl_setopt($ch, CURLOPT_USERAGENT, 'ISPAPISSL/'.$module_version.' WHMCS/'. $GLOBALS['CONFIG']['Version'].' PHP/'.phpversion().' ('.php_uname('s').')');
     curl_setopt($ch, CURLOPT_REFERER, $GLOBALS['CONFIG']['SystemURL']);
     $response = curl_exec($config['curl']);
     return $response;
 }
 
-function ispapissl_encode_command($commandarray) {
+function ispapissl_encode_command($commandarray)
+{
     if (!is_array($commandarray)) {
         return $commandarray;
     }
@@ -634,7 +647,7 @@ function ispapissl_encode_command($commandarray) {
     foreach ($commandarray as $k => $v) {
         if (is_array($v)) {
             $v = ispapissl_encode_command($v);
-            $l = explode( '
+            $l = explode('
 ', trim($v));
             foreach ($l as $line) {
                 $command .= ($k.$line.'
@@ -652,7 +665,8 @@ function ispapissl_encode_command($commandarray) {
     return $command;
 }
 
-function ispapissl_parse_response($response) {
+function ispapissl_parse_response($response)
+{
     if (is_array($response)) {
         return $response;
     }
@@ -663,7 +677,7 @@ function ispapissl_parse_response($response) {
 
     $hash = array('PROPERTY' => array());
     $rlist = explode('
-', $response );
+', $response);
     foreach ($rlist as $item) {
         if (preg_match('/^([^\=]*[^	\= ])[	 ]*=[	 ]*(.*)$/', $item, $m)) {
             $attr = $m[1];
@@ -689,6 +703,3 @@ function ispapissl_parse_response($response) {
     }
     return $hash;
 }
-
-global $ispapissl_module_version;
-$ispapissl_module_version = '7.0.0';
