@@ -6,7 +6,9 @@ clean:
 
 buildsources:
 	mkdir -p $(FOLDER)/install/modules/servers
+	mkdir -p $(FOLDER)/install/modules/addons
 	cp -a servers/ispapissl $(FOLDER)/install/modules/servers
+	cp -a addons/ispapissl_addon $(FOLDER)/install/modules/addons
 	cp README.md HISTORY.md HISTORY.old CONTRIBUTING.md LICENSE README.pdf $(FOLDER)
 	find $(FOLDER)/install -name "*~" | xargs rm -f
 	find $(FOLDER)/install -name "*.bak" | xargs rm -f

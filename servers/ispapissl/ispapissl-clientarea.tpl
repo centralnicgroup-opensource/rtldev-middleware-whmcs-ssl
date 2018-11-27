@@ -1,28 +1,34 @@
 {if $ispapissl.sslresendcertapproveremail}
+     <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails">
+        {if $ispapissl.errormessage}
+            <div class="alert alert-warning text-center">{$ispapissl.errormessage}</div><br />
+        {/if}
+        <input type="hidden" name="id" value="{$ispapissl.id}" />
+        <input type="submit" class="btn btn-primary" name="sslresendcertapproveremail" value="Resend Approveremail"/><br>
 
-    {if $ispapissl.errormessage}<div class="errorbox">{$ispapissl.errormessage}</div><br />{/if}
+        <p><b>{$LANG.sslcertapproveremail}</b></p>
+        <p>{$LANG.sslcertapproveremaildetails}</p>
 
-    <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails">
-    <input type="hidden" name="id" value="{$ispapissl.id}" />
-
-    <p><b>{$LANG.sslcertapproveremail}</b></p>
-
-    <p>{$LANG.sslcertapproveremaildetails}</p>
-
-    <p>{foreach from=$ispapissl.approveremails item=approveremail key=num}
-    <input type="radio" name="approveremail" value="{$approveremail}"{if $num eq 0} checked{/if} />
-    {$approveremail}<br />
-    {/foreach}</p>
-
-    <table align="center">
-        <tr>
-            <td><input type="submit" value="{$LANG.clientareabacklink}" class="button" /></td>
-            <td><input type="submit" name="sslresendcertapproveremail" value="{$LANG.ordercontinuebutton}" class="button" /></td>
-        </tr>
-    </table>
+        <label> Please enter your approver email here:</label>
+        <input type="text" name="approveremail"/><br>
+        <label> Or </label>
+        <p>
+            {foreach from=$ispapissl.approveremails item=approveremail key=num}
+                <input type="radio" class="radio-button" name="approveremails" value="{$approveremail}"{if $num eq 0} checked{/if} />
+                {$approveremail}<br />
+            {/foreach}
+        </p>
+        <table align="center">
+            <tr>
+                <td><input type="submit" value="{$LANG.clientareabacklink}" class="button" /></td>
+                <td><input type="submit" name="sslresendcertapproveremail" value="{$LANG.ordercontinuebutton}" class="button" /></td>
+            </tr>
+        </table>
     </form>
-
 {else}
+    {if $ispapissl.successmessage}
+        <br><div class='alert alert-success text-center'>Approver email has been resent successfully.</div>
+    {/if}
 
     {if $ispapissl.status}
         <h2>{$LANG.sslcertinfo}</h2>
@@ -86,5 +92,4 @@
             </table></td></tr></table>
         {/if}
     {/if}
-
 {/if}
