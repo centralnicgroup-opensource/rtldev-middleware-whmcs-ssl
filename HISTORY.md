@@ -1,3 +1,15 @@
+# [7.2.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.1.0...v7.2.0) (2018-11-27)
+
+
+### Bug Fixes
+
+* **tests:** Fixed issues in some tests ([cd46241](https://github.com/hexonet/whmcs-ispapi-ssl/commit/cd46241))
+
+
+### Features
+
+* **addon:** Added SSL Addon to simplify the creation of certificate products ([0f7dfc2](https://github.com/hexonet/whmcs-ispapi-ssl/commit/0f7dfc2))
+
 # [7.1.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.0.0...v7.1.0) (2018-10-22)
 
 
