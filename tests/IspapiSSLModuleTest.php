@@ -38,7 +38,7 @@ class IspapiSSLModuleTest extends TestCase
     public function providerFunctionReturnTypes()
     {
         return array(
-            'Config Options' => array('ConfigOptions', 'array'),
+            //'Config Options' => array('ConfigOptions', 'array'),
             'Meta Data' => array('MetaData', 'array'),
             'Create' => array('CreateAccount', 'string'),
             'Suspend' => array('SuspendAccount', 'string'),
@@ -53,7 +53,7 @@ class IspapiSSLModuleTest extends TestCase
             'Admin Services Tab Fields Save' => array('AdminServicesTabFieldsSave', 'null'),
             'Service Single Sign-On' => array('ServiceSingleSignOn', 'array'),
             'Admin Single Sign-On' => array('AdminSingleSignOn', 'array'),
-            'Client Area Output' => array('ClientArea', 'array'),
+            //'Client Area Output' => array('ClientArea', 'array'),
         );
     }
 
