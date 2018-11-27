@@ -16,7 +16,9 @@ use WHMCS\Database\Capsule;
 use ISPAPISSL\Helper;
 use ISPAPISSL\LoadRegistrars;
 
-require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"includes","registrarfunctions.php")));
+if (defined("ROOTDIR")) {
+    require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"includes","registrarfunctions.php")));
+}
 require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"lib","Helper.class.php")));
 require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"lib","LoadRegistrars.class.php")));
 
