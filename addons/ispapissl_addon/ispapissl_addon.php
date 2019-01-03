@@ -12,7 +12,7 @@ $module_version = "1.0";
 /*
  * Configuration of the addon module.
  */
-function ispapissl_addon_config($params) {
+function ispapissl_addon_config() {
     global $module_version;
     $configarray = array(
         "name" => "ISPAPI SSL Addon",
