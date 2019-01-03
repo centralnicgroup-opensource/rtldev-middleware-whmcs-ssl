@@ -1,3 +1,10 @@
+## [7.2.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.0...v7.2.1) (2019-01-03)
+
+
+### Bug Fixes
+
+* **argumentcounterror:** Removed the unnecessary argument from the ispapissl_addon_config() function ([a171da5](https://github.com/hexonet/whmcs-ispapi-ssl/commit/a171da5))
+
 # [7.2.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.1.0...v7.2.0) (2018-11-27)
 
 
