@@ -1,3 +1,10 @@
+## [7.2.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.1...v7.2.2) (2019-01-14)
+
+
+### Bug Fixes
+
+* **pkg:** fixed wrong default cost currency issue ([5fc1348](https://github.com/hexonet/whmcs-ispapi-ssl/commit/5fc1348))
+
 ## [7.2.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.0...v7.2.1) (2019-01-03)
 
 
