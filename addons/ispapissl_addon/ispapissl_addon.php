@@ -74,7 +74,7 @@ function ispapissl_addon_output($vars){
     $command = array(
         "command" => "statususer"
     );
-    $statususer_data = Helper::APICall($_SESSION["ispapi_registrar"][0], $command);
+    $statususer_data = Helper::APICall($_SESSION["ispapi_registrar"][0], $command);    
 
     $pattern_for_SSL_certificate ="/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/";
     $certificates_and_prices = array();
@@ -86,6 +86,7 @@ function ispapissl_addon_output($vars){
         foreach ($list_of_certificates as $key => $ssl_certificate) {
             //to match ispapi classes of ssl certificates
             preg_match($pattern_for_SSL_certificate, $ssl_certificate, $certificate);
+            
             $ispapi_match_ssl_certificate = $certificate[1];
             //price of the ssl certificate
             $price = $statususer_data["PROPERTY"]["RELATIONVALUE"][$key];
@@ -93,6 +94,20 @@ function ispapissl_addon_output($vars){
             $certificates_and_prices[$ispapi_match_ssl_certificate]['Price']= $price;
             //this 'newprice' is modifiable by the user and this is the price that will be imported when it is changed/unchanged by user.
             $certificates_and_prices[$ispapi_match_ssl_certificate]['Newprice']= $price;
+
+            //default currency (at hexonet)
+            $pattern_for_currency = "/PRICE_CLASS_SSLCERT_".$certificate[1]."_CURRENCY$/";
+            $currency_match = preg_grep($pattern_for_currency, $statususer_data["PROPERTY"]["RELATIONTYPE"]);
+            $currency_match_keys= array_keys($currency_match);
+            
+            foreach ($currency_match_keys as $key) {
+                if (array_key_exists($key, $statususer_data["PROPERTY"]["RELATIONVALUE"])) {
+                    $cert_currency = $statususer_data["PROPERTY"]["RELATIONVALUE"][$key];
+                    #$tld_register_renew_transfer_currency[$tld]['currency'] = $tld_currency;
+                }
+            }
+            $certificates_and_prices[$ispapi_match_ssl_certificate]['Defaultcurrency']= $cert_currency;
+            
         }
     }
 
@@ -106,12 +121,6 @@ function ispapissl_addon_output($vars){
 
     foreach ($currencies as $key => $value) {
         $configured_currencies_in_whmcs[$value["id"]] = $value["code"];
-    }
-
-    //for cost currency - the default one
-    //$currencies[0]['code'] always the default currecy (in WHMCS)
-    foreach ($certificates_and_prices as $key => $value) {
-        $certificates_and_prices[$key]['Defaultcurrency']= $currencies[0]['code'];
     }
 
     //which product group selected by the user
