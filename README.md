@@ -9,18 +9,19 @@ This Repository covers the WHMCS SSL Module of HEXONET. It provides the followin
 
 ## Supported Features ##
 
-* Unified handling of different suppliers
-  * Comodo SSL Certs
-  * Verisign SSL Certs
-  * Thawte SSL Certs
-  * GeoTrust SSL Certs
-* Support for testing environment
+The ISPAPI SSL Module supports the following functions and features:
 
-... and MORE!
+  * Unified handling of different suppliers
+  * Support for testing environment
+  * Certificate products directly connected to the ISPAPI Registrar Module
+  * New SSL addon
+       * Load available SSL certificates and import them under a product group
+       * Bulk price update by using a profit margin
+       * Support for different currencies
 
 ## Resources ##
 
-* [Usage Guide](https://github.com/hexonet/whmcs-ispapi-ssl/blob/master/README.md#usage-guide)
+* [Usage Guide](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Usage-Guide)
 * [Release Notes](https://github.com/hexonet/whmcs-ispapi-ssl/releases)
 * [Development Guide](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Development-Guide)
 
@@ -30,35 +31,11 @@ NOTE: We introduced sematic-release starting with v7.1.0. This is why older Rele
 
 Download the ZIP archive including the latest release version [here](https://github.com/hexonet/whmcs-ispapi-ssl/raw/master/whmcs-ispapi-ssl-latest.zip).
 
-### Installation ###
+Read the following to get more information ...
 
-Copy all files from the *install/* subdirectory to your WHMCS installation root directory ($YOUR_WHMCS_ROOT), while keeping the folder structure.
-E.g.
+* [Getting started](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Usage-Guide#getting-started)
+* [Configuration](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Usage-Guide#configuration)
 
-```text
-install/modules/servers/ispapissl/ispapissl.php
-=> $YOUR_WHMCS_ROOT/modules/servers/ispapissl/ispapissl.php
-```
-
-### Configuration ###
-
-Login to the WHMCS Admin Area and navigate to `Setup > Products/Services > Products/Services` to activate.
-
-* Create a new group e.g. "SSL Certificates"
-* Create a new product, e.g.:
-  * Type: Other Product/Service
-  * Group: SSL Certificates
-  * Name: Comodo SSL Certificate
-* In details tab set a Product Description (optional).
-* Ensure the field "Welcome Email" is set to "None"
-* Ensure the field "Require Domain" is unchecked
-* In pricing tab set the "Payment Type" to "One Time" and configure a price
-* In module settings tab
-  * set Module Name to "Ispapissl"
-  * provide your HEXONET login credentials
-  * choose your desired "Certificate Type" using dropdown list "Certificate Type"
-  * choose your desired "Term" using dropdown list "Years"
-  * Set "Automatically setup the product as soon as the first payment is received" to ensure the certificate is paid before registration.
 
 ## Minimum Requirements ##
 
