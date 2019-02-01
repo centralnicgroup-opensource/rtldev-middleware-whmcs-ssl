@@ -92,7 +92,7 @@ function ispapissl_addon_output($vars){
             $price = $statususer_data["PROPERTY"]["RELATIONVALUE"][$key];
             //collect certs and prices
             $certificates_and_prices[$ispapi_match_ssl_certificate]['Price']= $price;
-            //this 'newprice' is modifiable by the user and this is the price that will be imported when it is changed/unchanged by user.
+            //this 'newprice' = sale price and is modifiable by the user and this is the price that will be imported when it is changed/unchanged by user.
             $certificates_and_prices[$ispapi_match_ssl_certificate]['Newprice']= $price;
 
             //default currency (at hexonet)
@@ -145,35 +145,75 @@ function ispapissl_addon_output($vars){
         }
 
     }
-    elseif(isset($_POST['addprofitmargin'])){
-        $profit_margin = $_POST['profitmargin'];
-        if(!empty($profit_margin)){
+    elseif(isset($_POST['calculateregprice'])){
+        $reg_period = $_POST['registrationperiod'];
 
-            //call a function to calculate profit margin
-            $certificates_and_new_prices = calculate_profitmargin($certificates_and_prices, $profit_margin);
-
-            $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
+        $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
+        if(!empty($reg_period) && $reg_period == 2){
+            $certificates_and_new_prices = calculate_registration_price($certificates_and_prices, $reg_period);            
             $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
-            $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-            $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
-
         }
-        else{
-            //$smarty->assign('selected_product_group', $selected_product_group);
-            $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
+        else {
             $smarty->assign('certificates_and_prices', $certificates_and_prices);
-            $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-            $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
         }
-
+        $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
+        $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
     }
-    elseif(isset($_POST['import'])){
-        //to collect new prices, certificates and (new) currency
+    elseif(isset($_POST['addprofitmargin'])){
+
+        $profit_margin = $_POST['profitmargin'];
+        $reg_period = $_POST['registrationperiod'];
+
+        $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
+        if(!empty($profit_margin)){
+            if(!empty($reg_period) && $reg_period == 2){
+                //profit margin on 2Y reg price
+                $certificates_and_new_prices = calculate_profitmargin(calculate_registration_price($certificates_and_prices, $reg_period), $profit_margin);
+                $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
+            }
+            else {
+                //profit margin on 1Y reg price
+                $certificates_and_new_prices = calculate_profitmargin($certificates_and_prices, $profit_margin);
+                $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
+            }
+        }
+        else {
+            //when clicked on empty profit margin but reg period is still set to 2Y
+            if(!empty($reg_period) && $reg_period == 2){
+                 $certificates_and_new_prices = calculate_registration_price($certificates_and_prices, $reg_period);
+                 $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
+             }
+             else {
+                 //when clicked on empty profit margin and reg period is set to 1Y
+                 $smarty->assign('certificates_and_prices', $certificates_and_prices);
+             }
+        }
+        $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
+        $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
+    }
+    elseif(isset($_POST['import'])){        
+        //to collect new prices, certificates and (new) selected currency
         if(isset($_POST["checkboxcertificate"])){
             import_button();
         }
-        $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
+
+        //take post values of sale prices - when user edit sale prices manually, should be displayed same after 'import'
+        $certificate_match_pattern = "/(.*)_saleprice/";
+        foreach($_POST as $key=>$value){
+            if(preg_match($certificate_match_pattern,$key,$match)){
+              $certificates_and_new_prices[$match[1]]['Newprice'] = $value;
+            }
+        }
+        //to remove underscores in certificate names
+        array_keys_to_lowerCase($certificates_and_new_prices);
+        foreach ($certificates_and_prices as $key => $value) {
+            if (array_key_exists($key, $certificates_and_new_prices)) {
+                $certificates_and_prices[$key]['Newprice'] = $certificates_and_new_prices[$key]['Newprice'];
+            }
+        }
+
         $smarty->assign('certificates_and_prices', $certificates_and_prices);
+        $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
         $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
         //to display checked items even after button click
         $smarty->assign('post-checkboxcertificate', $_POST['checkboxcertificate']);
@@ -204,17 +244,31 @@ function calculate_profitmargin($certificates_and_prices, $profit_margin){
     $certificates_and_new_prices = array();
     $certificates_and_new_prices = $certificates_and_prices;
 
-    foreach ($certificates_and_prices as $certificate => $price_defaultcurrency) {
-        $percentage_of_price = ($profit_margin/100) * $price_defaultcurrency['price'];
-        $new_price = $price_defaultcurrency['price'] + $percentage_of_price;
-        $certificates_and_new_prices[$certificate]['newprice'] = $new_price;
+    foreach ($certificates_and_new_prices as $certificate => $price_defaultcurrency) {
+        $percentage_of_price = ($profit_margin/100) * $price_defaultcurrency['Newprice'];
+        $new_price = $price_defaultcurrency['Newprice'] + $percentage_of_price;
+        $certificates_and_new_prices[$certificate]['Newprice'] = number_format((float)$new_price, 2, '.', '');
+    }
+
+    return $certificates_and_new_prices;
+}
+//calculate product price for 2Y period
+function calculate_registration_price($certificates_and_prices, $reg_period){
+    
+    $certificates_and_new_prices = array();
+    $certificates_and_new_prices = $certificates_and_prices;
+
+    foreach ($certificates_and_new_prices as $certificate => $price_and_defaultcurrency) {
+        $new_price = 2 * $price_and_defaultcurrency['Price'];
+        $certificates_and_new_prices[$certificate]['Price'] = number_format((float)$new_price, 2, '.', '');
+        $certificates_and_new_prices[$certificate]['Newprice'] = number_format((float)$new_price, 2, '.', '');
     }
 
     return $certificates_and_new_prices;
 }
 
 /*
- * To import selected SSL certificates/products
+ * Import selected SSL certificates/products
  */
 function import_button(){
     //prepare an array from POST values with certificates and the new price for importing
@@ -275,34 +329,42 @@ function import_button(){
  * Save imported SSL certificates/products
  */
 function importproducts($certificates_and_prices, $selected_product_group) {
+    //registration period 1Y or 2Y
+    $reg_period = $_POST['registrationperiod'];
+
+    if((!empty($reg_period) && $reg_period == 1)){
+        //to retrieve data for (1y or 2y product) from DB
+        $configoption3 = '1';
+        //certificate name will contain the following addition
+        $yeartext = ' - 1 Year';
+    }else{
+        $configoption3 = '2';
+        $yeartext = ' - 2 Year';
+    }
     //get the id of selected product group
     $product_group_id = Helper::SQLCall("SELECT id FROM tblproductgroups WHERE name=? LIMIT 1", array($selected_product_group), "fetch");
-
     foreach ($certificates_and_prices as $ssl_certificate => $price) {
-
-        //check if the product already exists under the selected product group
-        $data_tblproducts = Helper::SQLCall("SELECT * FROM tblproducts WHERE name=? AND gid=?", array($ssl_certificate, $product_group_id['id']), "fetch");
+        $ssl_certificate = $ssl_certificate.$yeartext;
+        $data_tblproducts = Helper::SQLCall("SELECT * FROM tblproducts WHERE name=? AND gid=? AND configoption3=?", array($ssl_certificate, $product_group_id['id'], $configoption3), "fetch");
 
         if(empty($data_tblproducts)){
-            //insert the product if it does not exists
-            $insert_stmt = Helper::SQLCall("INSERT INTO tblproducts (type, gid, name, paytype, autosetup, servertype, configoption1, configoption2, configoption3) VALUES ('other', ?, ?, 'recurring', 'payment', ?, ?, ?, '1')", array($product_group_id['id'], $ssl_certificate, $price['Servertype'], $price['Certificateclass'], $price['Registrar']), "execute");
-            //ID of the inserted product to insert/update pricing (relid in tblpricing)
-            //product_group_id = relid
-            $product_id = Helper::SQLCall("SELECT id FROM tblproducts WHERE name=? AND gid=? LIMIT 1", array($ssl_certificate, $product_group_id['id']), "fetch");
-
-            $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', ?, '-1', '-1')", array($price['Currency'],$product_id['id'], $price['Newprice']), "execute");
+            //insert
+            $insert_stmt = Helper::SQLCall("INSERT INTO tblproducts (type, gid, name, paytype, autosetup, servertype, configoption1, configoption2, configoption3) VALUES ('other', ?, ?, 'onetime', 'payment', ?, ?, ?, ?)", array($product_group_id['id'], $ssl_certificate, $price['Servertype'], $price['Certificateclass'], $price['Registrar'], $configoption3), "execute");
+            //insert pricing
+            $product_id = Helper::SQLCall("SELECT id FROM tblproducts WHERE name=? AND gid=? AND configoption3=? LIMIT 1", array($ssl_certificate, $product_group_id['id'], $configoption3), "fetch");
+            $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', ?, '-1', '-1', '-1','-1', '-1')", array($price['Currency'],$product_id['id'], $price['Newprice']), "execute");
         }else{
+            //update
             //the product exists then with which currency - there is possibility to store price of a product with as many currency as possible (if currencies configured in WHMCS)
-            $data_tblpricing = Helper::SQLCall("SELECT * FROM tblpricing WHERE relid=?", array($data_tblproducts['id']), "fetchall");
+            $data_tblpricing = Helper::SQLCall("SELECT * FROM tblpricing WHERE relid=? AND type='product'", array($data_tblproducts['id']), "fetchall");
             //if the currency exists in the $data_tblpricing then update it with new price
             if(in_array($price['Currency'], array_column($data_tblpricing, 'currency'))) { // search value in the array
-                $update_stmt = Helper::SQLCall("UPDATE tblpricing SET annually=? WHERE relid=? AND currency=?", array($price['Newprice'], $data_tblproducts['id'], $price['Currency']), "execute");
+                $update_stmt = Helper::SQLCall("UPDATE tblpricing SET monthly=? WHERE relid=? AND currency=?", array($price['Newprice'], $data_tblproducts['id'], $price['Currency']), "execute");
             }else{
                 //if the currency does not exists, then insert it with new price with same relid
-                $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', '-1', '-1', '-1', ?, '-1', '-1')", array($price['Currency'],$data_tblproducts['id'], $price['Newprice']), "execute");
+                $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', ?, '-1', '-1', '-1', '-1', '-1')", array($price['Currency'],$data_tblproducts['id'], $price['Newprice']), "execute");
             }
         }
-
     }
 }
 
