@@ -1,37 +1,63 @@
-ISPAPI_SSL_MODULE_VERSION := $(shell php -r 'include "servers/ispapissl/ispapissl.php"; print $$module_version;')
-FOLDER := pkg/whmcs-ispapi-ssl-$(ISPAPI_SSL_MODULE_VERSION)
+VERSION := $(shell php -r 'include "servers/ispapissl/ispapissl.php"; print $$module_version;')
+REPOID := whmcs-ispapi-ssl
+FOLDER := pkg/$(REPOID)-$(VERSION)
 
 clean:
 	rm -rf $(FOLDER)
 
 buildsources:
+	# create folder structure for archive
+	mkdir -p $(FOLDER)/docs
 	mkdir -p $(FOLDER)/install/modules/servers
 	mkdir -p $(FOLDER)/install/modules/addons
+	# clone repository wiki
+	rm -rf /tmp/$(REPOID)
+	git clone https://github.com/hexonet/$(REPOID).wiki.git /tmp/$(REPOID)
+	# copy files (archive contents)
 	cp -a servers/ispapissl $(FOLDER)/install/modules/servers
 	cp -a addons/ispapissl_addon $(FOLDER)/install/modules/addons
-	cp README.md HISTORY.md HISTORY.old CONTRIBUTING.md LICENSE README.pdf $(FOLDER)
+	# create the docs
+	cp README.md HISTORY.md HISTORY.old CONTRIBUTING.md LICENSE /tmp/$(REPOID)/*.md $(FOLDER)/docs
+	# Cleanup files
+	rm -rf $(FOLDER)/docs/_*.md $(FOLDER)/docs/Home.md /tmp/$(REPOID)
 	find $(FOLDER)/install -name "*~" | xargs rm -f
 	find $(FOLDER)/install -name "*.bak" | xargs rm -f
+	# convert all necessary files to html
+	find $(FOLDER)/docs -maxdepth 1 -name "*.md" -exec bash -c 'pandoc "$${0}" -f markdown -t html -s --self-contained -o "$${0/\.md/}.html"' {} \;
+	pandoc $(FOLDER)/docs/LICENSE -t html -s --self-contained -o $(FOLDER)/docs/LICENSE.html
+	rm -rf $(FOLDER)/docs/*.md $(FOLDER)/docs/LICENSE
+	# replacements in html files
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'sed -i -e "s/https:\/\/github\.com\/hexonet\/whmcs-ispapi-ssl\/wiki/\./g" "$${0}"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'sed -i -e "s/https:\/\/github\.com\/hexonet\/whmcs-ispapi-ssl\/blob\/master/\./g" "$${0}"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/Contact-Us.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/CONTRIBUTING.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/Development-Guide.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/HISTORY.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/LICENSE.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/README.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/Release-Notes.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'm=$$(basename -- "$${0}"); l="$${m/\.html/}"; sed -i -e "s|\.\/$$l|\.\/$$m|g" "$(FOLDER)/docs/Usage-Guide.html"' {} \;
+	find $(FOLDER)/docs -maxdepth 1 -name "*.html" -exec bash -c 'sed -i -e "s/\.html\.md/\.html/g" "$${0}"' {} \;
 
 buildlatestzip:
-	cp pkg/whmcs-ispapi-ssl.zip ./whmcs-ispapi-ssl-latest.zip # for downloadable "latest" zip by url
+	cp pkg/$(REPOID).zip ./$(REPOID)-latest.zip
 
 zip:
-	rm -rf pkg/whmcs-ispapi-ssl.zip
+	rm -rf pkg/$(REPOID).zip
 	@$(MAKE) buildsources
-	cd pkg && zip -r whmcs-ispapi-ssl.zip whmcs-ispapi-ssl-$(ISPAPI_SSL_MODULE_VERSION)
+	cd pkg && zip -r $(REPOID).zip $(REPOID)-$(VERSION)
 	@$(MAKE) clean
 
 tar:
-	rm -rf pkg/whmcs-ispapi-ssl.tar.gz
+	rm -rf pkg/$(REPOID).tar.gz
 	@$(MAKE) buildsources
-	cd pkg && tar -zcvf whmcs-ispapi-ssl.tar.gz whmcs-ispapi-ssl-$(ISPAPI_SSL_MODULE_VERSION)
+	cd pkg && tar -zcvf $(REPOID).tar.gz $(REPOID)-$(VERSION)
 	@$(MAKE) clean
 
 allarchives:
-	rm -rf pkg/whmcs-ispapi-ssl.zip
-	rm -rf pkg/whmcs-ispapi-ssl.tar
+	rm -rf pkg/$(REPOID).zip
+	rm -rf pkg/$(REPOID).tar
 	@$(MAKE) buildsources
-	cd pkg && zip -r whmcs-ispapi-ssl.zip whmcs-ispapi-ssl-$(ISPAPI_SSL_MODULE_VERSION) && tar -zcvf whmcs-ispapi-ssl.tar.gz whmcs-ispapi-ssl-$(ISPAPI_SSL_MODULE_VERSION)
+	cd pkg && zip -r $(REPOID).zip $(REPOID)-$(VERSION) && tar -zcvf $(REPOID).tar.gz $(REPOID)-$(VERSION)
 	@$(MAKE) buildlatestzip
 	@$(MAKE) clean
