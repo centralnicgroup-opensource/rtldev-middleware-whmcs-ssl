@@ -1,4 +1,4 @@
-VERSION := $(shell php -r 'include "servers/ispapissl/ispapissl.php"; print $$module_version;')
+VERSION := $(shell node -p "require('./release.json').version")
 REPOID := whmcs-ispapi-ssl
 FOLDER := pkg/$(REPOID)-$(VERSION)
 
