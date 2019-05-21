@@ -1,3 +1,10 @@
+## [7.2.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.2...v7.2.3) (2019-05-21)
+
+
+### Performance Improvements
+
+* **update:** update in LoadRegistrars.Class.php file ([c5e35a8](https://github.com/hexonet/whmcs-ispapi-ssl/commit/c5e35a8))
+
 ## [7.2.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.1...v7.2.2) (2019-01-14)
 
 
