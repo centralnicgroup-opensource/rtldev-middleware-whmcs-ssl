@@ -40,6 +40,11 @@ class LoadRegistrars
         foreach ($this->getAllConfiguredRegistrars() as $registrar) {
             $this->loadSingleISPAPIRegistrar($registrar);
         }
+        //if no registrar configured in the pricelist, then try to add hexonet and ispapi
+        if (empty($this->registrars)) {
+            $this->loadSingleISPAPIRegistrar("hexonet");
+            $this->loadSingleISPAPIRegistrar("ispapi");
+        }
     }
 
     /*
