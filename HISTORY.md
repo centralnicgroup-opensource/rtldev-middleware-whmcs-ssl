@@ -1,3 +1,10 @@
+# [7.3.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.3...v7.3.0) (2019-05-24)
+
+
+### Features
+
+* **import:** added support to import 2Y registration pricing ([c5c11bf](https://github.com/hexonet/whmcs-ispapi-ssl/commit/c5c11bf))
+
 ## [7.2.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.2...v7.2.3) (2019-05-21)
 
 
