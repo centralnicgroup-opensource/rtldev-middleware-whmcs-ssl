@@ -1,3 +1,10 @@
+## [7.3.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.0...v7.3.1) (2019-08-16)
+
+
+### Bug Fixes
+
+* **logo:** updated to our new logo design ([89652a7](https://github.com/hexonet/whmcs-ispapi-ssl/commit/89652a7))
+
 # [7.3.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.2.3...v7.3.0) (2019-05-24)
 
 
