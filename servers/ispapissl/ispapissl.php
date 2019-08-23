@@ -26,10 +26,22 @@ require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"lib","LoadReg
 global $module_version;
 $module_version = "7.3.2";
 
+/**
+ * Define module related meta data.
+ *
+ * Values returned here are used to determine module related abilities and
+ * settings.
+ *
+ * @see https://developers.whmcs.com/provisioning-modules/meta-data-params/
+ *
+ * @return array
+ */
 function ispapissl_MetaData()
 {
+    global $module_version;
     return array(
         'DisplayName' => 'ISPAPI SSL Certificates',
+        'MODULEVersion' => $module_version // custom meta data
     );
 }
 
