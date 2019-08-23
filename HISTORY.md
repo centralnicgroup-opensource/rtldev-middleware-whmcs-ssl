@@ -1,3 +1,10 @@
+## [7.3.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.1...v7.3.2) (2019-08-23)
+
+
+### Bug Fixes
+
+* **versioning:** fix auto-update version in addon part ([3d78720](https://github.com/hexonet/whmcs-ispapi-ssl/commit/3d78720))
+
 ## [7.3.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.0...v7.3.1) (2019-08-16)
 
 

@@ -24,7 +24,7 @@ require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"lib","LoadReg
 
 
 global $module_version;
-$module_version = "7.3.1";
+$module_version = "7.3.2";
 
 function ispapissl_MetaData()
 {
