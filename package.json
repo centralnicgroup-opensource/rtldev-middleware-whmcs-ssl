@@ -88,6 +88,7 @@
           "package.json",
           "composer.json",
           "servers/ispapissl/ispapissl.php",
+          "addons/ispapissl_addon/ispapissl_addon.php",
           "whmcs-ispapi-ssl-latest.zip",
           "release.json"
         ],
