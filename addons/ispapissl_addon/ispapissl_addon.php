@@ -8,7 +8,7 @@ use ISPAPISSL\Helper;
 require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"modules","servers","ispapissl","lib","LoadRegistrars.class.php")));
 require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"modules","servers","ispapissl","lib","Helper.class.php")));
 
-$module_version = "7.3.2";
+$module_version = "7.3.3";
 /*
  * Configuration of the addon module.
  */

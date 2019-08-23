@@ -1,3 +1,10 @@
+## [7.3.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.2...v7.3.3) (2019-08-23)
+
+
+### Bug Fixes
+
+* **versioning:** introduce meta data MODULEVersion for server module ([f9ff187](https://github.com/hexonet/whmcs-ispapi-ssl/commit/f9ff187))
+
 ## [7.3.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.1...v7.3.2) (2019-08-23)
 
 
