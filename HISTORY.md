@@ -1,3 +1,10 @@
+## [7.3.4](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.3...v7.3.4) (2019-09-13)
+
+
+### Bug Fixes
+
+* **dep-bump:** Migrate CI to semantic-release-whmcs ([1331f5c](https://github.com/hexonet/whmcs-ispapi-ssl/commit/1331f5c))
+
 ## [7.3.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.2...v7.3.3) (2019-08-23)
 
 
