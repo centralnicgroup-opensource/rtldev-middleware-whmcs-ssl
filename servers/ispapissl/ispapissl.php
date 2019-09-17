@@ -24,7 +24,7 @@ require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"lib","LoadReg
 
 
 global $module_version;
-$module_version = "7.3.4";
+$module_version = "7.3.5";
 
 /**
  * Define module related meta data.

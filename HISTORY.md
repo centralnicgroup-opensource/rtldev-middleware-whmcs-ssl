@@ -1,3 +1,10 @@
+## [7.3.5](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.4...v7.3.5) (2019-09-17)
+
+
+### Bug Fixes
+
+* **release process:** review from scratch ([abc8779](https://github.com/hexonet/whmcs-ispapi-ssl/commit/abc8779))
+
 ## [7.3.4](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.3...v7.3.4) (2019-09-13)
 
 
