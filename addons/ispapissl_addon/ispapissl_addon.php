@@ -2,11 +2,9 @@
 use WHMCS\Database\Capsule;
 session_start();
 
-use ISPAPISSL\LoadRegistrars;
-use ISPAPISSL\Helper;
-
-require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"modules","servers","ispapissl","lib","LoadRegistrars.class.php")));
-require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"modules","servers","ispapissl","lib","Helper.class.php")));
+use WHMCS\Module\Registrar\Ispapi\Ispapi;
+use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
+use WHMCS\Module\Registrar\Ispapi\Helper;
 
 $module_version = "7.3.5";
 /*
@@ -63,21 +61,21 @@ function ispapissl_addon_output($vars)
     //display all the product groups that user has
     $product_groups = Helper::SQLCall("SELECT * FROM tblproductgroups", array(), "fetchall");
     //check if user has any product groups. if not create one and display it
-    if ($product_groups) {
-        $smarty->assign('product_groups', $product_groups);
+    if ($product_groups['success'] && !empty($product_groups['result'])) {
+        $smarty->assign('product_groups', $product_groups['result']);
     } else {
-        $insert_stmt = Helper::SQLCall("INSERT INTO tblproductgroups (name) VALUES ('SSL Certificates')", array(), "execute");
+        $insert_stmt = Helper::SQLCall("INSERT INTO tblproductgroups (name) VALUES ('SSL Certificates')", null, "execute");
 
-        $product_groups = Helper::SQLCall("SELECT * FROM tblproductgroups", array(), "fetchall");
-
-        $smarty->assign('product_groups', $product_groups);
+        $product_groups = Helper::SQLCall("SELECT * FROM tblproductgroups", null, "fetchall");
+        //TODO: check what happens when there are no products groups from the above SQL call
+        $smarty->assign('product_groups', $product_groups['result']);
     }
 
     //get the SSL certificates
     $command = array(
         "command" => "statususer"
     );
-    $statususer_data = Helper::APICall($_SESSION["ispapi_registrar"][0], $command);
+    $statususer_data = Ispapi::call($command);
 
     $pattern_for_SSL_certificate ="/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/";
     $certificates_and_prices = array();
@@ -119,9 +117,9 @@ function ispapissl_addon_output($vars)
     //user currencies configured in whmcs
     $configured_currencies_in_whmcs = [];
 
-    $currencies = Helper::SQLCall("SELECT * FROM tblcurrencies", array(), "fetchall");
+    $currencies = Helper::SQLCall("SELECT * FROM tblcurrencies", null, "fetchall");
 
-    foreach ($currencies as $key => $value) {
+    foreach ($currencies['result'] as $key => $value) {
         $configured_currencies_in_whmcs[$value["id"]] = $value["code"];
     }
 
@@ -340,24 +338,26 @@ function importproducts($certificates_and_prices, $selected_product_group)
     $product_group_id = Helper::SQLCall("SELECT id FROM tblproductgroups WHERE name=? LIMIT 1", array($selected_product_group), "fetch");
     foreach ($certificates_and_prices as $ssl_certificate => $price) {
         $ssl_certificate = $ssl_certificate.$yeartext;
-        $data_tblproducts = Helper::SQLCall("SELECT * FROM tblproducts WHERE name=? AND gid=? AND configoption3=?", array($ssl_certificate, $product_group_id['id'], $configoption3), "fetch");
+        $data_tblproducts = Helper::SQLCall("SELECT * FROM tblproducts WHERE name=? AND gid=? AND configoption3=?", array($ssl_certificate, $product_group_id['result']['id'], $configoption3), "fetch");
 
-        if (empty($data_tblproducts)) {
+        if (empty($data_tblproducts['result'])) {
             //insert
-            $insert_stmt = Helper::SQLCall("INSERT INTO tblproducts (type, gid, name, paytype, autosetup, servertype, configoption1, configoption2, configoption3) VALUES ('other', ?, ?, 'onetime', 'payment', ?, ?, ?, ?)", array($product_group_id['id'], $ssl_certificate, $price['Servertype'], $price['Certificateclass'], $price['Registrar'], $configoption3), "execute");
+            $insert_stmt = Helper::SQLCall("INSERT INTO tblproducts (type, gid, name, paytype, autosetup, servertype, configoption1, configoption2, configoption3) VALUES ('other', ?, ?, 'onetime', 'payment', ?, ?, ?, ?)", array($product_group_id['result']['id'], $ssl_certificate, $price['Servertype'], $price['Certificateclass'], $price['Registrar'], $configoption3), "execute");
             //insert pricing
-            $product_id = Helper::SQLCall("SELECT id FROM tblproducts WHERE name=? AND gid=? AND configoption3=? LIMIT 1", array($ssl_certificate, $product_group_id['id'], $configoption3), "fetch");
-            $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', ?, '-1', '-1', '-1','-1', '-1')", array($price['Currency'],$product_id['id'], $price['Newprice']), "execute");
+            $product_id = Helper::SQLCall("SELECT id FROM tblproducts WHERE name=? AND gid=? AND configoption3=? LIMIT 1", array($ssl_certificate, $product_group_id['result']['id'], $configoption3), "fetch");
+
+            $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', ?, '-1', '-1', '-1','-1', '-1')", array($price['Currency'],$product_id['result']['id'], $price['Newprice']), "execute");
         } else {
             //update
             //the product exists then with which currency - there is possibility to store price of a product with as many currency as possible (if currencies configured in WHMCS)
-            $data_tblpricing = Helper::SQLCall("SELECT * FROM tblpricing WHERE relid=? AND type='product'", array($data_tblproducts['id']), "fetchall");
+            $data_tblpricing = Helper::SQLCall("SELECT * FROM tblpricing WHERE relid=? AND type='product'", array($data_tblproducts['result']['id']), "fetchall");
+
             //if the currency exists in the $data_tblpricing then update it with new price
-            if (in_array($price['Currency'], array_column($data_tblpricing, 'currency'))) { // search value in the array
-                $update_stmt = Helper::SQLCall("UPDATE tblpricing SET monthly=? WHERE relid=? AND currency=?", array($price['Newprice'], $data_tblproducts['id'], $price['Currency']), "execute");
+            if (in_array($price['Currency'], array_column($data_tblpricing['result'], 'currency'))) { // search value in the array
+                $update_stmt = Helper::SQLCall("UPDATE tblpricing SET monthly=? WHERE relid=? AND currency=?", array($price['Newprice'], $data_tblproducts['result']['id'], $price['Currency']), "execute");
             } else {
                 //if the currency does not exists, then insert it with new price with same relid
-                $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', ?, '-1', '-1', '-1', '-1', '-1')", array($price['Currency'],$data_tblproducts['id'], $price['Newprice']), "execute");
+                $insert_stmt = Helper::SQLCall("INSERT INTO tblpricing (type, currency, relid, msetupfee, qsetupfee, ssetupfee, asetupfee, bsetupfee, tsetupfee, monthly, quarterly, semiannually, annually, biennially, triennially) VALUES ('product', ?, ?, '0', '0', '0', '0', '0', '0', ?, '-1', '-1', '-1', '-1', '-1')", array($price['Currency'],$data_tblproducts['result']['id'], $price['Newprice']), "execute");
             }
         }
     }

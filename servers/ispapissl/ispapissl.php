@@ -8,20 +8,17 @@
  * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
  */
 
- // if (!defined("WHMCS")) {
- //     die("This file cannot be accessed directly");
- // }
-
 use WHMCS\Database\Capsule;
-use ISPAPISSL\Helper;
-use ISPAPISSL\LoadRegistrars;
+use WHMCS\Module\Registrar\Ispapi\Ispapi;
+use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
+use WHMCS\Module\Registrar\Ispapi\Helper;
 
-if (defined("ROOTDIR")) {
-    require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"includes","registrarfunctions.php")));
-}
-require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"lib","Helper.class.php")));
-require_once(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"lib","LoadRegistrars.class.php")));
+use \HEXONET\ResponseParser as RP;
 
+//TODO: delete the followign and test
+#if (defined("ROOTDIR")) {
+#    require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"includes","registrarfunctions.php")));
+#}
 
 global $module_version;
 $module_version = "7.3.5";
@@ -50,10 +47,9 @@ function ispapissl_MetaData()
  */
 function ispapissl_ConfigOptions()
 {
-    $data = Helper::SQLCall("SELECT * FROM tblemailtemplates WHERE name='SSL Certificate Configuration Required'", array(), "fetchall");
-
-    if (empty($data)) {
-        Helper::SQLCall("INSERT INTO tblemailtemplates (type, name, subject, message, fromname, fromemail, disabled, custom, language, copyto, plaintext) VALUES ('product', 'SSL Certificate Configuration Required', 'SSL Certificate Configuration Required', '<p>Dear {\$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{\$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{\$signature}</p>', '', '', '', '', '', '', '0')", array(), "execute");
+    $data = Helper::SQLCall("SELECT * FROM tblemailtemplates WHERE name='SSL Certificate Configuration Required'", null, "fetchall");
+    if (empty($data['result'])) {
+        Helper::SQLCall("INSERT INTO tblemailtemplates (type, name, subject, message, fromname, fromemail, disabled, custom, language, copyto, plaintext) VALUES ('product', 'SSL Certificate Configuration Required', 'SSL Certificate Configuration Required', '<p>Dear {\$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{\$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{\$signature}</p>', '', '', '', '', '', '', '0')", null, "execute");
     }
 
     //load all the ISPAPI registrars (Ispapi, Hexonet)
@@ -86,7 +82,7 @@ function ispapissl_CreateAccount(array $params)
         //to check if the customer order already exists. if not create the order at hexonet by clicking 'create' button
         $data = Helper::SQLCall("SELECT * FROM tblsslorders WHERE serviceid=?", array($params['serviceid']), "fetchall");
 
-        if (!empty($data)) {
+        if (!empty($data['result'])) {
             throw new Exception("An SSL Order already exists for this order");
         }
 
@@ -111,7 +107,7 @@ function ispapissl_CreateAccount(array $params)
                           'SSLCERTCLASS' => $certclass,
                           'PERIOD' => $certyears );
 
-        $response = Helper::APICall($registrar, $command);
+        $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
@@ -125,7 +121,7 @@ function ispapissl_CreateAccount(array $params)
         $sslorderid = Helper::SQLCall("SELECT id from tblsslorders WHERE remoteid=?", array($orderid), "fetch");
         //send configuration link to the customer via email based on the order id. Customer then follow the next steps by clicking the link to configure certificate
         global $CONFIG;
-        $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($sslorderid['id']);
+        $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($sslorderid['result']['id']);
 
         $sslconfigurationlink = '<a href="'.$sslconfigurationlink.'">'.$sslconfigurationlink.'</a>';
         sendmessage('SSL Certificate Configuration Required', $params['serviceid'], array('ssl_configuration_link' => $sslconfigurationlink));
@@ -160,7 +156,7 @@ function ispapissl_resend($params)
         //if the order id exists, allow to resend configuration email
         $data = Helper::SQLCall("SELECT id FROM tblsslorders WHERE serviceid=?", array($params['serviceid']), "fetch");
 
-        $id = $data['id'];
+        $id = $data['result']['id'];
         if (!$id) {
             throw new Exception('No SSL Order exists for this product');
         }
@@ -196,7 +192,7 @@ function ispapissl_sslstepone($params)
         //check order id of the certificate set at hexonet and update its status on WHMCS
         if (!$_SESSION['ispapisslcert'][$orderid]['id']) {
             $command = array('COMMAND' => 'QueryOrderList', 'ORDERID' => $orderid);
-            $response = Helper::APICall($registrar, $command);
+            $response = Ispapi::call($command);
 
             if ($response['CODE'] != 200) {
                 throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
@@ -205,7 +201,7 @@ function ispapissl_sslstepone($params)
             $cert_allowconfig = true;
 
             if (isset($response['PROPERTY']['LASTRESPONSE']) && strlen($response['PROPERTY']['LASTRESPONSE'][0])) {
-                $order_response = Helper::parseResponse($registrar, urldecode($response['PROPERTY']['LASTRESPONSE'][0]));
+                $order_response = RP::parse(urldecode($response['PROPERTY']['LASTRESPONSE'][0]));
 
                 if (isset($order_response['PROPERTY']['SSLCERTID'])) {
                     $_SESSION['ispapisslcert'][$orderid]['id'] = $order_response['PROPERTY']['SSLCERTID'][0];
@@ -260,7 +256,7 @@ function ispapissl_sslsteptwo($params)
 
         $registrar = $params['configoption2'];
 
-        $csr_response = Helper::APICall($registrar, $csr_command);
+        $csr_response = Ispapi::call($csr_command);
 
         if ($csr_response['CODE'] != 200) {
             throw new Exception($csr_response['CODE'].' '.$csr_response['DESCRIPTION']);
@@ -290,7 +286,7 @@ function ispapissl_sslsteptwo($params)
         //approver email to the customer
         $appemail_command = array('COMMAND' => 'QuerySSLCertDCVEmailAddressList', 'SSLCERTCLASS' => $certclass, 'CSR' => explode(PHP_EOL, $params['csr']) );
 
-        $appemail_response = Helper::APICall($registrar, $appemail_command);
+        $appemail_response = Ispapi::call($appemail_command);
 
         if (isset($appemail_response['PROPERTY']['EMAIL'])) {
             $values['approveremails'] = $appemail_response['PROPERTY']['EMAIL'];
@@ -344,7 +340,7 @@ function ispapissl_sslsteptwo($params)
             $command[$contacttype.'FAX'] = $params['faxnumber'];
         }
 
-        $response = Helper::APICall($registrar, $command);
+        $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
@@ -388,7 +384,7 @@ function ispapissl_sslstepthree($params)
         //perform an UPDATE the  createSSLCert to add approver email
         $command = array('ORDER' => 'UPDATE', 'ORDERID' => $orderid, 'COMMAND' => 'CreateSSLCert', 'SSLCERTCLASS' => $certclass, 'PERIOD' => $certyears, 'EMAIL' => $params['approveremail']);
 
-        $response = Helper::APICall($registrar, $command);
+        $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
@@ -396,7 +392,7 @@ function ispapissl_sslstepthree($params)
         //execute the order
         $command = array('COMMAND' => 'ExecuteOrder', 'ORDERID' => $orderid);
 
-        $response = Helper::APICall($registrar, $command);
+        $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
@@ -425,9 +421,9 @@ function ispapissl_ClientArea($params)
 
     $data = Helper::SQLCall("SELECT id, remoteid, status FROM tblsslorders WHERE serviceid=?", array($params['serviceid']), "fetch");
 
-    $params['remoteid'] = $data['remoteid'];
-    $params['status'] = $data['status'];
-    $sslorderid = $data['id'];
+    $params['remoteid'] = $data['result']['remoteid'];
+    $params['status'] = $data['result']['status'];
+    $sslorderid = $data['result']['id'];
     $orderid = $params['remoteid'];
 
     //config options
@@ -452,10 +448,10 @@ function ispapissl_ClientArea($params)
 
     $command = array('COMMAND' => 'QueryOrderList', 'ORDERID' => $orderid);
 
-    $response = Helper::APICall($registrar, $command);
+    $response = Ispapi::call($command);
 
     if (isset($response['PROPERTY']['ORDERCOMMAND']) && strlen($response['PROPERTY']['ORDERCOMMAND'][0])) {
-        $order_command = Helper::parseResponse($registrar, urldecode($response['PROPERTY']['ORDERCOMMAND'][0]));
+        $order_command = RP::parse(urldecode($response['PROPERTY']['ORDERCOMMAND'][0]));
 
         $csr = array();
         $i = 0;
@@ -483,14 +479,14 @@ function ispapissl_ClientArea($params)
     }
 
     if ((isset($response['PROPERTY']['LASTRESPONSE']) && strlen($response['PROPERTY']['LASTRESPONSE'][0]))) {
-        $order_response = Helper::parseResponse($registrar, urldecode($response['PROPERTY']['LASTRESPONSE'][0]));
+        $order_response = RP::parse(urldecode($response['PROPERTY']['LASTRESPONSE'][0]));
 
         if (isset($order_response['PROPERTY']['SSLCERTID'])) {
             $cert_id = $order_response['PROPERTY']['SSLCERTID'][0];
 
             $status_command = array('COMMAND' => 'StatusSSLCert', 'SSLCERTID' => $cert_id);
 
-            $status_response = Helper::APICall($registrar, $status_command);
+            $status_response = Ispapi::call($status_command);
 
             if (isset($status_response['PROPERTY']['CSR'])) {
                 $csr = implode(PHP_EOL, $status_response['PROPERTY']['CSR']);
@@ -553,7 +549,7 @@ function ispapissl_ClientArea($params)
         $ispapissl['approveremail'] = $_REQUEST['approveremail'];
         $resend_command = array('COMMAND' => 'ResendSSLCertEmail', 'SSLCERTID' => $cert_id, 'EMAIL' => $_REQUEST['approveremail']);
 
-        $resend_response = Helper::APICall($registrar, $resend_command);
+        $resend_response = Ispapi::call($resend_command);
 
         if ($resend_response['CODE'] == 200) {
             unset($_REQUEST[sslresendcertapproveremail]);
@@ -575,7 +571,7 @@ function ispapissl_ClientArea($params)
             $ispapissl['errormessage'] = $resend_response['DESCRIPTION'];
         }
 
-        $appemail_response = Helper::APICall($registrar, $appemail_command);
+        $appemail_response = Ispapi::call($appemail_command);
         if (isset($appemail_response['PROPERTY']['EMAIL'])) {
             $ispapissl['approveremails'] = $appemail_response['PROPERTY']['EMAIL'];
         } else {
