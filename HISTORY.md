@@ -1,3 +1,15 @@
+# [8.0.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.5...v8.0.0) (2020-04-27)
+
+
+### Code Refactoring
+
+* **migration:** to support v3.x.x of the ispapi registrar module ([8d8139d](https://github.com/hexonet/whmcs-ispapi-ssl/commit/8d8139ddb9129099c1247fe5b8026f261896ad04))
+
+
+### BREAKING CHANGES
+
+* **migration:** compatible with ISPAPI registrar module v3.x.x
+
 ## [7.3.5](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.4...v7.3.5) (2019-09-17)
 
 

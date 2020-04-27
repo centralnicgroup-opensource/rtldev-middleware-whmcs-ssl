@@ -6,7 +6,7 @@ use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 use WHMCS\Module\Registrar\Ispapi\Helper;
 
-$module_version = "7.3.5";
+$module_version = "8.0.0";
 /*
  * Configuration of the addon module.
  */

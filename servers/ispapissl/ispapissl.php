@@ -21,7 +21,7 @@ use \HEXONET\ResponseParser as RP;
 #}
 
 global $module_version;
-$module_version = "7.3.5";
+$module_version = "8.0.0";
 
 /**
  * Define module related meta data.
