@@ -1,26 +1,23 @@
 <?php
 use WHMCS\Database\Capsule;
-session_start();
-
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 use WHMCS\Module\Registrar\Ispapi\Helper;
 
-$module_version = "8.0.0";
+session_start();
+
 /*
  * Configuration of the addon module.
  */
 function ispapissl_addon_config()
 {
-    global $module_version;
-    $configarray = array(
+    return [
         "name" => "ISPAPI SSL Addon",
         "description" => "This addon allows you to quickly add and configure SSL Certificates",
-        "version" => $module_version,
         "author" => "HEXONET",
         "language" => "english",
-    );
-    return $configarray;
+        "version" => "8.0.0"
+    ];
 }
 
 /*

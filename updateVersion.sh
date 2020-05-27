@@ -6,12 +6,9 @@
 
 # version format: X.Y.Z
 newversion="$1";
-branch="$2";
 date="$(date +'%Y-%m-%d')";
 
-if [ "$branch" = "master" ]; then
-    sed -i "s/\$module_version = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\$module_version = \"${newversion}\"/g" addons/ispapissl_addon/ispapissl_addon.php
-    sed -i "s/\$module_version = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\$module_version = \"${newversion}\"/g" servers/ispapissl/ispapissl.php
-    sed -i "s/\"version\": \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"version\": \"${newversion}\"/g" release.json
-    sed -i "s/\"date\": \"[0-9]\+-[0-9]\+-[0-9]\+\"/\"date\": \"${date}\"/g" release.json
-fi;
+sed -i "s/\"version\" => \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"version\" => \"${newversion}\"/g" addons/ispapissl_addon/ispapissl_addon.php
+sed -i "s/\"MODULEVersion\" => \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"MODULEVersion\" => \"${newversion}\"/g" servers/ispapissl/ispapissl.php
+sed -i "s/\"version\": \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"version\": \"${newversion}\"/g" release.json
+sed -i "s/\"date\": \"[0-9]\+-[0-9]\+-[0-9]\+\"/\"date\": \"${date}\"/g" release.json

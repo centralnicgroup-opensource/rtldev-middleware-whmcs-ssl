@@ -20,9 +20,6 @@ use \HEXONET\ResponseParser as RP;
 #    require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"includes","registrarfunctions.php")));
 #}
 
-global $module_version;
-$module_version = "8.0.0";
-
 /**
  * Define module related meta data.
  *
@@ -35,11 +32,10 @@ $module_version = "8.0.0";
  */
 function ispapissl_MetaData()
 {
-    global $module_version;
-    return array(
-        'DisplayName' => 'ISPAPI SSL Certificates',
-        'MODULEVersion' => $module_version // custom meta data
-    );
+    return [
+        "DisplayName" => "ISPAPI SSL Certificates",
+        "MODULEVersion" => "8.0.0" // custom meta data
+    ];
 }
 
 /*
