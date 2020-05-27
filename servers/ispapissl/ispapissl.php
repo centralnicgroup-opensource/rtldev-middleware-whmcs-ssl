@@ -34,7 +34,7 @@ function ispapissl_MetaData()
 {
     return [
         "DisplayName" => "ISPAPI SSL Certificates",
-        "MODULEVersion" => "8.0.0" // custom meta data
+        "MODULEVersion" => "8.0.1" // custom meta data
     ];
 }
 

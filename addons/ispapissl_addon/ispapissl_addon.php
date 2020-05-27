@@ -16,7 +16,7 @@ function ispapissl_addon_config()
         "description" => "This addon allows you to quickly add and configure SSL Certificates",
         "author" => "HEXONET",
         "language" => "english",
-        "version" => "8.0.0"
+        "version" => "8.0.1"
     ];
 }
 

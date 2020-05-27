@@ -1,3 +1,10 @@
+## [8.0.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v8.0.0...v8.0.1) (2020-05-27)
+
+
+### Bug Fixes
+
+* **versioning:** move global var to config function ([f577843](https://github.com/hexonet/whmcs-ispapi-ssl/commit/f577843153371b897730ae47050072bb10243857))
+
 # [8.0.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v7.3.5...v8.0.0) (2020-04-27)
 
 
