@@ -5,10 +5,17 @@
 # semantic-release. SEE package.json
 
 # version format: X.Y.Z
-newversion="$1";
-date="$(date +'%Y-%m-%d')";
+newversion="$1"
+date="$(date +'%Y-%m-%d')"
 
-sed -i "s/\"version\" => \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"version\" => \"${newversion}\"/g" addons/ispapissl_addon/ispapissl_addon.php
-sed -i "s/\"MODULEVersion\" => \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"MODULEVersion\" => \"${newversion}\"/g" servers/ispapissl/ispapissl.php
-sed -i "s/\"version\": \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"version\": \"${newversion}\"/g" release.json
-sed -i "s/\"date\": \"[0-9]\+-[0-9]\+-[0-9]\+\"/\"date\": \"${date}\"/g" release.json
+printf -v sed_script 's/"MODULEVersion" => "[0-9]\+\.[0-9]\+\.[0-9]\+"/"MODULEVersion" => "%s"/g' "${newversion}"
+sed -i -e "${sed_script}" servers/ispapissl/ispapissl.php
+
+printf -v sed_script 's/"version" => "[0-9]\+\.[0-9]\+\.[0-9]\+"/"version" => "%s"/g' "${newversion}"
+sed -i -e "${sed_script}" addons/ispapissl_addon/ispapissl_addon.php
+
+printf -v sed_script 's/"version": "[0-9]\+\.[0-9]\+\.[0-9]\+"/"version": "%s"/g' "${newversion}"
+sed -i -e "${sed_script}" release.json
+
+printf -v sed_script 's/"date": "[0-9]\+-[0-9]\+-[0-9]\+"/"date": "%s"/g' "${date}"
+sed -i -e "${sed_script}" release.json
