@@ -104,7 +104,6 @@ function ispapissl_CreateAccount(array $params)
             $certyears = $params['configoption3'];
         }
 
-        $registrar = $params['configoption2'];
         //command to create the order of ssl certificate at hexonet
         $command = array( 'ORDER' => 'CREATE',
                           'COMMAND' => 'CreateSSLCert',
@@ -196,9 +195,6 @@ function ispapissl_resend($params)
  */
 function ispapissl_sslstepone($params)
 {
-
-    $registrar = $params['configoption2'];
-
     try {
         $orderid = $params['remoteid'];
         //check order id of the certificate set at hexonet and update its status on WHMCS
@@ -241,33 +237,14 @@ function ispapissl_sslstepone($params)
 
 function ispapissl_sslsteptwo($params)
 {
-
     try {
+        $ispapissl_server_map = [];
         include(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"ispapissl-config.php")));
-        //orderid and customer's contact data
         $orderid = $params['remoteid'];
-        $cert_id = $_SESSION['enomsslcert'][$orderid]['id'];
-        $webservertype = $params['servertype'];
-        $csr = $params['csr'];
-        $firstname = $params['firstname'];
-        $lastname = $params['lastname'];
-        $organisationname = $params['organisationname'];
-        $jobtitle = $params['jobtitle'];
-        $emailaddress = $params['email'];
-        $address1 = $params['address1'];
-        $address2 = $params['address2'];
-        $city = $params['city'];
-        $state = $params['state'];
-        $postcode = $params['postcode'];
-        $country = $params['country'];
-        $phonenumber = $params['phonenumber'];
-        $faxnumber = $params['faxnumber'];
 
         $values = array();
         //parse CSR submitted by the customer
         $csr_command = array( 'COMMAND' => 'ParseSSLCertCSR', 'CSR' => explode(PHP_EOL, $params['csr']));
-
-        $registrar = $params['configoption2'];
 
         $csr_response = Ispapi::call($csr_command);
 
@@ -298,7 +275,6 @@ function ispapissl_sslsteptwo($params)
 
         //approver email to the customer
         $appemail_command = array('COMMAND' => 'QuerySSLCertDCVEmailAddressList', 'SSLCERTCLASS' => $certclass, 'CSR' => explode(PHP_EOL, $params['csr']) );
-
         $appemail_response = Ispapi::call($appemail_command);
 
         if (isset($appemail_response['PROPERTY']['EMAIL'])) {
@@ -378,7 +354,6 @@ function ispapissl_sslsteptwo($params)
 
 function ispapissl_sslstepthree($params)
 {
-
     try {
         include(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"ispapissl-config.php")));
         $orderid = $params['remoteid'];
@@ -395,7 +370,6 @@ function ispapissl_sslstepthree($params)
             $certyears = $params['configoption3'];
         }
 
-        $registrar = $params['configoption2'];
         //perform an UPDATE the  createSSLCert to add approver email
         $command = array('ORDER' => 'UPDATE', 'ORDERID' => $orderid, 'COMMAND' => 'CreateSSLCert', 'SSLCERTCLASS' => $certclass, 'PERIOD' => $certyears, 'EMAIL' => $params['approveremail']);
 
@@ -446,21 +420,6 @@ function ispapissl_ClientArea($params)
     $sslorderid = $data->id;
     $orderid = $params['remoteid'];
 
-    //config options
-    if ($params['configoptions']['Certificate Type']) {
-        $certclass = $params['configoptions']['Certificate Type'];
-    } else {
-        $certclass = $params['configoption1'];
-    }
-
-    if ($params['configoptions']['Years']) {
-        $certyears = $params['configoptions']['Years'];
-    } else {
-        $certyears = $params['configoption4'];
-    }
-
-    $registrar = $params['configoption2'];
-
     $ispapissl = array();
     $ispapissl['id'] = $params['serviceid'];
     $ispapissl['md5certid'] = md5($sslorderid);
@@ -483,7 +442,6 @@ function ispapissl_ClientArea($params)
         }
 
         $csr = implode(PHP_EOL, $csr);
-
 
         if (strlen($csr)) {
             $ispapissl['config']['csr'] = htmlspecialchars($csr);
@@ -551,7 +509,6 @@ function ispapissl_ClientArea($params)
             }
         }
     }
-
 
     $clientsdatamap = array('firstname' => 'firstname', 'lastname' => 'lastname', 'organisationname' => 'companyname', 'jobtitle' => '', 'email' => 'email', 'address1' => 'address1', 'address2' => 'address2', 'city' => 'city', 'state' => 'state', 'postcode' => 'postcode', 'country' => 'country', 'phonenumber' => 'phonenumber');
     foreach ($clientsdatamap as $key => $item) {
