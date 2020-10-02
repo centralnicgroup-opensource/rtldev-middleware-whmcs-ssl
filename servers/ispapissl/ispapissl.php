@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ISPAPI SSL Module for WHMCS
  *
@@ -12,10 +13,9 @@ use Illuminate\Database\Capsule\Manager as DB;
 use WHMCS\Carbon;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
+use HEXONET\ResponseParser as RP;
 
-use \HEXONET\ResponseParser as RP;
-
-//TODO: delete the followign and test
+//TODO: delete the following and test
 #if (defined("ROOTDIR")) {
 #    require_once(implode(DIRECTORY_SEPARATOR, array(ROOTDIR,"includes","registrarfunctions.php")));
 #}
@@ -113,7 +113,7 @@ function ispapissl_CreateAccount(array $params)
         $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
-            throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
+            throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
         }
 
         $orderid = $response['PROPERTY']['ORDERID'][0];
@@ -133,10 +133,15 @@ function ispapissl_CreateAccount(array $params)
             ->value('id');
         //send configuration link to the customer via email based on the order id. Customer then follow the next steps by clicking the link to configure certificate
         global $CONFIG;
-        $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($sslorderid);
+        $sslconfigurationlink = $CONFIG['SystemURL'] . '/configuressl.php?cert=' . md5($sslorderid);
 
-        $sslconfigurationlink = '<a href="'.$sslconfigurationlink.'">'.$sslconfigurationlink.'</a>';
-        sendmessage('SSL Certificate Configuration Required', $params['serviceid'], array('ssl_configuration_link' => $sslconfigurationlink));
+        $sslconfigurationlink = '<a href="' . $sslconfigurationlink . '">' . $sslconfigurationlink . '</a>';
+        $postData = [
+            'messagename' => 'SSL Certificate Configuration Required',
+            'id' => $params['serviceid'],
+            'customvars' => base64_encode(serialize(["ssl_configuration_link" => $sslconfigurationlink])),
+        ];
+        localAPI('SendEmail', $postData);
     } catch (Exception $e) {
         logModuleCall(
             'ispapissl',
@@ -172,11 +177,15 @@ function ispapissl_resend($params)
             throw new Exception('No SSL Order exists for this product');
         }
         global $CONFIG;
-        $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($id);
+        $sslconfigurationlink = $CONFIG['SystemURL'] . '/configuressl.php?cert=' . md5($id);
 
-        $sslconfigurationlink = '<a href="'.$sslconfigurationlink.'">'.$sslconfigurationlink.'</a>';
-
-        sendmessage('SSL Certificate Configuration Required', $params['serviceid'], array('ssl_configuration_link' => $sslconfigurationlink));
+        $sslconfigurationlink = '<a href="' . $sslconfigurationlink . '">' . $sslconfigurationlink . '</a>';
+        $postData = [
+            'messagename' => 'SSL Certificate Configuration Required',
+            'id' => $params['serviceid'],
+            'customvars' => base64_encode(serialize(["ssl_configuration_link" => $sslconfigurationlink])),
+        ];
+        localAPI('SendEmail', $postData);
     } catch (Exception $e) {
         logModuleCall(
             'provisioningmodule',
@@ -203,7 +212,7 @@ function ispapissl_sslstepone($params)
             $response = Ispapi::call($command);
 
             if ($response['CODE'] != 200) {
-                throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
+                throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
             }
 
             $cert_allowconfig = true;
@@ -249,7 +258,7 @@ function ispapissl_sslsteptwo($params)
         $csr_response = Ispapi::call($csr_command);
 
         if ($csr_response['CODE'] != 200) {
-            throw new Exception($csr_response['CODE'].' '.$csr_response['DESCRIPTION']);
+            throw new Exception($csr_response['CODE'] . ' ' . $csr_response['DESCRIPTION']);
         }
         //contact information from the parsed CSR
         $values['displaydata']['Domain'] = htmlspecialchars($csr_response['PROPERTY']['CN'][0]);
@@ -294,15 +303,15 @@ function ispapissl_sslsteptwo($params)
                 $dom = array_pop($approverdomain);
 
                 if (preg_match('/^([a-z][a-z]|com|net|org|biz|info)$/i', $sld)) {
-                    $approverdomain = $dom.'.'.$sld.'.'.$tld;
+                    $approverdomain = $dom . '.' . $sld . '.' . $tld;
                 } else {
-                    $approverdomain = $sld.'.'.$tld;
+                    $approverdomain = $sld . '.' . $tld;
                 }
             }
             //to choose email by the customer to which approver email will be sent
             $approvers = array('admin', 'administrator', 'hostmaster', 'root', 'webmaster', 'postmaster');
             foreach ($approvers as $approver) {
-                $values['approveremails'][] = $approver.'@'.$approverdomain;
+                $values['approveremails'][] = $approver . '@' . $approverdomain;
             }
         }
         //perform a REPLACE with CreateSSLCert command to add CSR and contact data
@@ -314,25 +323,25 @@ function ispapissl_sslsteptwo($params)
         }
 
         foreach ($contacttypes as $contacttype) {
-            $command[$contacttype.'ORGANIZATION'] = $params['organisationname'];
-            $command[$contacttype.'FIRSTNAME'] = $params['firstname'];
-            $command[$contacttype.'LASTNAME'] = $params['lastname'];
-            $command[$contacttype.'NAME'] = $params['firstname'].' '.$params['lastname'];
-            $command[$contacttype.'JOBTITLE'] = $params['jobtitle'];
-            $command[$contacttype.'EMAIL'] = $params['email'];
-            $command[$contacttype.'STREET'] = $params['address1'];
-            $command[$contacttype.'CITY'] = $params['city'];
-            $command[$contacttype.'PROVINCE'] = $params['state'];
-            $command[$contacttype.'ZIP'] = $params['postcode'];
-            $command[$contacttype.'COUNTRY'] = $params['country'];
-            $command[$contacttype.'PHONE'] = $params['phonenumber'];
-            $command[$contacttype.'FAX'] = $params['faxnumber'];
+            $command[$contacttype . 'ORGANIZATION'] = $params['organisationname'];
+            $command[$contacttype . 'FIRSTNAME'] = $params['firstname'];
+            $command[$contacttype . 'LASTNAME'] = $params['lastname'];
+            $command[$contacttype . 'NAME'] = $params['firstname'] . ' ' . $params['lastname'];
+            $command[$contacttype . 'JOBTITLE'] = $params['jobtitle'];
+            $command[$contacttype . 'EMAIL'] = $params['email'];
+            $command[$contacttype . 'STREET'] = $params['address1'];
+            $command[$contacttype . 'CITY'] = $params['city'];
+            $command[$contacttype . 'PROVINCE'] = $params['state'];
+            $command[$contacttype . 'ZIP'] = $params['postcode'];
+            $command[$contacttype . 'COUNTRY'] = $params['country'];
+            $command[$contacttype . 'PHONE'] = $params['phonenumber'];
+            $command[$contacttype . 'FAX'] = $params['faxnumber'];
         }
 
         $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
-            throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
+            throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
         }
         //update tblhosting with domain(from CSR) and id
         DB::table('tblhosting')
@@ -376,7 +385,7 @@ function ispapissl_sslstepthree($params)
         $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
-            throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
+            throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
         }
         //execute the order
         $command = array('COMMAND' => 'ExecuteOrder', 'ORDERID' => $orderid);
@@ -384,7 +393,7 @@ function ispapissl_sslstepthree($params)
         $response = Ispapi::call($command);
 
         if ($response['CODE'] != 200) {
-            throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
+            throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
         }
         //update the status of the order at WHMCS
         DB::table('tblsslorders')
@@ -434,9 +443,9 @@ function ispapissl_ClientArea($params)
 
         $csr = array();
         $i = 0;
-        while (isset($order_command['CSR'.$i])) {
-            if (strlen($order_command['CSR'.$i])) {
-                $csr[] = $order_command['CSR'.$i];
+        while (isset($order_command['CSR' . $i])) {
+            if (strlen($order_command['CSR' . $i])) {
+                $csr[] = $order_command['CSR' . $i];
             }
             ++$i;
         }
@@ -538,7 +547,7 @@ function ispapissl_ClientArea($params)
         $resend_response = Ispapi::call($resend_command);
 
         if ($resend_response['CODE'] == 200) {
-            unset($_REQUEST[sslresendcertapproveremail]);
+            unset($_REQUEST['sslresendcertapproveremail']);
             $ispapissl['successmessage'] = 'Successfully resent the approver email';
         } else {
             $ispapissl['errormessage'] = $resend_response['DESCRIPTION'];
@@ -574,16 +583,16 @@ function ispapissl_ClientArea($params)
                     $dom = array_pop($approverdomain);
 
                     if (preg_match('/^([a-z][a-z]|com|net|org|biz|info)$/i', $sld)) {
-                        $approverdomain = $dom.'.'.$sld.'.'.$tld;
+                        $approverdomain = $dom . '.' . $sld . '.' . $tld;
                     } else {
-                        $approverdomain = $sld.'.'.$tld;
+                        $approverdomain = $sld . '.' . $tld;
                     }
                 }
 
                 $approvers = array('admin', 'administrator', 'hostmaster', 'root', 'webmaster', 'postmaster');
 
                 foreach ($approvers as $approver) {
-                    $ispapissl['approveremails'][] = $approver.'@'.$approverdomain;
+                    $ispapissl['approveremails'][] = $approver . '@' . $approverdomain;
                 }
             }
         }
