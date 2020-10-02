@@ -12,3 +12,6 @@ report
 
 # Generated Archives
 pkg
+
+# IntelliJ
+.idea

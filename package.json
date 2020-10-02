@@ -48,8 +48,8 @@
   },
   "scripts": {
     "phpCompatibility": "./scripts/phpcompatibility.sh",
-    "codeCheck": "phpcs --standard=PSR1,PSR2 -q -n --colors addons servers tests",
-    "codeFix": "phpcbf --standard=PSR1,PSR2 -q addons servers tests",
+    "codeCheck": "phpcs --standard=PSR12 -q -n --colors addons servers tests",
+    "codeFix": "phpcbf --standard=PSR12 -q addons servers tests",
     "test": "phpunit"
   }
 }
