@@ -8,10 +8,10 @@
  * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
  */
 
-use WHMCS\Database\Capsule;
+use Illuminate\Database\Capsule\Manager as DB;
+use WHMCS\Carbon;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
-use WHMCS\Module\Registrar\Ispapi\Helper;
 
 use \HEXONET\ResponseParser as RP;
 
@@ -43,9 +43,16 @@ function ispapissl_MetaData()
  */
 function ispapissl_ConfigOptions()
 {
-    $data = Helper::SQLCall("SELECT * FROM tblemailtemplates WHERE name='SSL Certificate Configuration Required'", null, "fetchall");
-    if (empty($data['result'])) {
-        Helper::SQLCall("INSERT INTO tblemailtemplates (type, name, subject, message, fromname, fromemail, disabled, custom, language, copyto, plaintext) VALUES ('product', 'SSL Certificate Configuration Required', 'SSL Certificate Configuration Required', '<p>Dear {\$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{\$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{\$signature}</p>', '', '', '', '', '', '', '0')", null, "execute");
+    $exists = DB::table('tblemailtemplates')
+        ->where('name', 'SSL Certificate Configuration Required')
+        ->exists();
+    if (!$exists) {
+        DB::table('tblemailtemplates')->insert([
+            'type' => 'product',
+            'name' => 'SSL Certificate Configuration Required',
+            'subject' => 'SSL Certificate Configuration Required',
+            'message' => '<p>Dear {\$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{\$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{\$signature}</p>'
+        ]);
     }
 
     //load all the ISPAPI registrars (Ispapi, Hexonet)
@@ -76,9 +83,10 @@ function ispapissl_CreateAccount(array $params)
     try {
         include(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"ispapissl-config.php")));
         //to check if the customer order already exists. if not create the order at hexonet by clicking 'create' button
-        $data = Helper::SQLCall("SELECT * FROM tblsslorders WHERE serviceid=?", array($params['serviceid']), "fetchall");
-
-        if (!empty($data['result'])) {
+        $orderExists = DB::table('tblsslorders')
+            ->where('serviceid', $params['serviceid'])
+            ->exists();
+        if (!$orderExists) {
             throw new Exception("An SSL Order already exists for this order");
         }
 
@@ -112,12 +120,21 @@ function ispapissl_CreateAccount(array $params)
         $orderid = $response['PROPERTY']['ORDERID'][0];
 
         //insert certificate - a customer order in the database with its status
-        Helper::SQLCall("INSERT INTO tblsslorders (userid, serviceid, remoteid, module, certtype, status) VALUES (?, ?, ?, 'ispapissl', ?, 'Awaiting Configuration')", array($params['clientsdetails']['userid'], $params['serviceid'], $orderid, $certclass), "execute");
+        DB::table('tblsslorders')->insert([
+            'userid' => $params['clientsdetails']['userid'],
+            'serviceid' => $params['serviceid'],
+            'remoteid' => $orderid,
+            'module' => 'ispapissl',
+            'certtype' => $certclass,
+            'status' => 'Awaiting Configuration'
+        ]);
         //the id (sslorderid) of the inserted item
-        $sslorderid = Helper::SQLCall("SELECT id from tblsslorders WHERE remoteid=?", array($orderid), "fetch");
+        $sslorderid = DB::table('tblsslorders')
+            ->where('remoteid', $orderid)
+            ->value('id');
         //send configuration link to the customer via email based on the order id. Customer then follow the next steps by clicking the link to configure certificate
         global $CONFIG;
-        $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($sslorderid['result']['id']);
+        $sslconfigurationlink = $CONFIG['SystemURL'].'/configuressl.php?cert='.md5($sslorderid);
 
         $sslconfigurationlink = '<a href="'.$sslconfigurationlink.'">'.$sslconfigurationlink.'</a>';
         sendmessage('SSL Certificate Configuration Required', $params['serviceid'], array('ssl_configuration_link' => $sslconfigurationlink));
@@ -147,12 +164,11 @@ function ispapissl_AdminCustomButtonArray()
  */
 function ispapissl_resend($params)
 {
-
     try {
         //if the order id exists, allow to resend configuration email
-        $data = Helper::SQLCall("SELECT id FROM tblsslorders WHERE serviceid=?", array($params['serviceid']), "fetch");
-
-        $id = $data['result']['id'];
+        $id = DB::table('tblsslorders')
+            ->where('serviceid', $params['serviceid'])
+            ->value('id');
         if (!$id) {
             throw new Exception('No SSL Order exists for this product');
         }
@@ -205,11 +221,12 @@ function ispapissl_sslstepone($params)
                 }
             }
 
-            if (!$cert_allowconfig) {
-                Helper::SQLCall("UPDATE tblsslorders SET completiondate=now(), status='Completed' WHERE serviceid=?", array($params['serviceid']), "execute");
-            } else {
-                Helper::SQLCall("UPDATE tblsslorders SET completiondate='', status='Awaiting Configuration' WHERE serviceid=?", array($params['serviceid']), "execute");
-            }
+            DB::table('tblsslorders')
+                ->where('serviceid', $params['serviceid'])
+                ->update([
+                    'completiondate' => $cert_allowconfig ? '' : Carbon::now(),
+                    'status' => $cert_allowconfig ? 'Awaiting Configuration' : 'Completed'
+                ]);
         }
     } catch (Exception $e) {
         logModuleCall(
@@ -342,7 +359,9 @@ function ispapissl_sslsteptwo($params)
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
         }
         //update tblhosting with domain(from CSR) and id
-        Helper::SQLCall("UPDATE tblhosting SET domain=? WHERE id=?", array($csr_response['PROPERTY']['CN'][0], $params['serviceid']), "execute");
+        DB::table('tblhosting')
+            ->where('id', $params['serviceid'])
+            ->update(['domain' => $csr_response['PROPERTY']['CN'][0]]);
     } catch (Exception $e) {
         logModuleCall(
             'provisioningmodule',
@@ -394,7 +413,10 @@ function ispapissl_sslstepthree($params)
             throw new Exception($response['CODE'].' '.$response['DESCRIPTION']);
         }
         //update the status of the order at WHMCS
-        Helper::SQLCall("UPDATE tblsslorders SET completiondate=now(), status='Completed' WHERE serviceid=?", array($params['serviceid']), "execute");
+        DB::table('tblsslorders')
+            ->where('serviceid', $params['serviceid'])
+            ->update(['completiondate' => Carbon::now()]);
+        return null;
     } catch (Exception $e) {
         logModuleCall(
             'provisioningmodule',
@@ -412,14 +434,16 @@ function ispapissl_sslstepthree($params)
  */
 function ispapissl_ClientArea($params)
 {
-
     include(implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__),"ispapissl-config.php")));
 
-    $data = Helper::SQLCall("SELECT id, remoteid, status FROM tblsslorders WHERE serviceid=?", array($params['serviceid']), "fetch");
+    $data = DB::table('tblsslorders')
+        ->where('serviceid', $params['serviceid'])
+        ->select(['id', 'remoteid', 'status'])
+        ->first();
 
-    $params['remoteid'] = $data['result']['remoteid'];
-    $params['status'] = $data['result']['status'];
-    $sslorderid = $data['result']['id'];
+    $params['remoteid'] = $data->remoteid;
+    $params['status'] = $data->status;
+    $sslorderid = $data->id;
     $orderid = $params['remoteid'];
 
     //config options
@@ -505,9 +529,18 @@ function ispapissl_ClientArea($params)
                     $exp_date = $status_response['PROPERTY']['REGISTRATIONEXPIRATIONDATE'][0];
                     $ispapissl['displaydata']['Expires'] = $exp_date;
 
-                    Helper::SQLCall("UPDATE tblhosting SET nextduedate=?, domain=? WHERE id=?", array($exp_date, $status_response['PROPERTY']['SSLCERTCN'][0], $params['serviceid']), "execute");
+                    DB::table('tblhosting')
+                        ->where('id', $params['serviceid'])
+                        ->update([
+                            'nextduedate' => $exp_date,
+                            'domain' => $status_response['PROPERTY']['SSLCERTCN'][0]
+                        ]);
                 } else {
-                    Helper::SQLCall("UPDATE tblhosting SET domain=? WHERE id=?", array($status_response['PROPERTY']['SSLCERTCN'][0], $params['serviceid']), "execute");
+                    DB::table('tblhosting')
+                        ->where('id', $params['serviceid'])
+                        ->update([
+                            'domain' => $status_response['PROPERTY']['SSLCERTCN'][0]
+                        ]);
                 }
 
                 $ispapissl['displaydata']['CN'] = htmlspecialchars($status_response['PROPERTY']['SSLCERTCN'][0]);

@@ -6,8 +6,8 @@
         Select Product Group
         <select name="selectedproductgroup" value={$selected_product_group}>
             <option></option>
-            {foreach $product_groups as $value}
-                <option>{$value['name']}</option>
+            {foreach $product_groups as $name}
+                <option>{$name}</option>
             {/foreach}
         </select>
         <br><br>
