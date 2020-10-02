@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Capsule\Manager as DB;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
@@ -24,7 +25,7 @@ function ispapissl_addon_config()
  */
 function ispapissl_addon_activate()
 {
-    return array('status'=>'success','description'=>'Installed');
+    return array('status' => 'success','description' => 'Installed');
 }
 
 /*
@@ -32,7 +33,7 @@ function ispapissl_addon_activate()
 */
 function ispapissl_addon_deactivate()
 {
-    return array('status'=>'success','description'=>'Uninstalled');
+    return array('status' => 'success','description' => 'Uninstalled');
 }
 
 /*
@@ -49,8 +50,8 @@ function ispapissl_addon_output()
     }
 
     //smarty template
-    $smarty = new Smarty;
-    $smarty->compile_dir = $GLOBALS['templates_compiledir'];
+    $smarty = new Smarty();
+    $smarty->setCompileDir($GLOBALS['templates_compiledir']);
     $smarty->caching = false;
 
     //display all the product groups that user has
@@ -69,7 +70,7 @@ function ispapissl_addon_output()
     );
     $statususer_data = Ispapi::call($command);
 
-    $pattern_for_SSL_certificate ="/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/";
+    $pattern_for_SSL_certificate = "/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/";
     $certificates_and_prices = array();
     if (preg_grep($pattern_for_SSL_certificate, $statususer_data["PROPERTY"]["RELATIONTYPE"])) {
         //get all the SSL Certificates
@@ -84,14 +85,14 @@ function ispapissl_addon_output()
             //price of the ssl certificate
             $price = $statususer_data["PROPERTY"]["RELATIONVALUE"][$key];
             //collect certs and prices
-            $certificates_and_prices[$ispapi_match_ssl_certificate]['Price']= $price;
+            $certificates_and_prices[$ispapi_match_ssl_certificate]['Price'] = $price;
             //this 'newprice' = sale price and is modifiable by the user and this is the price that will be imported when it is changed/unchanged by user.
-            $certificates_and_prices[$ispapi_match_ssl_certificate]['Newprice']= $price;
+            $certificates_and_prices[$ispapi_match_ssl_certificate]['Newprice'] = $price;
 
             //default currency (at hexonet)
-            $pattern_for_currency = "/PRICE_CLASS_SSLCERT_".$certificate[1]."_CURRENCY$/";
+            $pattern_for_currency = "/PRICE_CLASS_SSLCERT_" . $certificate[1] . "_CURRENCY$/";
             $currency_match = preg_grep($pattern_for_currency, $statususer_data["PROPERTY"]["RELATIONTYPE"]);
-            $currency_match_keys= array_keys($currency_match);
+            $currency_match_keys = array_keys($currency_match);
 
             $cert_currency = null;
             foreach ($currency_match_keys as $key) {
@@ -100,7 +101,7 @@ function ispapissl_addon_output()
                     #$tld_register_renew_transfer_currency[$tld]['currency'] = $tld_currency;
                 }
             }
-            $certificates_and_prices[$ispapi_match_ssl_certificate]['Defaultcurrency']= $cert_currency;
+            $certificates_and_prices[$ispapi_match_ssl_certificate]['Defaultcurrency'] = $cert_currency;
         }
     }
 
@@ -127,12 +128,12 @@ function ispapissl_addon_output()
         //check of the product group is selected by user if not show a error message
         if (empty($_SESSION['selectedproductgroup'])) {
             echo "<div class='errorbox'><strong><span class='title'>ERROR!</span></strong><br>Please select a product group</div><br>";
-            $smarty->display(dirname(__FILE__).'/templates/step1.tpl');
+            $smarty->display(dirname(__FILE__) . '/templates/step1.tpl');
         } else {
             $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
             $smarty->assign('certificates_and_prices', $certificates_and_prices);
             $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-            $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
+            $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
         }
     } elseif (isset($_POST['calculateregprice'])) {
         $reg_period = $_POST['registrationperiod'];
@@ -145,7 +146,7 @@ function ispapissl_addon_output()
             $smarty->assign('certificates_and_prices', $certificates_and_prices);
         }
         $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-        $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
+        $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
     } elseif (isset($_POST['addprofitmargin'])) {
         $profit_margin = $_POST['profitmargin'];
         $reg_period = $_POST['registrationperiod'];
@@ -172,7 +173,7 @@ function ispapissl_addon_output()
             }
         }
         $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-        $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
+        $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
     } elseif (isset($_POST['import'])) {
         //to collect new prices, certificates and (new) selected currency
         if (isset($_POST["checkboxcertificate"])) {
@@ -200,9 +201,9 @@ function ispapissl_addon_output()
         //to display checked items even after button click
         $smarty->assign('post-checkboxcertificate', $_POST['checkboxcertificate']);
 
-        $smarty->display(dirname(__FILE__).'/templates/step2.tpl');
+        $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
     } else {
-        $smarty->display(dirname(__FILE__).'/templates/step1.tpl');
+        $smarty->display(dirname(__FILE__) . '/templates/step1.tpl');
     }
 }
 
@@ -211,8 +212,8 @@ function ispapissl_addon_output()
  */
 function array_keys_to_lowerCase(&$array)
 {
-    $array=array_change_key_case($array, CASE_LOWER);
-    $array=array_combine(array_map(function ($str) {
+    $array = array_change_key_case($array, CASE_LOWER);
+    $array = array_combine(array_map(function ($str) {
         return ucwords(str_replace("_", " ", $str));
     }, array_keys($array)), array_values($array));
     foreach ($array as $key => $val) {
@@ -228,20 +229,20 @@ function calculate_profitmargin($certificates_and_prices, $profit_margin)
     $certificates_and_new_prices = $certificates_and_prices;
 
     foreach ($certificates_and_new_prices as $certificate => $price_defaultcurrency) {
-        $percentage_of_price = ($profit_margin/100) * $price_defaultcurrency['Newprice'];
+        $percentage_of_price = ($profit_margin / 100) * $price_defaultcurrency['Newprice'];
         $new_price = $price_defaultcurrency['Newprice'] + $percentage_of_price;
         $certificates_and_new_prices[$certificate]['Newprice'] = number_format((float)$new_price, 2, '.', '');
     }
 
     return $certificates_and_new_prices;
 }
-//calculate product price for 2Y period
+//calculate product price for the given period
 function calculate_registration_price($certificates_and_prices, $reg_period)
 {
     $certificates_and_new_prices = $certificates_and_prices;
 
     foreach ($certificates_and_new_prices as $certificate => $price_and_defaultcurrency) {
-        $new_price = 2 * $price_and_defaultcurrency['Price'];
+        $new_price = $reg_period * $price_and_defaultcurrency['Price'];
         $certificates_and_new_prices[$certificate]['Price'] = number_format((float)$new_price, 2, '.', '');
         $certificates_and_new_prices[$certificate]['Newprice'] = number_format((float)$new_price, 2, '.', '');
     }
@@ -325,7 +326,7 @@ function importproducts($certificates_and_prices, $selected_product_group)
     //get the id of selected product group
     $product_group_id = DB::table('tblproductgroups')->where('name', $selected_product_group)->value('id');
     foreach ($certificates_and_prices as $ssl_certificate => $price) {
-        $ssl_certificate = $ssl_certificate.$yeartext;
+        $ssl_certificate = $ssl_certificate . $yeartext;
         $product_id = DB::table('tblproducts')
             ->where('name', $ssl_certificate)
             ->where('gid', $product_group_id)
