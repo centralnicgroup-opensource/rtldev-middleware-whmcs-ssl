@@ -38,9 +38,8 @@ function ispapissl_addon_deactivate()
 /*
  * Module interface functionality
  */
-function ispapissl_addon_output($vars)
+function ispapissl_addon_output()
 {
-
     //load all the ISPAPI registrars
     $ispapi_registrars = new LoadRegistrars();
     $_SESSION["ispapi_registrar"] = $ispapi_registrars->getLoadedRegistars();
@@ -93,7 +92,8 @@ function ispapissl_addon_output($vars)
             $pattern_for_currency = "/PRICE_CLASS_SSLCERT_".$certificate[1]."_CURRENCY$/";
             $currency_match = preg_grep($pattern_for_currency, $statususer_data["PROPERTY"]["RELATIONTYPE"]);
             $currency_match_keys= array_keys($currency_match);
-            
+
+            $cert_currency = null;
             foreach ($currency_match_keys as $key) {
                 if (array_key_exists($key, $statususer_data["PROPERTY"]["RELATIONVALUE"])) {
                     $cert_currency = $statususer_data["PROPERTY"]["RELATIONVALUE"][$key];
@@ -224,9 +224,7 @@ function array_keys_to_lowerCase(&$array)
 //calculate profit margin of the product price
 function calculate_profitmargin($certificates_and_prices, $profit_margin)
 {
-
     //prices with profit margin
-    $certificates_and_new_prices = array();
     $certificates_and_new_prices = $certificates_and_prices;
 
     foreach ($certificates_and_new_prices as $certificate => $price_defaultcurrency) {
@@ -240,8 +238,6 @@ function calculate_profitmargin($certificates_and_prices, $profit_margin)
 //calculate product price for 2Y period
 function calculate_registration_price($certificates_and_prices, $reg_period)
 {
-    
-    $certificates_and_new_prices = array();
     $certificates_and_new_prices = $certificates_and_prices;
 
     foreach ($certificates_and_new_prices as $certificate => $price_and_defaultcurrency) {
