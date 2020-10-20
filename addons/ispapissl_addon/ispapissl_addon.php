@@ -1,6 +1,6 @@
 <?php
 
-use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
+use HEXONET\WHMCS\ISPAPI\SSL\SslHelper;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
@@ -55,7 +55,7 @@ function ispapissl_addon_output()
     $smarty->caching = false;
 
     //display all the product groups that user has
-    $smarty->assign('product_groups', SSLHelper::GetProductGroups());
+    $smarty->assign('product_groups', SslHelper::getProductGroups());
 
     //get the SSL certificates
     $command = array(
@@ -316,25 +316,25 @@ function importproducts($certificates_and_prices, $selected_product_group)
         $yeartext = ' - 2 Year';
     }
     //get the id of selected product group
-    $product_group_id = SSLHelper::GetProductGroupId($selected_product_group);
+    $product_group_id = SslHelper::getProductGroupId($selected_product_group);
     foreach ($certificates_and_prices as $ssl_certificate => $price) {
         $ssl_certificate = $ssl_certificate . $yeartext;
-        $product_id = SSLHelper::GetProductId($ssl_certificate, $product_group_id, $configoption3);
+        $product_id = SslHelper::getProductId($ssl_certificate, $product_group_id, $configoption3);
 
         if (!$product_id) {
-            $product_id = SSLHelper::CreateProduct($ssl_certificate, $product_group_id, $price['Servertype'], $price['Certificateclass'], $price['Registrar']);
+            $product_id = SslHelper::createProduct($ssl_certificate, $product_group_id, $price['Servertype'], $price['Certificateclass'], $price['Registrar']);
         } else {
             //update
             //the product exists then with which currency - there is possibility to store price of a product with as many currency as possible (if currencies configured in WHMCS)
-            $currencies = SSLHelper::GetProductCurrencies($product_id);
+            $currencies = SslHelper::getProductCurrencies($product_id);
 
             //if the currency exists then update it with new price
             if (in_array($price['Currency'], $currencies)) {
-                SSLHelper::UpdatePricing($product_id, $price['Currency'], $price['Newprice']);
+                SslHelper::updatePricing($product_id, $price['Currency'], $price['Newprice']);
                 return;
             }
         }
 
-        SSLHelper::CreatePricing($product_id, $price['Currency'], $price['Newprice']);
+        SslHelper::createPricing($product_id, $price['Currency'], $price['Newprice']);
     }
 }
