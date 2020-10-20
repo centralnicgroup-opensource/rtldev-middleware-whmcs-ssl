@@ -39,11 +39,13 @@ Read the following to get more information ...
 
 ## Minimum Requirements ##
 
-* WHMCS 7.2 or greater
-* PHP 5.6 or greater
+* WHMCS 8.0 or greater
+* PHP 7.2 or greater
 
 For the latest WHMCS minimum system requirements, please refer to
 [https://docs.whmcs.com/System_Requirements](https://docs.whmcs.com/System_Requirements)
+
+If you wish to use this module on older WHMCS versions, please use version 8.0 or earlier.
 
 ## Contributing ##
 
