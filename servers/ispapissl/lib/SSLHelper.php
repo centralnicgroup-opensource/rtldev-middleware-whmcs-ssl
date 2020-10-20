@@ -4,9 +4,9 @@ namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 use Illuminate\Database\Capsule\Manager as DB;
 
-class SSLHelper
+class SslHelper
 {
-    public static function CreateEmailTemplateIfNotExisting()
+    public static function createEmailTemplateIfNotExisting()
     {
         $exists = DB::table('tblemailtemplates')
             ->where('name', 'SSL Certificate Configuration Required')
@@ -21,21 +21,35 @@ class SSLHelper
         }
     }
 
-    public static function OrderExists($serviceId)
+    public static function sendConfigurationEmail($serviceId, $sslOrderId)
+    {
+        global $CONFIG;
+        $sslconfigurationlink = $CONFIG['SystemURL'] . '/configuressl.php?cert=' . md5($sslOrderId);
+
+        $sslconfigurationlink = '<a href="' . $sslconfigurationlink . '">' . $sslconfigurationlink . '</a>';
+        $postData = [
+            'messagename' => 'SSL Certificate Configuration Required',
+            'id' => $serviceId,
+            'customvars' => base64_encode(serialize(["ssl_configuration_link" => $sslconfigurationlink])),
+        ];
+        localAPI('SendEmail', $postData);
+    }
+
+    public static function orderExists($serviceId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
             ->exists();
     }
 
-    public static function GetOrderId($serviceId)
+    public static function getOrderId($serviceId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
             ->value('id');
     }
 
-    public static function GetOrder($serviceId)
+    public static function getOrder($serviceId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
@@ -43,7 +57,7 @@ class SSLHelper
             ->first();
     }
 
-    public static function CreateOrder($userId, $serviceId, $orderId, $certClass)
+    public static function createOrder($userId, $serviceId, $orderId, $certClass)
     {
         return DB::table('tblsslorders')->insertGetId([
             'userid' => $userId,
@@ -55,21 +69,21 @@ class SSLHelper
         ]);
     }
 
-    public static function UpdateOrder($serviceId, $data)
+    public static function updateOrder($serviceId, $data)
     {
         DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
             ->update($data);
     }
 
-    public static function UpdateHosting($serviceId, $data)
+    public static function updateHosting($serviceId, $data)
     {
         DB::table('tblhosting')
             ->where('id', $serviceId)
             ->update($data);
     }
 
-    public static function GetProductGroups()
+    public static function getProductGroups()
     {
         $productGroups = DB::table('tblproductgroups')->pluck('name');
         if (empty($productGroups)) {
@@ -79,12 +93,12 @@ class SSLHelper
         return $productGroups;
     }
 
-    public static function GetProductGroupId($productGroupName)
+    public static function getProductGroupId($productGroupName)
     {
         return DB::table('tblproductgroups')->where('name', $productGroupName)->value('id');
     }
 
-    public static function GetProductId($productName, $gid, $regPeriod)
+    public static function getProductId($productName, $gid, $regPeriod)
     {
         return DB::table('tblproducts')
             ->where('name', $productName)
@@ -93,7 +107,7 @@ class SSLHelper
             ->value('id');
     }
 
-    public static function GetProductCurrencies($productId)
+    public static function getProductCurrencies($productId)
     {
         return DB::table('tblpricing')
             ->where('relid', $productId)
@@ -101,7 +115,7 @@ class SSLHelper
             ->pluck('currency');
     }
 
-    public static function CreateProduct($productName, $productGroupId, $serverType, $certificateClass, $registrar, $regPeriod)
+    public static function createProduct($productName, $productGroupId, $serverType, $certificateClass, $registrar, $regPeriod)
     {
         return DB::table('tblproducts')->insertGetId([
             'type' => 'other',
@@ -115,8 +129,8 @@ class SSLHelper
             'configoption3' => $regPeriod
         ]);
     }
-    
-    public static function UpdatePricing($productId, $currency, $price)
+
+    public static function updatePricing($productId, $currency, $price)
     {
         DB::table('tblpricing')
             ->where('relid', $productId)
@@ -124,7 +138,7 @@ class SSLHelper
             ->update(['monthly' => $price]);
     }
 
-    public static function CreatePricing($productId, $currency, $price)
+    public static function createPricing($productId, $currency, $price)
     {
         DB::table('tblpricing')->insert([
             'type' => 'product',
@@ -143,5 +157,23 @@ class SSLHelper
             'biennially' => -1,
             'triennially' => -1
         ]);
+    }
+
+    public static function parseDomain($domain)
+    {
+        if (count($domain) == 2) {
+            $domain = implode('.', $domain);
+        } else {
+            $tld = array_pop($domain);
+            $sld = array_pop($domain);
+            $dom = array_pop($domain);
+
+            if (preg_match('/^([a-z][a-z]|com|net|org|biz|info)$/i', $sld)) {
+                $domain = $dom . '.' . $sld . '.' . $tld;
+            } else {
+                $domain = $sld . '.' . $tld;
+            }
+        }
+        return $domain;
     }
 }
