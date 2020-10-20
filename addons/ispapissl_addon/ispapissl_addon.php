@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as DB;
+use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
@@ -55,14 +55,7 @@ function ispapissl_addon_output()
     $smarty->caching = false;
 
     //display all the product groups that user has
-    $product_groups = DB::table('tblproductgroups')->pluck('name');
-    //check if user has any product groups. if not create one and display it
-    if (!empty($product_groups)) {
-        $smarty->assign('product_groups', $product_groups);
-    } else {
-        DB::table('tblproductgroups')->insert(['name' => 'SSL Certificates']);
-        $smarty->assign('product_groups', ['SSL Certificates']);
-    }
+    $smarty->assign('product_groups', SSLHelper::GetProductGroups());
 
     //get the SSL certificates
     $command = array(
@@ -110,9 +103,8 @@ function ispapissl_addon_output()
 
     //user currencies configured in whmcs
     $configured_currencies_in_whmcs = [];
-
-    $currencies = DB::table('tblcurrencies')->get();
-    foreach ($currencies as $value) {
+    $currencies = localAPI('GetCurrencies', []);
+    foreach ($currencies['currency'] as $value) {
         $configured_currencies_in_whmcs[$value["id"]] = $value["code"];
     }
 
@@ -324,57 +316,25 @@ function importproducts($certificates_and_prices, $selected_product_group)
         $yeartext = ' - 2 Year';
     }
     //get the id of selected product group
-    $product_group_id = DB::table('tblproductgroups')->where('name', $selected_product_group)->value('id');
+    $product_group_id = SSLHelper::GetProductGroupId($selected_product_group);
     foreach ($certificates_and_prices as $ssl_certificate => $price) {
         $ssl_certificate = $ssl_certificate . $yeartext;
-        $product_id = DB::table('tblproducts')
-            ->where('name', $ssl_certificate)
-            ->where('gid', $product_group_id)
-            ->where('configoption3', $configoption3)
-            ->value('id');
+        $product_id = SSLHelper::GetProductId($ssl_certificate, $product_group_id, $configoption3);
 
         if (!$product_id) {
-            $product_id = DB::table('tblproducts')->insertGetId([
-                'type' => 'other',
-                'gid' => $product_group_id,
-                'name' => $ssl_certificate,
-                'paytype' => 'onetime',
-                'autosetup' => 'payment',
-                'servertype' => $price['Servertype'],
-                'configoption1' => $price['Certificateclass'],
-                'configoption2' => $price['Registrar'],
-                'configoption3' => $configoption3
-            ]);
+            $product_id = SSLHelper::CreateProduct($ssl_certificate, $product_group_id, $price['Servertype'], $price['Certificateclass'], $price['Registrar']);
         } else {
             //update
             //the product exists then with which currency - there is possibility to store price of a product with as many currency as possible (if currencies configured in WHMCS)
-            $currencies = DB::table('tblpricing')->where('relid', $product_id)->where('type', 'product')->pluck('currency');
+            $currencies = SSLHelper::GetProductCurrencies($product_id);
 
             //if the currency exists then update it with new price
             if (in_array($price['Currency'], $currencies)) {
-                DB::table('tblpricing')
-                    ->where('relid', $product_id)
-                    ->where('currency', $price['Currency'])
-                    ->update(['monthly' => $price['Newprice']]);
+                SSLHelper::UpdatePricing($product_id, $price['Currency'], $price['Newprice']);
                 return;
             }
         }
-        DB::table('tblpricing')->insert([
-            'type' => 'product',
-            'currency' => $price['Currency'],
-            'relid' => $product_id,
-            'msetupfee' => 0,
-            'qsetupfee' => 0,
-            'ssetupfee' => 0,
-            'asetupfee' => 0,
-            'bsetupfee' => 0,
-            'tsetupfee' => 0,
-            'monthly' => $price['Newprice'],
-            'quarterly' => -1,
-            'semiannually' => -1,
-            'annually' => -1,
-            'biennially' => -1,
-            'triennially' => -1
-        ]);
+
+        SSLHelper::CreatePricing($product_id, $price['Currency'], $price['Newprice']);
     }
 }
