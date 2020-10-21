@@ -1,6 +1,6 @@
 <?php
 
-use HEXONET\WHMCS\ISPAPI\SSL\SslHelper;
+use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
@@ -55,7 +55,7 @@ function ispapissl_addon_output()
     $smarty->caching = false;
 
     //display all the product groups that user has
-    $smarty->assign('product_groups', SslHelper::getProductGroups());
+    $smarty->assign('product_groups', SSLHelper::getProductGroups());
 
     //get the SSL certificates
     $command = array(
@@ -99,7 +99,7 @@ function ispapissl_addon_output()
     }
 
     //array keys(certificate class names) without underscoreupper and to lower_case
-    array_keys_to_lowerCase($certificates_and_prices);
+    SSLHelper::formatArrayKeys($certificates_and_prices);
 
     //user currencies configured in whmcs
     $configured_currencies_in_whmcs = [];
@@ -132,7 +132,7 @@ function ispapissl_addon_output()
 
         $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
         if (!empty($reg_period) && $reg_period == 2) {
-            $certificates_and_new_prices = calculate_registration_price($certificates_and_prices, $reg_period);
+            $certificates_and_new_prices = SSLHelper::calculateRegistrationPrice($certificates_and_prices, $reg_period);
             $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
         } else {
             $smarty->assign('certificates_and_prices', $certificates_and_prices);
@@ -147,17 +147,17 @@ function ispapissl_addon_output()
         if (!empty($profit_margin)) {
             if (!empty($reg_period) && $reg_period == 2) {
                 //profit margin on 2Y reg price
-                $certificates_and_new_prices = calculate_profitmargin(calculate_registration_price($certificates_and_prices, $reg_period), $profit_margin);
+                $certificates_and_new_prices = SSLHelper::calculateProfitMargin(SSLHelper::calculateRegistrationPrice($certificates_and_prices, $reg_period), $profit_margin);
                 $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
             } else {
                 //profit margin on 1Y reg price
-                $certificates_and_new_prices = calculate_profitmargin($certificates_and_prices, $profit_margin);
+                $certificates_and_new_prices = SSLHelper::calculateProfitMargin($certificates_and_prices, $profit_margin);
                 $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
             }
         } else {
             //when clicked on empty profit margin but reg period is still set to 2Y
             if (!empty($reg_period) && $reg_period == 2) {
-                 $certificates_and_new_prices = calculate_registration_price($certificates_and_prices, $reg_period);
+                 $certificates_and_new_prices = SSLHelper::calculateRegistrationPrice($certificates_and_prices, $reg_period);
                  $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
             } else {
                 //when clicked on empty profit margin and reg period is set to 1Y
@@ -169,7 +169,7 @@ function ispapissl_addon_output()
     } elseif (isset($_POST['import'])) {
         //to collect new prices, certificates and (new) selected currency
         if (isset($_POST["checkboxcertificate"])) {
-            import_button();
+            SSLHelper::importProducts();
         }
 
         //take post values of sale prices - when user edit sale prices manually, should be displayed same after 'import'
@@ -180,7 +180,7 @@ function ispapissl_addon_output()
             }
         }
         //to remove underscores in certificate names
-        array_keys_to_lowerCase($certificates_and_new_prices);
+        SSLHelper::formatArrayKeys($certificates_and_new_prices);
         foreach ($certificates_and_prices as $key => $value) {
             if (array_key_exists($key, $certificates_and_new_prices)) {
                 $certificates_and_prices[$key]['Newprice'] = $certificates_and_new_prices[$key]['Newprice'];
@@ -196,145 +196,5 @@ function ispapissl_addon_output()
         $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
     } else {
         $smarty->display(dirname(__FILE__) . '/templates/step1.tpl');
-    }
-}
-
-/*
- * Helper functions
- */
-function array_keys_to_lowerCase(&$array)
-{
-    $array = array_change_key_case($array, CASE_LOWER);
-    $array = array_combine(array_map(function ($str) {
-        return ucwords(str_replace("_", " ", $str));
-    }, array_keys($array)), array_values($array));
-    foreach ($array as $key => $val) {
-        if (is_array($val)) {
-            array_keys_to_lowerCase($array[$key]);
-        }
-    }
-}
-//calculate profit margin of the product price
-function calculate_profitmargin($certificates_and_prices, $profit_margin)
-{
-    //prices with profit margin
-    $certificates_and_new_prices = $certificates_and_prices;
-
-    foreach ($certificates_and_new_prices as $certificate => $price_defaultcurrency) {
-        $percentage_of_price = ($profit_margin / 100) * $price_defaultcurrency['Newprice'];
-        $new_price = $price_defaultcurrency['Newprice'] + $percentage_of_price;
-        $certificates_and_new_prices[$certificate]['Newprice'] = number_format((float)$new_price, 2, '.', '');
-    }
-
-    return $certificates_and_new_prices;
-}
-//calculate product price for the given period
-function calculate_registration_price($certificates_and_prices, $reg_period)
-{
-    $certificates_and_new_prices = $certificates_and_prices;
-
-    foreach ($certificates_and_new_prices as $certificate => $price_and_defaultcurrency) {
-        $new_price = $reg_period * $price_and_defaultcurrency['Price'];
-        $certificates_and_new_prices[$certificate]['Price'] = number_format((float)$new_price, 2, '.', '');
-        $certificates_and_new_prices[$certificate]['Newprice'] = number_format((float)$new_price, 2, '.', '');
-    }
-
-    return $certificates_and_new_prices;
-}
-
-/*
- * Import selected SSL certificates/products
- */
-function import_button()
-{
-    //prepare an array from POST values with certificates and the new price for importing
-
-    //load all the ISPAPI registrars
-    $ispapi_registrars = new LoadRegistrars();
-    $_SESSION["ispapi_registrar"] = $ispapi_registrars->getLoadedRegistars();
-
-    $selected_product_group = $_POST['SelectedProductGroup'];
-
-    $certificate_match_pattern = "/(.*)_saleprice/";
-
-    //POST values and checked items of ssl certificates are different. POST's are seperated by _ underscore where checked items not.
-    $certificates_and_new_prices = []; //will have all the certificates which have new prices
-    foreach ($_POST as $key => $value) {
-        if (preg_match($certificate_match_pattern, $key, $match)) {
-            $certificates_and_new_prices[$match[1]]['newprice'] = $value;
-          //certificate class
-            $certificates_and_new_prices[$match[1]]['certificateClass'] = strtoupper($match[1]);
-          //for ssl server module
-            $certificates_and_new_prices[$match[1]]['servertype'] = 'ispapissl';
-          //registrar
-            $certificates_and_new_prices[$match[1]]['registrar'] = $_SESSION["ispapi_registrar"][0];
-        }
-    }
-
-    //for currency
-    $currencies = [];
-    $currency_pattern = "/currency/";
-    foreach ($_POST as $key => $value) {
-        if (preg_match($currency_pattern, $key)) {
-            $currencies['currency'] = $value;
-        }
-    }
-    //to merge each curreny value from currencies array certificates_and_new_prices
-    $i = -1;
-    foreach ($certificates_and_new_prices as $key => $value) {
-        $i++;
-        $certificates_and_new_prices[$key]['currency'] = $currencies['currency'][$i];
-    }
-    //POST value automatically replace space with _. therefore I have to call this:
-    array_keys_to_lowerCase($certificates_and_new_prices);
-
-    //import only checked certificates - unset/remove all other certificates from $certificates_and_new_prices
-    foreach ($certificates_and_new_prices as $key => $val) {
-        if (array_search($key, $_POST['checkboxcertificate']) === false) {
-            unset($certificates_and_new_prices[$key]);
-        }
-    }
-    //import certificates and new prices
-    importproducts($certificates_and_new_prices, $selected_product_group);
-}
-
-/*
- * Save imported SSL certificates/products
- */
-function importproducts($certificates_and_prices, $selected_product_group)
-{
-    //registration period 1Y or 2Y
-    $reg_period = $_POST['registrationperiod'];
-
-    if ((!empty($reg_period) && $reg_period == 1)) {
-        //to retrieve data for (1y or 2y product) from DB
-        $configoption3 = '1';
-        //certificate name will contain the following addition
-        $yeartext = ' - 1 Year';
-    } else {
-        $configoption3 = '2';
-        $yeartext = ' - 2 Year';
-    }
-    //get the id of selected product group
-    $product_group_id = SslHelper::getProductGroupId($selected_product_group);
-    foreach ($certificates_and_prices as $ssl_certificate => $price) {
-        $ssl_certificate = $ssl_certificate . $yeartext;
-        $product_id = SslHelper::getProductId($ssl_certificate, $product_group_id, $configoption3);
-
-        if (!$product_id) {
-            $product_id = SslHelper::createProduct($ssl_certificate, $product_group_id, $price['Servertype'], $price['Certificateclass'], $price['Registrar']);
-        } else {
-            //update
-            //the product exists then with which currency - there is possibility to store price of a product with as many currency as possible (if currencies configured in WHMCS)
-            $currencies = SslHelper::getProductCurrencies($product_id);
-
-            //if the currency exists then update it with new price
-            if (in_array($price['Currency'], $currencies)) {
-                SslHelper::updatePricing($product_id, $price['Currency'], $price['Newprice']);
-                return;
-            }
-        }
-
-        SslHelper::createPricing($product_id, $price['Currency'], $price['Newprice']);
     }
 }

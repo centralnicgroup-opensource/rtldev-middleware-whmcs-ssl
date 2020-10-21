@@ -10,7 +10,7 @@
  */
 
 use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
-use HEXONET\WHMCS\ISPAPI\SSL\SslHelper;
+use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Carbon;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 use HEXONET\ResponseParser as RP;
@@ -38,7 +38,7 @@ function ispapissl_MetaData()
  */
 function ispapissl_ConfigOptions()
 {
-    SslHelper::createEmailTemplateIfNotExisting();
+    SSLHelper::createEmailTemplateIfNotExisting();
     $registrars = new LoadRegistrars();
 
     return [
@@ -63,15 +63,15 @@ function ispapissl_ConfigOptions()
 function ispapissl_CreateAccount(array $params)
 {
     try {
-        if (SslHelper::orderExists($params['serviceid'])) {
+        if (SSLHelper::orderExists($params['serviceid'])) {
             throw new Exception("An SSL Order already exists for this order");
         }
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
         $certYears = $params['configoptions']['Years'] ?? $params['configoption3'];
         $response = APIHelper::createCertificate($certClass, $certYears);
         $orderId = $response['ORDERID'][0];
-        $sslOrderId = SslHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $orderId, $certClass);
-        SslHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
+        $sslOrderId = SSLHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $orderId, $certClass);
+        SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
     } catch (Exception $e) {
         logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
@@ -93,11 +93,11 @@ function ispapissl_AdminCustomButtonArray()
 function ispapissl_resend($params)
 {
     try {
-        $sslOrderId = SslHelper::getOrderId($params['serviceid']);
+        $sslOrderId = SSLHelper::getOrderId($params['serviceid']);
         if (!$sslOrderId) {
             throw new Exception('No SSL Order exists for this product');
         }
-        SslHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
+        SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
     } catch (Exception $e) {
         logModuleCall('provisioningmodule', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
@@ -122,7 +122,7 @@ function ispapissl_sslstepone($params)
                     $allowConfig = false;
                 }
             }
-            SslHelper::updateOrder($params['serviceid'], [
+            SSLHelper::updateOrder($params['serviceid'], [
                 'completiondate' => $allowConfig ? '' : Carbon::now(),
                 'status' => $allowConfig ? 'Awaiting Configuration' : 'Completed'
             ]);
@@ -166,7 +166,7 @@ function ispapissl_sslsteptwo($params)
             if (count($domain) < 2) {
                 throw new Exception("Invalid CN in CSR");
             }
-            $domain = SslHelper::parseDomain($domain);
+            $domain = SSLHelper::parseDomain($domain);
             foreach (['admin', 'administrator', 'hostmaster', 'root', 'webmaster', 'postmaster'] as $mailbox) {
                 $values['approveremails'][] = $mailbox . '@' . $domain;
             }
@@ -188,7 +188,7 @@ function ispapissl_sslsteptwo($params)
             $contact[$contactType . 'FAX'] = $params['faxnumber'];
         }
         APIHelper::replaceCertificate($orderId, $certClass, $certYears, $params['csr'], $ispapissl_server_map[$params['servertype']], $csr['CN'][0], $contact);
-        SslHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
+        SSLHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
         logModuleCall(
             'provisioningmodule',
@@ -212,7 +212,7 @@ function ispapissl_sslstepthree($params)
 
         APIHelper::updateCertificate($orderId, $certClass, $certYears, $params['approveremail']);
         APIHelper::executeOrder($orderId);
-        SslHelper::updateOrder($params['serviceid'], ['completiondate' => Carbon::now()]);
+        SSLHelper::updateOrder($params['serviceid'], ['completiondate' => Carbon::now()]);
         return null;
     } catch (Exception $e) {
         logModuleCall(
@@ -231,7 +231,7 @@ function ispapissl_sslstepthree($params)
  */
 function ispapissl_ClientArea($params)
 {
-    $data = SslHelper::getOrder($params['serviceid']);
+    $data = SSLHelper::getOrder($params['serviceid']);
 
     $params['remoteid'] = $data->remoteid;
     $params['status'] = $data->status;
@@ -305,12 +305,12 @@ function ispapissl_ClientArea($params)
                     $exp_date = $status['REGISTRATIONEXPIRATIONDATE'][0];
                     $tpl['displaydata']['Expires'] = $exp_date;
 
-                    SslHelper::updateHosting($params['serviceid'], [
+                    SSLHelper::updateHosting($params['serviceid'], [
                         'nextduedate' => $exp_date,
                         'domain' => $status['SSLCERTCN'][0]
                     ]);
                 } else {
-                    SslHelper::updateHosting($params['serviceid'], [
+                    SSLHelper::updateHosting($params['serviceid'], [
                         'domain' => $status['SSLCERTCN'][0]
                     ]);
                 }
@@ -386,7 +386,7 @@ function ispapissl_ClientArea($params)
                 if (count($domain) < 2) {
                     $tpl['errormessage'] = 'Invalid Domain';
                 } else {
-                    $domain = SslHelper::parseDomain($domain);
+                    $domain = SSLHelper::parseDomain($domain);
                     foreach (['admin', 'administrator', 'hostmaster', 'root', 'webmaster', 'postmaster'] as $mailbox) {
                         $tpl['approveremails'][] = $mailbox . '@' . $domain;
                     }
