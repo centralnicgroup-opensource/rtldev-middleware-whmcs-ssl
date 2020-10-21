@@ -213,8 +213,6 @@ class SSLHelper
     public static function importProducts()
     {
         $registrars = new LoadRegistrars();
-        $_SESSION["ispapi_registrar"] = $registrars->getLoadedRegistars();
-
         $products = [];
         $currencies = [];
         foreach ($_POST as $key => $value) {
@@ -222,7 +220,7 @@ class SSLHelper
                 $products[$match[1]]['newprice'] = $value;
                 $products[$match[1]]['certificateClass'] = strtoupper($match[1]);
                 $products[$match[1]]['servertype'] = 'ispapissl';
-                $products[$match[1]]['registrar'] = $_SESSION["ispapi_registrar"][0];
+                $products[$match[1]]['registrar'] = $registrars->getLoadedRegistars()[0];
             } elseif (preg_match("/currency/", $key)) {
                 $currencies[] = $value;
             }
