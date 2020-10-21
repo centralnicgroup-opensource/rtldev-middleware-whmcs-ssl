@@ -1,7 +1,7 @@
 <?php
 
+use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
-use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
 session_start();
@@ -25,7 +25,7 @@ function ispapissl_addon_config()
  */
 function ispapissl_addon_activate()
 {
-    return array('status' => 'success','description' => 'Installed');
+    return ['status' => 'success','description' => 'Installed'];
 }
 
 /*
@@ -33,7 +33,7 @@ function ispapissl_addon_activate()
 */
 function ispapissl_addon_deactivate()
 {
-    return array('status' => 'success','description' => 'Uninstalled');
+    return ['status' => 'success','description' => 'Uninstalled'];
 }
 
 /*
@@ -41,160 +41,107 @@ function ispapissl_addon_deactivate()
  */
 function ispapissl_addon_output()
 {
-    //load all the ISPAPI registrars
-    $ispapi_registrars = new LoadRegistrars();
-    $_SESSION["ispapi_registrar"] = $ispapi_registrars->getLoadedRegistars();
+    global $templates_compiledir;
 
-    if (empty($_SESSION["ispapi_registrar"])) {
+    $registrars = new LoadRegistrars();
+    if (empty($registrars->getLoadedRegistars())) {
         die("The ispapi registrar authentication failed! Please verify your registrar credentials and try again.");
     }
 
-    //smarty template
-    $smarty = new Smarty();
-    $smarty->setCompileDir($GLOBALS['templates_compiledir']);
-    $smarty->caching = false;
+    $user = APIHelper::getUserStatus();
 
-    //display all the product groups that user has
-    $smarty->assign('product_groups', SSLHelper::getProductGroups());
+    $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/';
+    $products = [];
+    if (preg_grep($pattern, $user['RELATIONTYPE'])) {
+        foreach (preg_grep($pattern, $user['RELATIONTYPE']) as $key => $val) {
+            preg_match($pattern, $val, $matches);
+            $certificate = $matches[1];
 
-    //get the SSL certificates
-    $command = array(
-        "command" => "statususer"
-    );
-    $statususer_data = Ispapi::call($command);
-
-    $pattern_for_SSL_certificate = "/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/";
-    $certificates_and_prices = array();
-    if (preg_grep($pattern_for_SSL_certificate, $statususer_data["PROPERTY"]["RELATIONTYPE"])) {
-        //get all the SSL Certificates
-        $list_of_certificates = preg_grep($pattern_for_SSL_certificate, $statususer_data["PROPERTY"]["RELATIONTYPE"]);
-
-        //get the prices of the SSL certificates
-        foreach ($list_of_certificates as $key => $ssl_certificate) {
-            //to match ispapi classes of ssl certificates
-            preg_match($pattern_for_SSL_certificate, $ssl_certificate, $certificate);
-            
-            $ispapi_match_ssl_certificate = $certificate[1];
-            //price of the ssl certificate
-            $price = $statususer_data["PROPERTY"]["RELATIONVALUE"][$key];
-            //collect certs and prices
-            $certificates_and_prices[$ispapi_match_ssl_certificate]['Price'] = $price;
-            //this 'newprice' = sale price and is modifiable by the user and this is the price that will be imported when it is changed/unchanged by user.
-            $certificates_and_prices[$ispapi_match_ssl_certificate]['Newprice'] = $price;
-
-            //default currency (at hexonet)
-            $pattern_for_currency = "/PRICE_CLASS_SSLCERT_" . $certificate[1] . "_CURRENCY$/";
-            $currency_match = preg_grep($pattern_for_currency, $statususer_data["PROPERTY"]["RELATIONTYPE"]);
-            $currency_match_keys = array_keys($currency_match);
-
-            $cert_currency = null;
-            foreach ($currency_match_keys as $key) {
-                if (array_key_exists($key, $statususer_data["PROPERTY"]["RELATIONVALUE"])) {
-                    $cert_currency = $statususer_data["PROPERTY"]["RELATIONVALUE"][$key];
-                    #$tld_register_renew_transfer_currency[$tld]['currency'] = $tld_currency;
+            $price = $user['RELATIONVALUE'][$key];
+            $currencyKeys = array_keys(preg_grep('/PRICE_CLASS_SSLCERT_' . $certificate . '_CURRENCY$/', $user['RELATIONTYPE']));
+            $currency = null;
+            foreach ($currencyKeys as $key) {
+                if (array_key_exists($key, $user['RELATIONVALUE'])) {
+                    $currency = $user['RELATIONVALUE'][$key];
                 }
             }
-            $certificates_and_prices[$ispapi_match_ssl_certificate]['Defaultcurrency'] = $cert_currency;
+
+            $products[$certificate]['Price'] = $price;
+            $products[$certificate]['Newprice'] = $price;
+            $products[$certificate]['Defaultcurrency'] = $currency;
         }
     }
+    SSLHelper::formatArrayKeys($products);
 
-    //array keys(certificate class names) without underscoreupper and to lower_case
-    SSLHelper::formatArrayKeys($certificates_and_prices);
-
-    //user currencies configured in whmcs
-    $configured_currencies_in_whmcs = [];
+    $systemCurrencies = [];
     $currencies = localAPI('GetCurrencies', []);
     foreach ($currencies['currency'] as $value) {
-        $configured_currencies_in_whmcs[$value["id"]] = $value["code"];
+        $systemCurrencies[$value['id']] = $value['code'];
     }
 
-    //which product group selected by the user
-    $selected_product_group = htmlspecialchars($_POST['selectedproductgroup']);
+    $productGroupName = htmlspecialchars($_POST['selectedproductgroup']);
+    $productsWithNewPrices = [];
 
-    //for prices with profit margin
-    $certificates_and_new_prices = array();
+    $smarty = new Smarty();
+    $smarty->setTemplateDir(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
+    $smarty->setCompileDir($templates_compiledir);
+    $smarty->caching = false;
 
-    //import (products) ssl certificates and prices
+    $step = 2;
+    $smarty->assign('product_groups', SSLHelper::getProductGroups());
+
     if (isset($_POST['loadcertificates'])) {
-        $_SESSION['selectedproductgroup'] = $selected_product_group;
-        //check of the product group is selected by user if not show a error message
-        if (empty($_SESSION['selectedproductgroup'])) {
-            echo "<div class='errorbox'><strong><span class='title'>ERROR!</span></strong><br>Please select a product group</div><br>";
-            $smarty->display(dirname(__FILE__) . '/templates/step1.tpl');
-        } else {
-            $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
-            $smarty->assign('certificates_and_prices', $certificates_and_prices);
-            $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-            $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
+        $_SESSION['selectedproductgroup'] = $productGroupName;
+        if (empty($productGroupName)) {
+            $smarty->assign('error', 'Please select a product group');
+            $step = 1;
         }
     } elseif (isset($_POST['calculateregprice'])) {
-        $reg_period = $_POST['registrationperiod'];
-
-        $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
-        if (!empty($reg_period) && $reg_period == 2) {
-            $certificates_and_new_prices = SSLHelper::calculateRegistrationPrice($certificates_and_prices, $reg_period);
-            $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
-        } else {
-            $smarty->assign('certificates_and_prices', $certificates_and_prices);
+        $regPeriod = $_POST['registrationperiod'];
+        if (!empty($regPeriod) && $regPeriod == 2) {
+            $products = SSLHelper::calculateRegistrationPrice($products, $regPeriod);
         }
-        $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-        $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
     } elseif (isset($_POST['addprofitmargin'])) {
-        $profit_margin = $_POST['profitmargin'];
-        $reg_period = $_POST['registrationperiod'];
-
-        $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
-        if (!empty($profit_margin)) {
-            if (!empty($reg_period) && $reg_period == 2) {
-                //profit margin on 2Y reg price
-                $certificates_and_new_prices = SSLHelper::calculateProfitMargin(SSLHelper::calculateRegistrationPrice($certificates_and_prices, $reg_period), $profit_margin);
-                $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
+        $profitMargin = $_POST['profitmargin'];
+        $regPeriod = $_POST['registrationperiod'];
+        if (!empty($profitMargin)) {
+            if (!empty($regPeriod) && $regPeriod == 2) {
+                $products = SSLHelper::calculateProfitMargin(SSLHelper::calculateRegistrationPrice($products, $regPeriod), $profitMargin);
             } else {
-                //profit margin on 1Y reg price
-                $certificates_and_new_prices = SSLHelper::calculateProfitMargin($certificates_and_prices, $profit_margin);
-                $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
+                $products = SSLHelper::calculateProfitMargin($products, $profitMargin);
             }
-        } else {
-            //when clicked on empty profit margin but reg period is still set to 2Y
-            if (!empty($reg_period) && $reg_period == 2) {
-                 $certificates_and_new_prices = SSLHelper::calculateRegistrationPrice($certificates_and_prices, $reg_period);
-                 $smarty->assign('certificates_and_prices', $certificates_and_new_prices);
-            } else {
-                //when clicked on empty profit margin and reg period is set to 1Y
-                $smarty->assign('certificates_and_prices', $certificates_and_prices);
-            }
+        } elseif (!empty($regPeriod) && $regPeriod == 2) {
+            $products = SSLHelper::calculateRegistrationPrice($products, $regPeriod);
         }
-        $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-        $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
     } elseif (isset($_POST['import'])) {
-        //to collect new prices, certificates and (new) selected currency
-        if (isset($_POST["checkboxcertificate"])) {
+        if (isset($_POST['checkboxcertificate'])) {
             SSLHelper::importProducts();
         }
-
-        //take post values of sale prices - when user edit sale prices manually, should be displayed same after 'import'
-        $certificate_match_pattern = "/(.*)_saleprice/";
         foreach ($_POST as $key => $value) {
-            if (preg_match($certificate_match_pattern, $key, $match)) {
-                $certificates_and_new_prices[$match[1]]['Newprice'] = $value;
+            if (preg_match('/(.*)_saleprice/', $key, $match)) {
+                $productsWithNewPrices[$match[1]]['Newprice'] = $value;
             }
         }
-        //to remove underscores in certificate names
-        SSLHelper::formatArrayKeys($certificates_and_new_prices);
-        foreach ($certificates_and_prices as $key => $value) {
-            if (array_key_exists($key, $certificates_and_new_prices)) {
-                $certificates_and_prices[$key]['Newprice'] = $certificates_and_new_prices[$key]['Newprice'];
+        SSLHelper::formatArrayKeys($productsWithNewPrices);
+        foreach ($products as $key => $value) {
+            if (array_key_exists($key, $productsWithNewPrices)) {
+                $products[$key]['Newprice'] = $productsWithNewPrices[$key]['Newprice'];
             }
         }
-
-        $smarty->assign('certificates_and_prices', $certificates_and_prices);
-        $smarty->assign('session-selected-product-group', $_SESSION["selectedproductgroup"]);
-        $smarty->assign('configured_currencies_in_whmcs', $configured_currencies_in_whmcs);
-        //to display checked items even after button click
         $smarty->assign('post-checkboxcertificate', $_POST['checkboxcertificate']);
-
-        $smarty->display(dirname(__FILE__) . '/templates/step2.tpl');
     } else {
-        $smarty->display(dirname(__FILE__) . '/templates/step1.tpl');
+        $step = 1;
+    }
+
+    if ($step == 2) {
+        $smarty->assign('session-selected-product-group', $_SESSION['selectedproductgroup']);
+        $smarty->assign('certificates_and_prices', $products);
+        $smarty->assign('configured_currencies_in_whmcs', $systemCurrencies);
+    }
+
+    try {
+        $smarty->display("step{$step}.tpl");
+    } catch (Exception $e) {
+        die('ERROR - Unable to render template: ' . $e->getMessage());
     }
 }

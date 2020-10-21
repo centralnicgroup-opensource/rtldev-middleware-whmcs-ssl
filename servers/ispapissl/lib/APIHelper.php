@@ -4,6 +4,14 @@ namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 class APIHelper
 {
+    public static function getUserStatus()
+    {
+        $command = [
+            'COMMAND' => 'StatusUser'
+        ];
+        return self::getResponse($command);
+    }
+
     public static function createCertificate($certClass, $certYears)
     {
         $command = [
@@ -47,7 +55,9 @@ class APIHelper
     public static function getOrder($orderId)
     {
         $command = [
-            'COMMAND' => 'QueryOrderList', 'ORDERID' => $orderId];
+            'COMMAND' => 'QueryOrderList',
+            'ORDERID' => $orderId
+        ];
         return self::getResponse($command);
     }
 
