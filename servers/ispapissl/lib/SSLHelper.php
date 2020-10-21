@@ -3,8 +3,9 @@
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 use Illuminate\Database\Capsule\Manager as DB;
+use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
-class SslHelper
+class SSLHelper
 {
     public static function createEmailTemplateIfNotExisting()
     {
@@ -175,5 +176,85 @@ class SslHelper
             }
         }
         return $domain;
+    }
+
+    public static function formatArrayKeys(&$array)
+    {
+        $array = array_change_key_case($array, CASE_LOWER);
+        $array = array_combine(array_map(function ($str) {
+            return ucwords(str_replace("_", " ", $str));
+        }, array_keys($array)), array_values($array));
+        foreach ($array as $key => $val) {
+            if (is_array($val)) {
+                self::formatArrayKeys($array[$key]);
+            }
+        }
+    }
+
+    public static function calculateProfitMargin($products, $profitMargin)
+    {
+        foreach ($products as $certificate => $price) {
+            $newPrice = $price['Newprice'] + ($profitMargin / 100) * $price['Newprice'];
+            $products[$certificate]['Newprice'] = number_format((float)$newPrice, 2, '.', '');
+        }
+        return $products;
+    }
+
+    public static function calculateRegistrationPrice($products, $regPeriod)
+    {
+        foreach ($products as $certificate => $price) {
+            $newPrice = number_format((float) $regPeriod * $price['Price'], 2, '.', '');
+            $products[$certificate]['Price'] = $newPrice;
+            $products[$certificate]['Newprice'] = $newPrice;
+        }
+        return $products;
+    }
+
+    public static function importProducts()
+    {
+        $registrars = new LoadRegistrars();
+        $_SESSION["ispapi_registrar"] = $registrars->getLoadedRegistars();
+
+        $products = [];
+        $currencies = [];
+        foreach ($_POST as $key => $value) {
+            if (preg_match("/(.*)_saleprice/", $key, $match)) {
+                $products[$match[1]]['newprice'] = $value;
+                $products[$match[1]]['certificateClass'] = strtoupper($match[1]);
+                $products[$match[1]]['servertype'] = 'ispapissl';
+                $products[$match[1]]['registrar'] = $_SESSION["ispapi_registrar"][0];
+            } elseif (preg_match("/currency/", $key)) {
+                $currencies[] = $value;
+            }
+        }
+
+        $i = 0;
+        self::formatArrayKeys($products);
+        foreach ($products as $key => $val) {
+            if (array_search($key, $_POST['checkboxcertificate']) === false) {
+                unset($products[$key]);
+            } else {
+                $products[$key]['currency'] = $currencies[$i];
+            }
+            $i++;
+        }
+
+        $productGroupName = $_POST['SelectedProductGroup'];
+        $productGroupId = self::getProductGroupId($productGroupName);
+        $regPeriod = ($_POST['registrationperiod'] == 1) ? 1 : 2;
+        foreach ($products as $productName => $price) {
+            $productName .= " - {$regPeriod} Year";
+            $productId = self::getProductId($productName, $productGroupId, $regPeriod);
+            if (!$productId) {
+                $productId = self::createProduct($productName, $productGroupId, $price['Servertype'], $price['Certificateclass'], $price['Registrar'], $regPeriod);
+            } else {
+                $currencies = self::getProductCurrencies($productId);
+                if (in_array($price['Currency'], $currencies)) {
+                    self::updatePricing($productId, $price['Currency'], $price['Newprice']);
+                    continue;
+                }
+            }
+            self::createPricing($productId, $price['Currency'], $price['Newprice']);
+        }
     }
 }
