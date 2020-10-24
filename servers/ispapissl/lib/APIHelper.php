@@ -2,6 +2,8 @@
 
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
+use WHMCS\Module\Registrar\Ispapi\Ispapi;
+
 class APIHelper
 {
     public static function getUserStatus()

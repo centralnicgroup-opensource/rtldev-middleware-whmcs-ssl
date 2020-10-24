@@ -6,6 +6,9 @@ use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
 session_start();
 
+require(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
+require(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
+
 /*
  * Configuration of the addon module.
  */
