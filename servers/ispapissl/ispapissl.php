@@ -135,8 +135,6 @@ function ispapissl_sslstepone($params)
 function ispapissl_sslsteptwo($params)
 {
     try {
-        $ispapissl_server_map = [];
-        include(implode(DIRECTORY_SEPARATOR, [__DIR__, "ispapissl-config.php"]));
         $orderId = $params['remoteid'];
         if (!strlen($params['jobtitle'])) {
             $params['jobtitle'] = 'N/A';
@@ -187,7 +185,21 @@ function ispapissl_sslsteptwo($params)
             $contact[$contactType . 'PHONE'] = $params['phonenumber'];
             $contact[$contactType . 'FAX'] = $params['faxnumber'];
         }
-        APIHelper::replaceCertificate($orderId, $certClass, $certYears, $params['csr'], $ispapissl_server_map[$params['servertype']], $csr['CN'][0], $contact);
+        switch ($params['servertype']) {
+            case 1001:
+                $serverType = 'APACHESSL';
+                break;
+            case 1002:
+                $serverType = 'APACHESSLEAY';
+                break;
+            case 1013:
+            case 1014:
+                $serverType = 'IIS';
+                break;
+            default:
+                $serverType = 'OTHER';
+        }
+        APIHelper::replaceCertificate($orderId, $certClass, $certYears, $params['csr'], $serverType, $csr['CN'][0], $contact);
         SSLHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
         logModuleCall(
@@ -345,7 +357,7 @@ function ispapissl_ClientArea($params)
     }
 
     if (!isset($tpl['config']['servertype'])) {
-        $tpl['config']['servertype'] = '1002';
+        $tpl['config']['servertype'] = '1000'; // OTHER
     }
 
     $_LANG = [
