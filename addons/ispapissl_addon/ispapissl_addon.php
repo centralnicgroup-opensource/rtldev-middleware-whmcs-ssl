@@ -46,9 +46,15 @@ function ispapissl_addon_output()
 {
     global $templates_compiledir;
 
+    if (!class_exists('WHMCS\Module\Registrar\Ispapi\LoadRegistrars')) {
+        echo "The ISPAPI Registrar Module is required. Please install it and activate it.";
+        return;
+    }
+
     $registrars = new LoadRegistrars();
     if (empty($registrars->getLoadedRegistars())) {
-        die("The ispapi registrar authentication failed! Please verify your registrar credentials and try again.");
+        echo "The ISPAPI Registrar Module authentication failed! Please verify your registrar credentials and try again.";
+        return;
     }
 
     $user = APIHelper::getUserStatus();
@@ -145,6 +151,6 @@ function ispapissl_addon_output()
     try {
         $smarty->display("step{$step}.tpl");
     } catch (Exception $e) {
-        die('ERROR - Unable to render template: ' . $e->getMessage());
+        echo "ERROR - Unable to render template: {$e->getMessage()}";
     }
 }
