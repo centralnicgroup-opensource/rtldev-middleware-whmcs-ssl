@@ -182,7 +182,14 @@ class SSLHelper
     {
         $array = array_change_key_case($array, CASE_LOWER);
         $array = array_combine(array_map(function ($str) {
-            return ucwords(str_replace("_", " ", $str));
+            $str = str_replace('_', ' ', $str);
+            $str = str_replace('ssl', 'SSL ', $str);
+            $str = str_replace(' ev', ' EV', $str);
+            $str = str_replace(' san', ' SAN', $str);
+            $str = str_replace('truebizid', 'True BusinessID', $str);
+            $str = str_replace('securesite', 'Secure Site', $str);
+            $str = str_replace('domainvetted', 'Domain-Vetted ', $str);
+            return ucwords($str);
         }, array_keys($array)), array_values($array));
         foreach ($array as $key => $val) {
             if (is_array($val)) {
@@ -213,6 +220,7 @@ class SSLHelper
     public static function importProducts()
     {
         $registrars = new LoadRegistrars();
+        $registrar = $registrars->getLoadedRegistars()[0];
         $products = [];
         $currencies = [];
         foreach ($_POST as $key => $value) {
@@ -220,7 +228,7 @@ class SSLHelper
                 $products[$match[1]]['newprice'] = $value;
                 $products[$match[1]]['certificateClass'] = strtoupper($match[1]);
                 $products[$match[1]]['servertype'] = 'ispapissl';
-                $products[$match[1]]['registrar'] = $registrars->getLoadedRegistars()[0];
+                $products[$match[1]]['registrar'] = $registrar;
             } elseif (preg_match("/currency/", $key)) {
                 $currencies[] = $value;
             }

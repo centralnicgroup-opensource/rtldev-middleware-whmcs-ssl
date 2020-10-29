@@ -84,8 +84,10 @@ function ispapissl_addon_output()
 
     $systemCurrencies = [];
     $currencies = localAPI('GetCurrencies', []);
-    foreach ($currencies['currency'] as $value) {
-        $systemCurrencies[$value['id']] = $value['code'];
+    if ($currencies['result'] == 'success') {
+        foreach ($currencies['currencies']['currency'] as $value) {
+            $systemCurrencies[$value['id']] = $value['code'];
+        }
     }
 
     $productGroupName = htmlspecialchars($_POST['selectedproductgroup']);
