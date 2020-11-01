@@ -14,21 +14,6 @@
 
     <div class="row">
         <div class="col-lg-2 col-md-4 col-sm-12">
-            <label for="RegistrationPeriod">Registration Period</label>
-            <div class="input-group">
-                <select class="form-control" id="RegistrationPeriod" name="RegistrationPeriod">
-                    <option value="1" {if $smarty.post.RegistrationPeriod == 1}selected{/if}>1Y</option>
-                    <option value="2" {if $smarty.post.RegistrationPeriod == 2}selected{/if}>2Y</option>
-                </select>
-                <span class="input-group-btn">
-                    <button type="submit" name="calculateregprice" class="btn btn-primary">
-                        <i class="fas fa-calculator"></i>
-                        Calculate
-                    </button>
-                </span>
-            </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-12">
             <label for="ProfitMargin">Profit Margin</label>
             <div class="input-group">
                 <input class="form-control" type="number" step=0.01 id="ProfitMargin" name="ProfitMargin" min="0" value="{$smarty.post.ProfitMargin|default:0}" />

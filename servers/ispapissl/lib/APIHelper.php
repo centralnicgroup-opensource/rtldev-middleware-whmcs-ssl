@@ -14,37 +14,37 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function createCertificate($certClass, $certYears)
+    public static function createCertificate($certClass)
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
             'ORDER' => 'CREATE',
             'SSLCERTCLASS' => $certClass,
-            'PERIOD' => $certYears
+            'PERIOD' => 1
         ];
         return self::getResponse($command);
     }
 
-    public static function updateCertificate($orderId, $certClass, $certYears, $email)
+    public static function updateCertificate($orderId, $certClass, $email)
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
             'ORDER' => 'UPDATE',
             'ORDERID' => $orderId,
             'SSLCERTCLASS' => $certClass,
-            'PERIOD' => $certYears,
+            'PERIOD' => 1,
             'EMAIL' => $email
         ];
         return self::getResponse($command);
     }
 
-    public static function replaceCertificate($orderId, $certClass, $certYears, $csr, $serverType, $domain, $contact)
+    public static function replaceCertificate($orderId, $certClass, $csr, $serverType, $domain, $contact)
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
             'ORDER' => 'REPLACE',
             'SSLCERTCLASS' => $certClass,
-            'PERIOD' => $certYears,
+            'PERIOD' => 1,
             'ORDERID' => $orderId,
             'CSR' => explode(PHP_EOL, $csr),
             'SERVERSOFTWARE' => $serverType,
