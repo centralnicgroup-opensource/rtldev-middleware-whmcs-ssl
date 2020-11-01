@@ -1,13 +1,8 @@
 {if isset($smarty.post.import)}
-    {if !isset($smarty.post.checkboxcertificate)}
+    {if !isset($smarty.post.SelectedCertificate)}
         <div class="alert alert-warning">
             <i class="fas fa-exclamation-circle"></i>
             <strong>Error!</strong> Please select an SSL Certificate.
-        </div>
-    {else}
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle"></i>
-            <strong>Success!</strong> Your products list has been updated successfully.
         </div>
     {/if}
 {/if}
@@ -19,11 +14,11 @@
 
     <div class="row">
         <div class="col-lg-2 col-md-4 col-sm-12">
-            <label for="registrationperiod">Registration Period</label>
+            <label for="RegistrationPeriod">Registration Period</label>
             <div class="input-group">
-                <select class="form-control" id="registrationperiod" name="registrationperiod">
-                    <option value="1" {if $smarty.post.registrationperiod == 1}selected{/if}>1Y</option>
-                    <option value="2" {if $smarty.post.registrationperiod == 2}selected{/if}>2Y</option>
+                <select class="form-control" id="RegistrationPeriod" name="RegistrationPeriod">
+                    <option value="1" {if $smarty.post.RegistrationPeriod == 1}selected{/if}>1Y</option>
+                    <option value="2" {if $smarty.post.RegistrationPeriod == 2}selected{/if}>2Y</option>
                 </select>
                 <span class="input-group-btn">
                     <button type="submit" name="calculateregprice" class="btn btn-primary">
@@ -36,12 +31,12 @@
         <div class="col-lg-2 col-md-4 col-sm-12">
             <label for="ProfitMargin">Profit Margin</label>
             <div class="input-group">
-                <input class="form-control" type="number" step=0.01 id="ProfitMargin" name="profitmargin" min="0" value="{$smarty.post.profitmargin|default:0}" />
+                <input class="form-control" type="number" step=0.01 id="ProfitMargin" name="ProfitMargin" min="0" value="{$smarty.post.ProfitMargin|default:0}" />
                 <span class="input-group-addon" id="basic-addon2">
                     <i class="fas fa-percent"></i>
                 </span>
                 <span class="input-group-btn">
-                    <button type="submit" name="addprofitmargin" class="btn btn-primary">
+                    <button type="submit" name="AddProfitMargin" class="btn btn-primary">
                         <i class="fas fa-plus-circle"></i>
                         Add
                     </button>
@@ -67,33 +62,33 @@
         <tr>
             <th></th>
             <th></th>
-            <th style="width:16%">Cost ({if $smarty.post.registrationperiod}{$smarty.post.registrationperiod}Y{else}1Y{/if})</th>
+            <th style="width:16%">Cost ({if $smarty.post.RegistrationPeriod}{$smarty.post.RegistrationPeriod}Y{else}1Y{/if})</th>
             <th style="width:16%">Sale</th>
             <th style="width:16%">Cost</th>
             <th style="width:16%">Sale</th>
         </tr>
         {counter start = -1 skip = 1 print = false}
-        {foreach $certificates_and_prices as $certificate => $price_and_defaultcurrency}
+        {foreach $products as $certificateClass => $product}
             <tr>
                 <td>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="checkboxcertificate[]" value="{$certificate}" {if in_array($certificate, $smarty.post.checkboxcertificate)}checked {/if}/>
+                            <input type="checkbox" name="SelectedCertificate[{$certificateClass}]" {if isset($smarty.post.SelectedCertificate[$certificateClass])}checked {/if}/>
                         </label>
                     </div>
                 </td>
-                <td>{$certificate}</td>
-                <td>{$price_and_defaultcurrency.Price}</td>
+                <td>{$product.Name}</td>
+                <td>{$product.Price}</td>
                 <td>
                     <label>
-                        <input class="form-control" type="text" name="{$certificate}_saleprice" value="{$price_and_defaultcurrency.Newprice}" />
+                        <input class="form-control" type="text" name="SalePrice[{$certificateClass}]" value="{$product.NewPrice}" />
                     </label>
                 </td>
-                <td>{$price_and_defaultcurrency.Defaultcurrency}</td>
+                <td>{$product.DefaultCurrency}</td>
                 <td>
                     {assign var="selectedvalue" value="{$smarty.post.currency[{counter}]}"}
                     <label>
-                        <select class="form-control" name="currency[]">
+                        <select class="form-control" name="Currency[{$certificateClass}]">
                             {foreach $configured_currencies_in_whmcs as $id => $code}
                                 <option {if $selectedvalue == $id}selected{/if} value="{$id}">{$code}</option>
                             {/foreach}
