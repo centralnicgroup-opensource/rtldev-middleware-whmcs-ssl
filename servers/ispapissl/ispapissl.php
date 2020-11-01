@@ -12,7 +12,6 @@
 use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Carbon;
-use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 use HEXONET\ResponseParser as RP;
 
 require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
@@ -42,20 +41,11 @@ function ispapissl_MetaData()
 function ispapissl_ConfigOptions()
 {
     SSLHelper::createEmailTemplateIfNotExisting();
-    $registrars = new LoadRegistrars();
 
     return [
         'Certificate Class' => [
             'Type' => 'text',
             'Size' => '25',
-        ],
-        'Registrar' => [
-            'Type' => 'dropdown',
-            'Options' => implode(",", $registrars->getLoadedRegistars())
-        ],
-        'Years' => [
-            'Type' => 'dropdown',
-            'Options' => '1,2,3,4,5,6,7,8,9,10'
         ]
     ];
 }
@@ -70,8 +60,7 @@ function ispapissl_CreateAccount(array $params)
             throw new Exception("An SSL Order already exists for this order");
         }
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
-        $certYears = $params['configoptions']['Years'] ?? $params['configoption3'];
-        $response = APIHelper::createCertificate($certClass, $certYears);
+        $response = APIHelper::createCertificate($certClass);
         $orderId = $response['ORDERID'][0];
         $sslOrderId = SSLHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $orderId, $certClass);
         SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
@@ -156,8 +145,7 @@ function ispapissl_sslsteptwo($params)
         ];
         array_walk($values, 'htmlspecialchars');
 
-        $certClass = $params['configoptions']['Certificate Type'] ?? $params['configoption1'];
-        $certYears = $params['configoptions']['Years'] ?? $params['configoption3'];
+        $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
 
         $response = APIHelper::getEmailAddress($certClass, $params['csr']);
         if (isset($response['EMAIL'])) {
@@ -202,7 +190,7 @@ function ispapissl_sslsteptwo($params)
             default:
                 $serverType = 'OTHER';
         }
-        APIHelper::replaceCertificate($orderId, $certClass, $certYears, $params['csr'], $serverType, $csr['CN'][0], $contact);
+        APIHelper::replaceCertificate($orderId, $certClass, $params['csr'], $serverType, $csr['CN'][0], $contact);
         SSLHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
         logModuleCall(
@@ -222,10 +210,9 @@ function ispapissl_sslstepthree($params)
 {
     try {
         $orderId = $params['remoteid'];
-        $certClass = $params['configoptions']['Certificate Type'] ?? $params['configoption1'];
-        $certYears = $params['configoptions']['Years'] ?? $params['configoption3'];
+        $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
 
-        APIHelper::updateCertificate($orderId, $certClass, $certYears, $params['approveremail']);
+        APIHelper::updateCertificate($orderId, $certClass, $params['approveremail']);
         APIHelper::executeOrder($orderId);
         SSLHelper::updateOrder($params['serviceid'], ['completiondate' => Carbon::now()]);
         return null;

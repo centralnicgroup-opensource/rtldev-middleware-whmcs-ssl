@@ -108,22 +108,10 @@ function ispapissl_addon_output()
             $smarty->assign('error', 'Please select a product group');
             $step = 1;
         }
-    } elseif (isset($_POST['calculateregprice'])) {
-        $regPeriod = $_POST['RegistrationPeriod'];
-        if (!empty($regPeriod) && $regPeriod == 2) {
-            $products = SSLHelper::calculateRegistrationPrice($products, $regPeriod);
-        }
     } elseif (isset($_POST['AddProfitMargin'])) {
         $profitMargin = $_POST['ProfitMargin'];
-        $regPeriod = $_POST['RegistrationPeriod'];
         if (!empty($profitMargin)) {
-            if (!empty($regPeriod) && $regPeriod == 2) {
-                $products = SSLHelper::calculateProfitMargin(SSLHelper::calculateRegistrationPrice($products, $regPeriod), $profitMargin);
-            } else {
-                $products = SSLHelper::calculateProfitMargin($products, $profitMargin);
-            }
-        } elseif (!empty($regPeriod) && $regPeriod == 2) {
-            $products = SSLHelper::calculateRegistrationPrice($products, $regPeriod);
+            $products = SSLHelper::calculateProfitMargin($products, $profitMargin);
         }
     } elseif (isset($_POST['import'])) {
         if (isset($_POST['SelectedCertificate'])) {

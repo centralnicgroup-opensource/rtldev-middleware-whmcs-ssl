@@ -99,12 +99,11 @@ class SSLHelper
         return DB::table('tblproductgroups')->where('name', $productGroupName)->value('id');
     }
 
-    public static function getProductId($productName, $gid, $regPeriod)
+    public static function getProductId($certificateClass, $gid)
     {
         return DB::table('tblproducts')
-            ->where('name', $productName)
+            ->where('configoption1', $certificateClass)
             ->where('gid', $gid)
-            ->where('configoption3', $regPeriod)
             ->value('id');
     }
 
@@ -116,18 +115,16 @@ class SSLHelper
             ->pluck('currency');
     }
 
-    public static function createProduct($productName, $productGroupId, $certificateClass, $registrar, $regPeriod)
+    public static function createProduct($productName, $productGroupId, $certificateClass)
     {
         return DB::table('tblproducts')->insertGetId([
             'type' => 'other',
             'gid' => $productGroupId,
             'name' => $productName,
-            'paytype' => 'onetime',
+            'paytype' => 'recurring',
             'autosetup' => 'payment',
             'servertype' => 'ispapissl',
             'configoption1' => $certificateClass,
-            'configoption2' => $registrar,
-            'configoption3' => $regPeriod,
             'tax' => 1
         ]);
     }
@@ -137,7 +134,7 @@ class SSLHelper
         DB::table('tblpricing')
             ->where('relid', $productId)
             ->where('currency', $currency)
-            ->update(['monthly' => $price]);
+            ->update(['annually' => $price]);
     }
 
     public static function createPricing($productId, $currency, $price)
@@ -152,10 +149,10 @@ class SSLHelper
             'asetupfee' => 0,
             'bsetupfee' => 0,
             'tsetupfee' => 0,
-            'monthly' => $price,
+            'monthly' => -1,
             'quarterly' => -1,
             'semiannually' => -1,
-            'annually' => -1,
+            'annually' => $price,
             'biennially' => -1,
             'triennially' => -1
         ]);
@@ -257,28 +254,15 @@ class SSLHelper
         return $products;
     }
 
-    public static function calculateRegistrationPrice($products, $regPeriod)
-    {
-        foreach ($products as $certificateClass => $product) {
-            $newPrice = number_format((float) $regPeriod * $product['Price'], 2, '.', '');
-            $products[$certificateClass]['Price'] = $newPrice;
-            $products[$certificateClass]['NewPrice'] = $newPrice;
-        }
-        return $products;
-    }
-
     public static function importProducts()
     {
-        $registrars = new LoadRegistrars();
-        $registrar = $registrars->getLoadedRegistars()[0]; // returns hexonet... but why not use ispapi?
         $productGroupName = $_POST['SelectedProductGroup'];
         $productGroupId = self::getProductGroupId($productGroupName);
-        $regPeriod = ($_POST['RegistrationPeriod'] == 1) ? 1 : 2;
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
-            $productName = self::getProductName($certificateClass) . " - {$regPeriod} Year";
-            $productId = self::getProductId($productName, $productGroupId, $regPeriod);
+            $productName = self::getProductName($certificateClass);
+            $productId = self::getProductId($certificateClass, $productGroupId);
             if (!$productId) {
-                $productId = self::createProduct($productName, $productGroupId, $certificateClass, $registrar, $regPeriod);
+                $productId = self::createProduct($productName, $productGroupId, $certificateClass);
             } else {
                 $currencies = self::getProductCurrencies($productId);
                 if (in_array($_POST['Currency'][$certificateClass], $currencies->toArray())) {
