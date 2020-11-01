@@ -116,7 +116,7 @@ class SSLHelper
             ->pluck('currency');
     }
 
-    public static function createProduct($productName, $productGroupId, $serverType, $certificateClass, $registrar, $regPeriod)
+    public static function createProduct($productName, $productGroupId, $certificateClass, $registrar, $regPeriod)
     {
         return DB::table('tblproducts')->insertGetId([
             'type' => 'other',
@@ -124,10 +124,11 @@ class SSLHelper
             'name' => $productName,
             'paytype' => 'onetime',
             'autosetup' => 'payment',
-            'servertype' => $serverType,
+            'servertype' => 'ispapissl',
             'configoption1' => $certificateClass,
             'configoption2' => $registrar,
-            'configoption3' => $regPeriod
+            'configoption3' => $regPeriod,
+            'tax' => 1
         ]);
     }
 
@@ -160,6 +161,55 @@ class SSLHelper
         ]);
     }
 
+    public static function getProductName($certificateClass)
+    {
+        $certificateNames = [
+            'COMODO_ESSENTIALSSL' => 'Sectigo Essential SSL',
+            'COMODO_ESSENTIALSSL_WILDCARD' => 'Sectigo Essential SSL Wildcard',
+            'COMODO_SSL_EV' => 'Sectigo EV SSL',
+            'COMODO_INSTANTSSL' => 'Sectigo Instant SSL',
+            'COMODO_INSTANTSSL_PREMIUM' => 'Sectigo Instant SSL Premium',
+            'COMODO_POSITIVESSL' => 'Sectigo Positive SSL',
+            'COMODO_PREMIUMSSL_WILDCARD' => 'Sectigo Premium SSL Wildcard',
+            'COMODO_SSL' => 'Sectigo DV SSL',
+            'COMODO_SSL_WILDCARD' => 'Sectigo DV SSL Wildcard',
+            'GEOTRUST_QUICKSSL' => 'GeoTrust Quick SSL',
+            'GEOTRUST_QUICKSSLPREMIUM' => 'GeoTrust Quick SSL Premium',
+            'GEOTRUST_QUICKSSLPREMIUM_SAN' => 'GeoTrust Quick SSL Premium SAN Package',
+            'GEOTRUST_RAPIDSSL' => 'GeoTrust Rapid SSL',
+            'GEOTRUST_RAPIDSSL_WILDCARD' => 'GeoTrust Rapid SSL Wildcard',
+            'GEOTRUST_TRUEBIZID' => 'GeoTrust True Business ID',
+            'GEOTRUST_TRUEBIZID_SAN' => 'GeoTrust True Business ID SAN Package',
+            'GEOTRUST_TRUEBIZID_EV' => 'GeoTrust True Business ID EV',
+            'GEOTRUST_TRUEBIZID_EV_SAN' => 'GeoTrust True Business ID EV SAN Package',
+            'GEOTRUST_TRUEBIZID_WILDCARD' => 'GeoTrust True Business ID Wildcard',
+            'SYMANTEC_SECURESITE' => 'Symantec Secure Site',
+            'SYMANTEC_SECURESITE_EV' => 'Symantec Secure Site EV',
+            'SYMANTEC_SECURESITE_PRO' => 'Symantec Secure Site Pro',
+            'SYMANTEC_SECURESITE_PRO_EV' => 'Symantec Secure Site Pro EV',
+            'THAWTE_SSL123' => 'thawte SSL 123',
+            'THAWTE_SSLWEBSERVER' => 'thawte SSL Webserver',
+            'THAWTE_SSLWEBSERVER_EV' => 'thawte SSL Webserver EV',
+            'THAWTE_SSLWEBSERVER_WILDCARD' => 'thawte SSL Webserver Wildcard',
+            'TRUSTWAVE_DOMAINVETTEDSSL' => 'Trustwave Domain vetted SSL',
+            'TRUSTWAVE_PREMIUMSSL' => 'Trustwave Premium SSL',
+            'TRUSTWAVE_PREMIUMSSL_SAN' => 'Trustwave Premium SSL SAN Package',
+            'TRUSTWAVE_PREMIUMSSL_EV' => 'Trustwave Premium SSL EV',
+            'TRUSTWAVE_PREMIUMSSL_EV_SAN' => 'Trustwave Premium SSL EV SAN Package',
+            'TRUSTWAVE_PREMIUMSSL_WILDCARD' => 'Trustwave Premium SSL Wildcard'
+        ];
+        if (isset($certificateNames[$certificateClass])) {
+            return $certificateNames[$certificateClass];
+        }
+
+        $certificateName = str_replace('_', ' ', strtolower($certificateClass));
+        $certificateName = str_replace('ssl', 'SSL', $certificateName);
+        $certificateName = str_replace(' ev', ' EV', $certificateName);
+        $certificateName = str_replace(' san', ' SAN', $certificateName);
+        $certificateName = str_replace('domainvetted', 'Domain-Vetted ', $certificateName);
+        return ucwords($certificateName);
+    }
+
     public static function parseDomain($domain)
     {
         if (count($domain) == 2) {
@@ -183,7 +233,7 @@ class SSLHelper
         $array = array_change_key_case($array, CASE_LOWER);
         $array = array_combine(array_map(function ($str) {
             $str = str_replace('_', ' ', $str);
-            $str = str_replace('ssl', 'SSL ', $str);
+            $str = str_replace('ssl', 'SSL', $str);
             $str = str_replace(' ev', ' EV', $str);
             $str = str_replace(' san', ' SAN', $str);
             $str = str_replace('truebizid', 'True BusinessID', $str);
@@ -200,19 +250,19 @@ class SSLHelper
 
     public static function calculateProfitMargin($products, $profitMargin)
     {
-        foreach ($products as $certificate => $price) {
-            $newPrice = $price['Newprice'] + ($profitMargin / 100) * $price['Newprice'];
-            $products[$certificate]['Newprice'] = number_format((float)$newPrice, 2, '.', '');
+        foreach ($products as $certificateClass => $product) {
+            $newPrice = $product['NewPrice'] + ($profitMargin / 100) * $product['NewPrice'];
+            $products[$certificateClass]['NewPrice'] = number_format((float)$newPrice, 2, '.', '');
         }
         return $products;
     }
 
     public static function calculateRegistrationPrice($products, $regPeriod)
     {
-        foreach ($products as $certificate => $price) {
-            $newPrice = number_format((float) $regPeriod * $price['Price'], 2, '.', '');
-            $products[$certificate]['Price'] = $newPrice;
-            $products[$certificate]['Newprice'] = $newPrice;
+        foreach ($products as $certificateClass => $product) {
+            $newPrice = number_format((float) $regPeriod * $product['Price'], 2, '.', '');
+            $products[$certificateClass]['Price'] = $newPrice;
+            $products[$certificateClass]['NewPrice'] = $newPrice;
         }
         return $products;
     }
@@ -220,47 +270,23 @@ class SSLHelper
     public static function importProducts()
     {
         $registrars = new LoadRegistrars();
-        $registrar = $registrars->getLoadedRegistars()[0];
-        $products = [];
-        $currencies = [];
-        foreach ($_POST as $key => $value) {
-            if (preg_match("/(.*)_saleprice/", $key, $match)) {
-                $products[$match[1]]['newprice'] = $value;
-                $products[$match[1]]['certificateClass'] = strtoupper($match[1]);
-                $products[$match[1]]['servertype'] = 'ispapissl';
-                $products[$match[1]]['registrar'] = $registrar;
-            } elseif (preg_match("/currency/", $key)) {
-                $currencies[] = $value;
-            }
-        }
-
-        $i = 0;
-        self::formatArrayKeys($products);
-        foreach ($products as $key => $val) {
-            if (array_search($key, $_POST['checkboxcertificate']) === false) {
-                unset($products[$key]);
-            } else {
-                $products[$key]['currency'] = $currencies[$i];
-            }
-            $i++;
-        }
-
+        $registrar = $registrars->getLoadedRegistars()[0]; // returns hexonet... but why not use ispapi?
         $productGroupName = $_POST['SelectedProductGroup'];
         $productGroupId = self::getProductGroupId($productGroupName);
-        $regPeriod = ($_POST['registrationperiod'] == 1) ? 1 : 2;
-        foreach ($products as $productName => $price) {
-            $productName .= " - {$regPeriod} Year";
+        $regPeriod = ($_POST['RegistrationPeriod'] == 1) ? 1 : 2;
+        foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
+            $productName = self::getProductName($certificateClass) . " - {$regPeriod} Year";
             $productId = self::getProductId($productName, $productGroupId, $regPeriod);
             if (!$productId) {
-                $productId = self::createProduct($productName, $productGroupId, $price['Servertype'], $price['Certificateclass'], $price['Registrar'], $regPeriod);
+                $productId = self::createProduct($productName, $productGroupId, $certificateClass, $registrar, $regPeriod);
             } else {
                 $currencies = self::getProductCurrencies($productId);
-                if (in_array($price['Currency'], $currencies)) {
-                    self::updatePricing($productId, $price['Currency'], $price['Newprice']);
+                if (in_array($_POST['Currency'][$certificateClass], $currencies->toArray())) {
+                    self::updatePricing($productId, $_POST['Currency'][$certificateClass], $_POST['SalePrice'][$certificateClass]);
                     continue;
                 }
             }
-            self::createPricing($productId, $price['Currency'], $price['Newprice']);
+            self::createPricing($productId, $_POST['Currency'][$certificateClass], $_POST['SalePrice'][$certificateClass]);
         }
     }
 }

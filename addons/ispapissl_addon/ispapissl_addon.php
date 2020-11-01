@@ -6,8 +6,8 @@ use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
 session_start();
 
-require(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
-require(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
+require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
+require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
 
 /*
  * Configuration of the addon module.
@@ -75,12 +75,14 @@ function ispapissl_addon_output()
                 }
             }
 
-            $products[$certificate]['Price'] = $price;
-            $products[$certificate]['Newprice'] = $price;
-            $products[$certificate]['Defaultcurrency'] = $currency;
+            $products[$certificate] = [
+                'Name' => SSLHelper::getProductName($certificate),
+                'Price' => $price,
+                'NewPrice' => $price,
+                'DefaultCurrency' => $currency
+            ];
         }
     }
-    SSLHelper::formatArrayKeys($products);
 
     $systemCurrencies = [];
     $currencies = localAPI('GetCurrencies', []);
@@ -91,7 +93,6 @@ function ispapissl_addon_output()
     }
 
     $productGroupName = htmlspecialchars($_POST['selectedproductgroup']);
-    $productsWithNewPrices = [];
 
     $smarty = new Smarty();
     $smarty->setTemplateDir(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
@@ -108,13 +109,13 @@ function ispapissl_addon_output()
             $step = 1;
         }
     } elseif (isset($_POST['calculateregprice'])) {
-        $regPeriod = $_POST['registrationperiod'];
+        $regPeriod = $_POST['RegistrationPeriod'];
         if (!empty($regPeriod) && $regPeriod == 2) {
             $products = SSLHelper::calculateRegistrationPrice($products, $regPeriod);
         }
-    } elseif (isset($_POST['addprofitmargin'])) {
-        $profitMargin = $_POST['profitmargin'];
-        $regPeriod = $_POST['registrationperiod'];
+    } elseif (isset($_POST['AddProfitMargin'])) {
+        $profitMargin = $_POST['ProfitMargin'];
+        $regPeriod = $_POST['RegistrationPeriod'];
         if (!empty($profitMargin)) {
             if (!empty($regPeriod) && $regPeriod == 2) {
                 $products = SSLHelper::calculateProfitMargin(SSLHelper::calculateRegistrationPrice($products, $regPeriod), $profitMargin);
@@ -125,28 +126,17 @@ function ispapissl_addon_output()
             $products = SSLHelper::calculateRegistrationPrice($products, $regPeriod);
         }
     } elseif (isset($_POST['import'])) {
-        if (isset($_POST['checkboxcertificate'])) {
+        if (isset($_POST['SelectedCertificate'])) {
             SSLHelper::importProducts();
+            $step = 3;
         }
-        foreach ($_POST as $key => $value) {
-            if (preg_match('/(.*)_saleprice/', $key, $match)) {
-                $productsWithNewPrices[$match[1]]['Newprice'] = $value;
-            }
-        }
-        SSLHelper::formatArrayKeys($productsWithNewPrices);
-        foreach ($products as $key => $value) {
-            if (array_key_exists($key, $productsWithNewPrices)) {
-                $products[$key]['Newprice'] = $productsWithNewPrices[$key]['Newprice'];
-            }
-        }
-        $smarty->assign('post-checkboxcertificate', $_POST['checkboxcertificate']);
     } else {
         $step = 1;
     }
 
     if ($step == 2) {
         $smarty->assign('session-selected-product-group', $_SESSION['selectedproductgroup']);
-        $smarty->assign('certificates_and_prices', $products);
+        $smarty->assign('products', $products);
         $smarty->assign('configured_currencies_in_whmcs', $systemCurrencies);
     }
 

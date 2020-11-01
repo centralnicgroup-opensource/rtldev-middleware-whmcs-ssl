@@ -15,6 +15,9 @@ use WHMCS\Carbon;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 use HEXONET\ResponseParser as RP;
 
+require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
+require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
+
 /**
  * Define module related meta data.
  *
