@@ -59,36 +59,35 @@ function ispapissl_addon_output()
 
     $user = APIHelper::getUserStatus();
 
+    $currencies = SSLHelper::getCurrencies();
+
     $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/';
     $products = [];
-    if (preg_grep($pattern, $user['RELATIONTYPE'])) {
-        foreach (preg_grep($pattern, $user['RELATIONTYPE']) as $key => $val) {
+    $certs = preg_grep($pattern, $user['RELATIONTYPE']);
+    if (is_array($certs)) {
+        foreach ($certs as $key => $val) {
             preg_match($pattern, $val, $matches);
-            $certificate = $matches[1];
+            $productKey = $matches[1];
 
             $price = $user['RELATIONVALUE'][$key];
-            $currencyKeys = array_keys(preg_grep('/PRICE_CLASS_SSLCERT_' . $certificate . '_CURRENCY$/', $user['RELATIONTYPE']));
-            $currency = null;
-            foreach ($currencyKeys as $key) {
-                if (array_key_exists($key, $user['RELATIONVALUE'])) {
-                    $currency = $user['RELATIONVALUE'][$key];
-                }
+            $currencyKey = array_search("PRICE_CLASS_SSLCERT_{$productKey}_CURRENCY", $user['RELATIONTYPE']);
+            if ($currencyKey === false) {
+                continue;
+            }
+            $currency = $user['RELATIONVALUE'][$currencyKey];
+
+            $arrayKey = array_search($currency, array_column($currencies, 'code'));
+            if ($arrayKey === false) {
+                //TODO convert currency via API
+            } else {
+                $price = round($price / $currencies[$arrayKey]['rate'], 2);
             }
 
-            $products[$certificate] = [
-                'Name' => SSLHelper::getProductName($certificate),
+            $products[$productKey] = [
+                'Name' => SSLHelper::getProductName($productKey),
                 'Price' => $price,
-                'NewPrice' => $price,
-                'DefaultCurrency' => $currency
+                'NewPrice' => $price
             ];
-        }
-    }
-
-    $systemCurrencies = [];
-    $currencies = localAPI('GetCurrencies', []);
-    if ($currencies['result'] == 'success') {
-        foreach ($currencies['currencies']['currency'] as $value) {
-            $systemCurrencies[$value['id']] = $value['code'];
         }
     }
 
@@ -100,7 +99,7 @@ function ispapissl_addon_output()
     $smarty->caching = false;
 
     $step = 2;
-    $smarty->assign('product_groups', SSLHelper::getProductGroups());
+    $smarty->assign('productGroups', SSLHelper::getProductGroups());
 
     if (isset($_POST['loadcertificates'])) {
         $_SESSION['selectedproductgroup'] = $productGroupName;
@@ -123,9 +122,8 @@ function ispapissl_addon_output()
     }
 
     if ($step == 2) {
-        $smarty->assign('session-selected-product-group', $_SESSION['selectedproductgroup']);
         $smarty->assign('products', $products);
-        $smarty->assign('configured_currencies_in_whmcs', $systemCurrencies);
+        $smarty->assign('currency', SSLHelper::getDefaultCurrency());
     }
 
     try {

@@ -256,21 +256,50 @@ class SSLHelper
 
     public static function importProducts()
     {
-        $productGroupName = $_POST['SelectedProductGroup'];
-        $productGroupId = self::getProductGroupId($productGroupName);
+        $currencies = self::getCurrencies();
+        $productGroupId = self::getProductGroupId($_POST['SelectedProductGroup']);
+
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
             $productName = self::getProductName($certificateClass);
             $productId = self::getProductId($certificateClass, $productGroupId);
             if (!$productId) {
                 $productId = self::createProduct($productName, $productGroupId, $certificateClass);
-            } else {
-                $currencies = self::getProductCurrencies($productId);
-                if (in_array($_POST['Currency'][$certificateClass], $currencies->toArray())) {
-                    self::updatePricing($productId, $_POST['Currency'][$certificateClass], $_POST['SalePrice'][$certificateClass]);
+            }
+
+            $productPrices = [];
+            foreach ($currencies as $currency) {
+                $productPrices[$currency['id']] = round($_POST['SalePrice'][$certificateClass] * $currency['rate'], 2);
+            }
+
+            $productCurrencies = self::getProductCurrencies($productId);
+            foreach ($productCurrencies as $currencyId) {
+                if (array_search($currencyId, array_column($currencies, 'id')) === false) {
+                    continue; // this should not happen, but just to be sure...
+                }
+                self::updatePricing($productId, $currencyId, $productPrices[$currencyId]);
+            }
+            foreach ($currencies as $currency) {
+                if (in_array($currency['id'], $productCurrencies->toArray())) {
                     continue;
                 }
+                self::createPricing($productId, $currency['id'], $productPrices[$currency['id']]);
             }
-            self::createPricing($productId, $_POST['Currency'][$certificateClass], $_POST['SalePrice'][$certificateClass]);
         }
+    }
+
+    public static function getCurrencies()
+    {
+        $currencies = localAPI('GetCurrencies', []);
+        if ($currencies['result'] == 'success') {
+            return $currencies['currencies']['currency'];
+        }
+        return [];
+    }
+
+    public static function getDefaultCurrency()
+    {
+        return DB::table('tblcurrencies')
+            ->where('default', 1)
+            ->value('code');
     }
 }

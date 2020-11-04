@@ -16,7 +16,7 @@
                 <label for="selectedproductgroup">Select Product Group</label>
                 <select class="form-control" name="selectedproductgroup" id="selectedproductgroup" value={$selected_product_group}>
                     <option></option>
-                    {foreach $product_groups as $name}
+                    {foreach $productGroups as $name}
                         <option>{$name}</option>
                     {/foreach}
                 </select>
