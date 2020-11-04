@@ -41,16 +41,8 @@
                 </div>
             </th>
             <th>SSL Certificate</th>
-            <th colspan="2">Price</th>
-            <th colspan="2">Currency</th>
-        </tr>
-        <tr>
-            <th></th>
-            <th></th>
-            <th style="width:16%">Cost ({if $smarty.post.RegistrationPeriod}{$smarty.post.RegistrationPeriod}Y{else}1Y{/if})</th>
-            <th style="width:16%">Sale</th>
-            <th style="width:16%">Cost</th>
-            <th style="width:16%">Sale</th>
+            <th style="width:32%">Cost (yearly)</th>
+            <th style="width:32%">Sale</th>
         </tr>
         {counter start = -1 skip = 1 print = false}
         {foreach $products as $certificateClass => $product}
@@ -63,27 +55,17 @@
                     </div>
                 </td>
                 <td>{$product.Name}</td>
-                <td>{$product.Price}</td>
+                <td>{$product.Price} {$currency}</td>
                 <td>
                     <label>
                         <input class="form-control" type="text" name="SalePrice[{$certificateClass}]" value="{$product.NewPrice}" />
-                    </label>
-                </td>
-                <td>{$product.DefaultCurrency}</td>
-                <td>
-                    {assign var="selectedvalue" value="{$smarty.post.currency[{counter}]}"}
-                    <label>
-                        <select class="form-control" name="Currency[{$certificateClass}]">
-                            {foreach $configured_currencies_in_whmcs as $id => $code}
-                                <option {if $selectedvalue == $id}selected{/if} value="{$id}">{$code}</option>
-                            {/foreach}
-                        </select>
                     </label>
                 </td>
             </tr>
         {/foreach}
     </table>
     <br />
+    <input type="hidden" name="Currency" value="{$currency}" />
     <button type="submit" name="import" class="btn btn-primary">
         <i class="fas fa-upload"></i>
         Import
