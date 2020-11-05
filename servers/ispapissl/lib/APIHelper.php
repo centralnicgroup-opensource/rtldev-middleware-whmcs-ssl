@@ -119,6 +119,14 @@ class APIHelper
         return self::getResponse($command);
     }
 
+    public static function getExchangeRates()
+    {
+        $command = [
+            'COMMAND' => 'QueryExchangeRates'
+        ];
+        return self::getResponse($command);
+    }
+
     private static function getResponse($command)
     {
         $response = Ispapi::call($command);

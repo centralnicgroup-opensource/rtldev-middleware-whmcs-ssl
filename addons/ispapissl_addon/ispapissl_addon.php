@@ -60,6 +60,8 @@ function ispapissl_addon_output()
     $user = APIHelper::getUserStatus();
 
     $currencies = SSLHelper::getCurrencies();
+    $defaultCurrency = SSLHelper::getDefaultCurrency();
+    $exchangeRates = APIHelper::getExchangeRates();
 
     $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/';
     $products = [];
@@ -78,7 +80,26 @@ function ispapissl_addon_output()
 
             $arrayKey = array_search($currency, array_column($currencies, 'code'));
             if ($arrayKey === false) {
-                //TODO convert currency via API
+                if (in_array($currency, $exchangeRates['CURRENCYFROM'])) {
+                    // Product currency is same as ISPAPI base currency
+                    $exchangeKey = array_search($defaultCurrency, $exchangeRates['CURRENCYTO']);
+                    if ($exchangeKey === false) {
+                        continue;
+                    }
+                    $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
+                } else {
+                    // Convert to ISPAPI base currency
+                    $exchangeKey = array_search($currency, $exchangeRates['CURRENCYTO']);
+                    if ($exchangeKey === false) {
+                        continue;
+                    }
+                    $price = round($price / $exchangeRates['RATE'][$exchangeKey], 2);
+                    if ($defaultCurrency != $exchangeRates['CURRENCYFROM'][$exchangeKey]) {
+                        // Convert to WHMCS default currency
+                        $exchangeKey = array_search($defaultCurrency, $exchangeRates['CURRENCYTO']);
+                        $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
+                    }
+                }
             } else {
                 $price = round($price / $currencies[$arrayKey]['rate'], 2);
             }
@@ -123,7 +144,7 @@ function ispapissl_addon_output()
 
     if ($step == 2) {
         $smarty->assign('products', $products);
-        $smarty->assign('currency', SSLHelper::getDefaultCurrency());
+        $smarty->assign('currency', $defaultCurrency);
     }
 
     try {
