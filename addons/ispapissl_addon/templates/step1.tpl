@@ -1,9 +1,6 @@
-{if $error}
-    <div class="alert alert-warning">
-        <i class="fas fa-exclamation-circle"></i>
-        {$error}
-    </div>
-{/if}
+{extends file="layout.tpl"}
+
+{block name="content"}
 
 <h2>Load SSL certificates</h2>
 
@@ -34,3 +31,5 @@
         Load
     </button>
 </form>
+
+{/block}

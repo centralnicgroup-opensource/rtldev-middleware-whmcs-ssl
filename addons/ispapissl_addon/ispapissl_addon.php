@@ -15,9 +15,9 @@ require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
 function ispapissl_addon_config()
 {
     return [
-        "name" => "ISPAPI SSL Addon",
-        "description" => "This addon allows you to quickly add and configure SSL Certificates",
-        "author" => "HEXONET",
+        "name" => "ISPAPI SSL",
+        "description" => "Quickly add and configure SSL Certificates",
+        "author" => '<a href="https://www.hexonet.net/" target="_blank"><img style="max-width:100px" src="data:image/png;base64,' . SSLHelper::getLogo() . '" alt="HEXONET" /></a>',
         "language" => "english",
         "version" => "8.0.1"
     ];
@@ -120,6 +120,7 @@ function ispapissl_addon_output()
     $smarty->caching = false;
 
     $step = 2;
+    $smarty->assign('logo', SSLHelper::getLogo());
     $smarty->assign('productGroups', SSLHelper::getProductGroups());
 
     if (isset($_POST['loadcertificates'])) {
@@ -136,7 +137,10 @@ function ispapissl_addon_output()
     } elseif (isset($_POST['import'])) {
         if (isset($_POST['SelectedCertificate'])) {
             SSLHelper::importProducts();
+            $smarty->assign('success', "Your product list has been updated successfully");
             $step = 3;
+        } else {
+            $smarty->assign('error', 'Please select an SSL Certificate');
         }
     } else {
         $step = 1;

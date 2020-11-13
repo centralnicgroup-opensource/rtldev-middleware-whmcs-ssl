@@ -1,11 +1,6 @@
-{if isset($smarty.post.import)}
-    {if !isset($smarty.post.SelectedCertificate)}
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-circle"></i>
-            <strong>Error!</strong> Please select an SSL Certificate.
-        </div>
-    {/if}
-{/if}
+{extends file="layout.tpl"}
+
+{block name="content"}
 
 <h2>Bulk Pricing update</h2>
 
@@ -82,3 +77,5 @@ function checkAll(element) {
     }
 }
 </script>
+
+{/block}
