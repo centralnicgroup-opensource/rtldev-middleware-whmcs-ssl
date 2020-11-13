@@ -20,7 +20,8 @@ class APIHelper
             'COMMAND' => 'CreateSSLCert',
             'ORDER' => 'CREATE',
             'SSLCERTCLASS' => $certClass,
-            'PERIOD' => 1
+            'PERIOD' => 1,
+            'INCOMPLETE' => 1
         ];
         return self::getResponse($command);
     }
@@ -33,7 +34,8 @@ class APIHelper
             'ORDERID' => $orderId,
             'SSLCERTCLASS' => $certClass,
             'PERIOD' => 1,
-            'EMAIL' => $email
+            'EMAIL' => $email,
+            'INCOMPLETE' => 1
         ];
         return self::getResponse($command);
     }
@@ -48,7 +50,8 @@ class APIHelper
             'ORDERID' => $orderId,
             'CSR' => explode(PHP_EOL, $csr),
             'SERVERSOFTWARE' => $serverType,
-            'SSLCERTDOMAIN' => $domain
+            'SSLCERTDOMAIN' => $domain,
+            'INCOMPLETE' => 0
         ];
         array_push($command, $contact);
         return self::getResponse($command);
