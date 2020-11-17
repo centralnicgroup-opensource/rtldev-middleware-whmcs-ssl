@@ -3,7 +3,6 @@
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
 class SSLHelper
 {
@@ -40,6 +39,7 @@ class SSLHelper
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
+            ->where("module", "ispapissl")
             ->exists();
     }
 
@@ -47,13 +47,16 @@ class SSLHelper
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
+            ->where("module", "ispapissl")
             ->value('id');
     }
 
-    public static function getOrder($serviceId)
+    public static function getOrder($serviceId, $addonId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
+            ->where("addon_id", $addonId)
+            ->where("module", "ispapissl")
             ->select(['id', 'remoteid', 'status'])
             ->first();
     }
@@ -70,10 +73,12 @@ class SSLHelper
         ]);
     }
 
-    public static function updateOrder($serviceId, $data)
+    public static function updateOrder($serviceId, $addonId, $data)
     {
         DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
+            ->where("addon_id", $addonId)
+            ->where("module", "ispapissl")
             ->update($data);
     }
 
@@ -305,6 +310,7 @@ class SSLHelper
 
     public static function getLogo()
     {
-        return "iVBORw0KGgoAAAANSUhEUgAAAJcAAAAYCAMAAADAp59GAAAALVBMVEX///8AKFYAKFYAKFYAKFYAKFYAKFYAKFYAKFYAKFYAKFYAKFYAKFYAKFYAKFYVecfJAAAAD3RSTlMAMMCwEPD/YJCA0KBAcCCTS168AAABTklEQVR42u3W627DIAyGYXAIlFPu/3JH3KDPNJKlLGWrtL1/EK1LHqnpwdzIUm9x5nOyqz9a7d9hBWo9+o72Aq+IH4n8brmFNwdriXFllqWX9nMRLkHnLEbldPQt6i6/F3kdCsYl75NjTjhY2ZjMrLZ5yfC5Q5nPP1cwikhxaTCdBZcsz3CNsChZBizV5eubXLXIjIRJlvFyukpXKs+ycq4zWx/CK6zmKmYMMMnqFztmClzi3KSey42vuOQCTLAwrLjoWy4E1ykJ28C66DpX7roAa+sDrN934XuL1/AhLrCqA2yK69r9iU9iAuz2fX/bBZYfYPiZadX5rhxFVbJGmOcWHnt4uLRz0XbZJVutYK2FAOtQWZp1f+ks2xYNltw8l87SYMy67SqxFfouxFZpM2NPlidKzOIqD9r2LG9ETjn33DZK/v/LTyzE3k+xvgCvHi6YVzoHZAAAAABJRU5ErkJggg==";
+        $data = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/logo.png');
+        return 'data:image/png;base64,' . base64_encode($data);
     }
 }
