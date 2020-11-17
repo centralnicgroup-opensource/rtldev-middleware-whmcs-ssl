@@ -74,9 +74,16 @@ function ispapissl_CreateAccount(array $params)
     return 'success';
 }
 
-/*
- * Custom button for resending configuration email.
- */
+function ispapissl_TerminateAccount($params)
+{
+    $order = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
+    if (!$order || $order->status == "Awaiting Configuration") {
+        return "SSL Either not Provisioned or Not Awaiting Configuration so unable to cancel";
+    }
+    SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['status' => 'Cancelled']);
+    return "success";
+}
+
 function ispapissl_AdminCustomButtonArray()
 {
     return [
