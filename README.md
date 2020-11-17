@@ -14,10 +14,11 @@ The ISPAPI SSL Module supports the following functions and features:
   * Unified handling of different suppliers
   * Support for testing environment
   * Certificate products directly connected to the ISPAPI Registrar Module
-  * New SSL addon
+  * Create, renew and revoke certificates
+  * SSL addon
        * Load available SSL certificates and import them under a product group
        * Bulk price update by using a profit margin
-       * Support for different currencies
+       * Multicurrency support
 
 ## Resources ##
 

@@ -1,0 +1,33 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-servers",
+  "name": "ispapissl",
+  "license": "MIT",
+  "category": "digitalservices",
+  "description": {
+    "name": "ISPAPI SSL",
+    "tagline": "Sell SSL Certificates using a HEXONET reseller account.",
+    "long": "",
+    "features": [
+      "Resell all certificate classes offered by HEXONET",
+      "Import products with pricing and profit margins",
+      "Create, renew and revoke certificates",
+      "Support for testing environment"
+    ]
+  },
+  "logo": {
+    "filename": "logo.png"
+  },
+  "support": {
+    "homepage": "https:\/\/www.hexonet.net\/",
+    "learn_more": "https:\/\/github.com\/hexonet\/whmcs-ispapi-ssl\/blob\/master\/README.md",
+    "support_url": "https:\/\/github.com\/hexonet\/whmcs-ispapi-ssl\/wiki\/Contact-Us",
+    "docs_url": "https:\/\/github.com\/hexonet\/whmcs-ispapi-ssl\/wiki\/Usage-Guide"
+  },
+  "authors": [
+    {
+      "name": "HEXONET",
+      "homepage": "https:\/\/www.hexonet.net\/"
+    }
+  ]
+}
