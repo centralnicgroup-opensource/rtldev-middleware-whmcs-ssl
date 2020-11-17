@@ -79,13 +79,16 @@ function ispapissl_CreateAccount(array $params)
  */
 function ispapissl_AdminCustomButtonArray()
 {
-    return ['Resend Configuration Email' => 'resend'];
+    return [
+        'Revoke' => 'Revoke',
+        'Resend Configuration Email' => 'Resend',
+    ];
 }
 
 /*
  * Resend configuration link if the product exists. click on 'Resend Configuration Email' button on the admin area.
  */
-function ispapissl_resend($params)
+function ispapissl_Resend($params)
 {
     try {
         $sslOrderId = SSLHelper::getOrderId($params['serviceid']);
@@ -93,6 +96,51 @@ function ispapissl_resend($params)
             throw new Exception('No SSL Order exists for this product');
         }
         SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
+    } catch (Exception $e) {
+        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        return $e->getMessage();
+    }
+    return 'success';
+}
+
+function ispapissl_Revoke($params)
+{
+    try {
+        $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+        if (!$order) {
+            return 'Could not find certificate';
+        }
+        APIHelper::revokeCertificate($order->remoteid);
+    } catch (Exception $e) {
+        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        return $e->getMessage();
+    }
+    return 'success';
+}
+
+function ispapissl_Reissue($params)
+{
+    try {
+        $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+        if (!$order) {
+            return 'Could not find certificate';
+        }
+        APIHelper::reissueCertificate($order->remoteid, $params['csr']);
+    } catch (Exception $e) {
+        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        return $e->getMessage();
+    }
+    return 'success';
+}
+
+function ispapissl_Renew($params)
+{
+    try {
+        $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+        if (!$order) {
+            return 'Could not find certificate';
+        }
+        APIHelper::renewCertificate($order->remoteid);
     } catch (Exception $e) {
         logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
