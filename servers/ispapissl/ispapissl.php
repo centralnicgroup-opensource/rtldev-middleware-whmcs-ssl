@@ -154,14 +154,12 @@ function ispapissl_SSLStepTwo($params)
         if (isset($response['EMAIL'])) {
             $values['approveremails'] = $response['EMAIL'];
         } else {
-            $domain = explode('.', preg_replace('/^\*\./', '', $csr['CN'][0]));
-            if (count($domain) < 2) {
+            $domain = preg_replace('/^\*\./', '', $csr['CN'][0]);
+            if (count(explode('.', $domain)) < 2) {
                 throw new Exception("Invalid CN in CSR");
             }
-            $domain = SSLHelper::parseDomain($domain);
-            foreach (['admin', 'administrator', 'hostmaster', 'root', 'webmaster', 'postmaster'] as $mailbox) {
-                $values['approveremails'][] = $mailbox . '@' . $domain;
-            }
+            $response = APIHelper::getValidationAddresses($certClass, $domain);
+            $values['approveremails'] = $response['EMAIL'];
         }
         $contact = [];
         foreach (['', 'ADMINCONTACT', 'TECHCONTACT', 'BILLINGCONTACT'] as $contactType) {
@@ -391,10 +389,9 @@ function ispapissl_ClientArea($params)
                 if (count($domain) < 2) {
                     $tpl['errormessage'] = 'Invalid Domain';
                 } else {
-                    $domain = SSLHelper::parseDomain($domain);
-                    foreach (['admin', 'administrator', 'hostmaster', 'root', 'webmaster', 'postmaster'] as $mailbox) {
-                        $tpl['approveremails'][] = $mailbox . '@' . $domain;
-                    }
+                    $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
+                    $response = APIHelper::getValidationAddresses($certClass, $domain);
+                    $tpl['approveremails'] = $response['EMAIL'];
                 }
             }
         }

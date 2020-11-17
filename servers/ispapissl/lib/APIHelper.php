@@ -112,6 +112,16 @@ class APIHelper
         return self::getResponse($command);
     }
 
+    public static function getValidationAddresses($certClass, $domain)
+    {
+        $command = [
+            'COMMAND' => 'QuerySSLCertDCVEMailAddressList',
+            'SSLCERTCLASS' => $certClass,
+            'DOMAIN' => $domain
+        ];
+        return self::getResponse($command);
+    }
+
     public static function resendEmail($certId, $email)
     {
         $command = [

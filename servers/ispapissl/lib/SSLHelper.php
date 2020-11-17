@@ -212,24 +212,6 @@ class SSLHelper
         return ucwords($certificateName);
     }
 
-    public static function parseDomain($domain)
-    {
-        if (count($domain) == 2) {
-            $domain = implode('.', $domain);
-        } else {
-            $tld = array_pop($domain);
-            $sld = array_pop($domain);
-            $dom = array_pop($domain);
-
-            if (preg_match('/^([a-z][a-z]|com|net|org|biz|info)$/i', $sld)) {
-                $domain = $dom . '.' . $sld . '.' . $tld;
-            } else {
-                $domain = $sld . '.' . $tld;
-            }
-        }
-        return $domain;
-    }
-
     public static function formatArrayKeys(&$array)
     {
         $array = array_change_key_case($array, CASE_LOWER);
