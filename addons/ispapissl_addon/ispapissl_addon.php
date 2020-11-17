@@ -17,7 +17,7 @@ function ispapissl_addon_config()
     return [
         "name" => "ISPAPI SSL",
         "description" => "Quickly add and configure SSL Certificates",
-        "author" => '<a href="https://www.hexonet.net/" target="_blank"><img style="max-width:100px" src="data:image/png;base64,' . SSLHelper::getLogo() . '" alt="HEXONET" /></a>',
+        "author" => '<a href="https://www.hexonet.net/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="HEXONET" /></a>',
         "language" => "english",
         "version" => "8.0.1"
     ];

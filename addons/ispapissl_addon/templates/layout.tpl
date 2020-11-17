@@ -1,6 +1,6 @@
 <div class="pull-right" style="margin-top: -42px;">
     <a href="https://www.hexonet.net/" target="_blank">
-        <img src="data:image/png;base64,{$logo}" title="Powered by HEXONET" alt="HEXONET" />
+        <img src="{$logo}" title="Powered by HEXONET" alt="HEXONET" />
     </a>
 </div>
 

@@ -31,6 +31,9 @@ function ispapissl_MetaData()
 {
     return [
         "DisplayName" => "ISPAPI SSL Certificates",
+        "APIVersion" => "1.1",
+        "RequiresServer" => false,
+        "AutoGenerateUsernameAndPassword" => false,
         "MODULEVersion" => "8.0.1" // custom meta data
     ];
 }
@@ -120,7 +123,7 @@ function ispapissl_sslstepone($params)
             ]);
         }
     } catch (Exception $e) {
-        logModuleCall('provisioningmodule', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
     }
 }
 
@@ -162,7 +165,7 @@ function ispapissl_sslsteptwo($params)
         }
         $contact = [];
         foreach (['', 'ADMINCONTACT', 'TECHCONTACT', 'BILLINGCONTACT'] as $contactType) {
-            $contact[$contactType . 'ORGANIZATION'] = $params['organisationname'];
+            $contact[$contactType . 'ORGANIZATION'] = $params['orgname'];
             $contact[$contactType . 'FIRSTNAME'] = $params['firstname'];
             $contact[$contactType . 'LASTNAME'] = $params['lastname'];
             $contact[$contactType . 'NAME'] = $params['firstname'] . ' ' . $params['lastname'];
@@ -194,7 +197,7 @@ function ispapissl_sslsteptwo($params)
         SSLHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
         logModuleCall(
-            'provisioningmodule',
+            'ispapissl',
             __FUNCTION__,
             $params,
             $e->getMessage(),
@@ -218,7 +221,7 @@ function ispapissl_sslstepthree($params)
         return null;
     } catch (Exception $e) {
         logModuleCall(
-            'provisioningmodule',
+            'ispapissl',
             __FUNCTION__,
             $params,
             $e->getMessage(),
@@ -267,7 +270,7 @@ function ispapissl_ClientArea($params)
         $contactMappings = [
             'firstname' => 'ADMINCONTACTFIRSTNAME',
             'lastname' => 'ADMINCONTACTLASTNAME',
-            'organisationname' => 'ADMINCONTACTORGANIZATION',
+            'orgname' => 'ADMINCONTACTORGANIZATION',
             'jobtitle' => 'ADMINCONTACTJOBTITLE',
             'email' => 'ADMINCONTACTEMAIL',
             'address1' => 'ADMINCONTACTSTREET',
@@ -329,7 +332,7 @@ function ispapissl_ClientArea($params)
     $contactMappings = [
         'firstname' => 'firstname',
         'lastname' => 'lastname',
-        'organisationname' => 'companyname',
+        'orgname' => 'companyname',
         'jobtitle' => '',
         'email' => 'email',
         'address1' => 'address1',
