@@ -26,20 +26,6 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function updateCertificate($orderId, $certClass, $email)
-    {
-        $command = [
-            'COMMAND' => 'CreateSSLCert',
-            'ORDER' => 'UPDATE',
-            'ORDERID' => $orderId,
-            'SSLCERTCLASS' => $certClass,
-            'PERIOD' => 1,
-            'EMAIL' => $email,
-            'INCOMPLETE' => 1
-        ];
-        return self::getResponse($command);
-    }
-
     public static function replaceCertificate($orderId, $certClass, $csr, $serverType, $domain, $contact)
     {
         $command = [
@@ -50,10 +36,51 @@ class APIHelper
             'ORDERID' => $orderId,
             'CSR' => explode(PHP_EOL, $csr),
             'SERVERSOFTWARE' => $serverType,
-            'SSLCERTDOMAIN' => $domain,
-            'INCOMPLETE' => 0
+            'SSLCERTDOMAIN' => $domain
         ];
-        array_push($command, $contact);
+        $command = array_merge($command, $contact);
+        return self::getResponse($command);
+    }
+
+    public static function updateCertificate($orderId, $certClass, $email)
+    {
+        $command = [
+            'COMMAND' => 'CreateSSLCert',
+            'ORDER' => 'UPDATE',
+            'ORDERID' => $orderId,
+            'SSLCERTCLASS' => $certClass,
+            'PERIOD' => 1,
+            'EMAIL' => $email
+        ];
+        return self::getResponse($command);
+    }
+
+    public static function renewCertificate($certId)
+    {
+        $command = [
+            'COMMAND' => 'RenewSSLCert',
+            'SSLCERTID' => $certId
+        ];
+        return self::getResponse($command);
+    }
+
+    public static function reissueCertificate($certId, $csr)
+    {
+        $command = [
+            'COMMAND' => 'ReissueSSLCert',
+            'SSLCERTID' => $certId,
+            'CSR' => explode(PHP_EOL, $csr)
+        ];
+        return self::getResponse($command);
+    }
+
+    public static function revokeCertificate($certId)
+    {
+        $command = [
+            'COMMAND' => 'RevokeSSLCert',
+            'SSLCERTID' => $certId,
+            'REASON' => 'WHMCS'
+        ];
         return self::getResponse($command);
     }
 
