@@ -94,7 +94,7 @@ function ispapissl_resend($params)
         }
         SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
     } catch (Exception $e) {
-        logModuleCall('provisioningmodule', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
     }
     return 'success';
@@ -103,7 +103,7 @@ function ispapissl_resend($params)
 /*
  * The following three steps are essential to setup the ssl certificate. When the customer clicks on the configuration email, he will be guided to complete these steps.
  */
-function ispapissl_sslstepone($params)
+function ispapissl_SSLStepOne($params)
 {
     try {
         $orderId = $params['remoteid'];
@@ -117,7 +117,7 @@ function ispapissl_sslstepone($params)
                     $allowConfig = false;
                 }
             }
-            SSLHelper::updateOrder($params['serviceid'], [
+            SSLHelper::updateOrder($params['serviceid'], $params['addonId'], [
                 'completiondate' => $allowConfig ? '' : Carbon::now(),
                 'status' => $allowConfig ? 'Awaiting Configuration' : 'Completed'
             ]);
@@ -127,7 +127,7 @@ function ispapissl_sslstepone($params)
     }
 }
 
-function ispapissl_sslsteptwo($params)
+function ispapissl_SSLStepTwo($params)
 {
     try {
         $orderId = $params['remoteid'];
@@ -143,10 +143,10 @@ function ispapissl_sslsteptwo($params)
             'Email' => $csr['EMAILADDRESS'][0],
             'Locality' => $csr['L'][0],
             'State' => $csr['ST'][0],
-            'Country' => $csr['C'][0],
-            'approveremails' => []
+            'Country' => $csr['C'][0]
         ];
-        array_walk($values, 'htmlspecialchars');
+        array_walk($values['displaydata'], 'htmlspecialchars');
+        $values['approveremails'] = [];
 
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
 
@@ -209,7 +209,7 @@ function ispapissl_sslsteptwo($params)
     return $values;
 }
 
-function ispapissl_sslstepthree($params)
+function ispapissl_SSLStepThree($params)
 {
     try {
         $orderId = $params['remoteid'];
@@ -217,7 +217,7 @@ function ispapissl_sslstepthree($params)
 
         APIHelper::updateCertificate($orderId, $certClass, $params['approveremail']);
         APIHelper::executeOrder($orderId);
-        SSLHelper::updateOrder($params['serviceid'], ['completiondate' => Carbon::now()]);
+        SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now()]);
         return null;
     } catch (Exception $e) {
         logModuleCall(
@@ -236,7 +236,7 @@ function ispapissl_sslstepthree($params)
  */
 function ispapissl_ClientArea($params)
 {
-    $data = SSLHelper::getOrder($params['serviceid']);
+    $data = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
 
     $params['remoteid'] = $data->remoteid;
     $params['status'] = $data->status;
@@ -400,11 +400,10 @@ function ispapissl_ClientArea($params)
         }
     }
 
+    $tpl['LANG'] = $GLOBALS['_LANG'];
+
     return [
-        'tabOverviewReplacementTemplate' => "ispapissl-clientarea.tpl",
-        'templateVariables' => [
-            'ispapissl' => $tpl,
-            'LANG' => $GLOBALS['_LANG']
-        ],
+        'tabOverviewReplacementTemplate' => "templates/clientarea.tpl",
+        'templateVariables' => $tpl
     ];
 }
