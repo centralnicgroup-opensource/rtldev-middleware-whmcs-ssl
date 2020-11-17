@@ -84,6 +84,17 @@ function ispapissl_TerminateAccount($params)
     return "success";
 }
 
+function ispapissl_AdminServicesTabFields($params)
+{
+    $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+    $remoteId = '-';
+    if ($order && $order->remoteid) {
+        $remoteId = $order->remoteid;
+    }
+    $status = $order ? $order->status : 'Not Yet Provisioned';
+    return ["ISPAPI Order ID" => $remoteId, "SSL Configuration Status" => $status];
+}
+
 function ispapissl_AdminCustomButtonArray()
 {
     return [
