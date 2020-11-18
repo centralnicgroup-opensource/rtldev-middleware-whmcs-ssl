@@ -12,7 +12,6 @@
 use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Carbon;
-use HEXONET\ResponseParser as RP;
 
 require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
 require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
@@ -74,7 +73,7 @@ function ispapissl_CreateAccount(array $params)
     return 'success';
 }
 
-function ispapissl_TerminateAccount($params)
+function ispapissl_TerminateAccount(array $params)
 {
     $order = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
     if (!$order || $order->status == "Awaiting Configuration") {
@@ -84,7 +83,7 @@ function ispapissl_TerminateAccount($params)
     return "success";
 }
 
-function ispapissl_AdminServicesTabFields($params)
+function ispapissl_AdminServicesTabFields(array $params)
 {
     $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
     $remoteId = '-';
@@ -106,7 +105,7 @@ function ispapissl_AdminCustomButtonArray()
 /*
  * Resend configuration link if the product exists. click on 'Resend Configuration Email' button on the admin area.
  */
-function ispapissl_Resend($params)
+function ispapissl_Resend(array $params)
 {
     try {
         $sslOrderId = SSLHelper::getOrderId($params['serviceid']);
@@ -121,7 +120,7 @@ function ispapissl_Resend($params)
     return 'success';
 }
 
-function ispapissl_Revoke($params)
+function ispapissl_Revoke(array $params)
 {
     try {
         $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -136,7 +135,7 @@ function ispapissl_Revoke($params)
     return 'success';
 }
 
-function ispapissl_Reissue($params)
+function ispapissl_Reissue(array $params)
 {
     try {
         $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -151,7 +150,7 @@ function ispapissl_Reissue($params)
     return 'success';
 }
 
-function ispapissl_Renew($params)
+function ispapissl_Renew(array $params)
 {
     try {
         $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -169,31 +168,25 @@ function ispapissl_Renew($params)
 /*
  * The following three steps are essential to setup the ssl certificate. When the customer clicks on the configuration email, he will be guided to complete these steps.
  */
-function ispapissl_SSLStepOne($params)
+function ispapissl_SSLStepOne(array $params)
 {
     try {
         $orderId = $params['remoteid'];
         if (!$_SESSION['ispapisslcert'][$orderId]['id']) {
-            $allowConfig = true;
-            $response = APIHelper::getOrder($orderId);
-            if (isset($response['LASTRESPONSE']) && strlen($response['LASTRESPONSE'][0])) {
-                $order_response = RP::parse(urldecode($response['LASTRESPONSE'][0]));
-                if (isset($order_response['SSLCERTID'])) {
-                    $_SESSION['ispapisslcert'][$orderId]['id'] = $order_response['SSLCERTID'][0];
-                    $allowConfig = false;
-                }
+            $order = APIHelper::getOrder($orderId);
+            if ($order['SSLCERTID'] > 0) {
+                $_SESSION['ispapisslcert'][$orderId]['id'] = $order['SSLCERTID'];
+                SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now(), 'status' => 'Completed']);
+            } else {
+                SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => '', 'status' => 'waiting Configuration']);
             }
-            SSLHelper::updateOrder($params['serviceid'], $params['addonId'], [
-                'completiondate' => $allowConfig ? '' : Carbon::now(),
-                'status' => $allowConfig ? 'Awaiting Configuration' : 'Completed'
-            ]);
         }
     } catch (Exception $e) {
         logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
     }
 }
 
-function ispapissl_SSLStepTwo($params)
+function ispapissl_SSLStepTwo(array $params)
 {
     try {
         $orderId = $params['remoteid'];
@@ -273,7 +266,7 @@ function ispapissl_SSLStepTwo($params)
     return $values;
 }
 
-function ispapissl_SSLStepThree($params)
+function ispapissl_SSLStepThree(array $params)
 {
     try {
         $orderId = $params['remoteid'];
@@ -298,98 +291,84 @@ function ispapissl_SSLStepThree($params)
 /*
  * On ClientArea, product details page - the status of the purchased SSL certificate will be displayed.
  */
-function ispapissl_ClientArea($params)
+function ispapissl_ClientArea(array $params)
 {
     $data = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
 
-    $params['remoteid'] = $data->remoteid;
-    $params['status'] = $data->status;
-    $sslOrderId = $data->id;
-    $orderId = $params['remoteid'];
-
     $tpl = [
         'id' => $params['serviceid'],
-        'md5certid' => md5($sslOrderId),
-        'status' => $params['status']
+        'md5certId' => md5($data->id),
+        'status' => $data->status
     ];
 
-    $response = APIHelper::getOrder($orderId);
+    $response = APIHelper::getOrder($data->remoteid);
 
-    if (isset($response['ORDERCOMMAND']) && strlen($response['ORDERCOMMAND'][0])) {
-        $order_command = RP::parse(urldecode($response['ORDERCOMMAND'][0]));
-
-        $csr = [];
-        $i = 0;
-        while (isset($order_command['CSR' . $i])) {
-            if (strlen($order_command['CSR' . $i])) {
-                $csr[] = $order_command['CSR' . $i];
-            }
-            $i++;
+    $csr = [];
+    $i = 0;
+    while (isset($response['COMMAND']['CSR' . $i])) {
+        if (strlen($response['COMMAND']['CSR' . $i])) {
+            $csr[] = $response['COMMAND']['CSR' . $i];
         }
-        $csr = implode(PHP_EOL, $csr);
-        if (strlen($csr)) {
-            $tpl['config']['csr'] = htmlspecialchars($csr);
-        }
+        $i++;
+    }
+    $csr = implode(PHP_EOL, $csr);
+    if (strlen($csr)) {
+        $tpl['config']['csr'] = htmlspecialchars($csr);
+    }
 
-        $contactMappings = [
-            'firstname' => 'ADMINCONTACTFIRSTNAME',
-            'lastname' => 'ADMINCONTACTLASTNAME',
-            'orgname' => 'ADMINCONTACTORGANIZATION',
-            'jobtitle' => 'ADMINCONTACTJOBTITLE',
-            'email' => 'ADMINCONTACTEMAIL',
-            'address1' => 'ADMINCONTACTSTREET',
-            'city' => 'ADMINCONTACTCITY',
-            'state' => 'ADMINCONTACTPROVINCE',
-            'postcode' => 'ADMINCONTACTZIP',
-            'country' => 'ADMINCONTACTCOUNTRY',
-            'phonenumber' => 'ADMINCONTACTPHONE'
-        ];
-        foreach ($contactMappings as $key => $item) {
-            if (isset($order_command[$item])) {
-                $tpl['config'][$key] = htmlspecialchars($order_command[$item]);
-            }
+    $contactMappings = [
+        'firstname' => 'ADMINCONTACTFIRSTNAME',
+        'lastname' => 'ADMINCONTACTLASTNAME',
+        'orgname' => 'ADMINCONTACTORGANIZATION',
+        'jobtitle' => 'ADMINCONTACTJOBTITLE',
+        'email' => 'ADMINCONTACTEMAIL',
+        'address1' => 'ADMINCONTACTSTREET',
+        'city' => 'ADMINCONTACTCITY',
+        'state' => 'ADMINCONTACTPROVINCE',
+        'postcode' => 'ADMINCONTACTZIP',
+        'country' => 'ADMINCONTACTCOUNTRY',
+        'phonenumber' => 'ADMINCONTACTPHONE'
+    ];
+    foreach ($contactMappings as $key => $item) {
+        if (isset($response['COMMAND'][$item])) {
+            $tpl['config'][$key] = htmlspecialchars($response['COMMAND'][$item]);
         }
     }
 
-    if ((isset($response['LASTRESPONSE']) && strlen($response['LASTRESPONSE'][0]))) {
-        $order_response = RP::parse(urldecode($response['LASTRESPONSE'][0]));
+    $certId = $response['SSLCERTID'];
+    if ($certId > 0) {
+        $status = APIHelper::getCertStatus($certId);
+        if (isset($status['CSR'])) {
+            $tpl['config']['csr'] = htmlspecialchars(implode(PHP_EOL, $status['CSR']));
+        }
+        if (isset($status['CRT'])) {
+            $tpl['crt'] = htmlspecialchars(implode(PHP_EOL, $status['CRT']));
+        }
+        if (isset($status['CACRT'])) {
+            $tpl['cacrt'] = htmlspecialchars(implode(PHP_EOL, $status['CACRT']));
+        }
+        if (isset($status['STATUS'])) {
+            $tpl['processingStatus'] = htmlspecialchars($status['STATUS'][0]);
 
-        if (isset($order_response['SSLCERTID'])) {
-            $certId = $order_response['SSLCERTID'][0];
-            $status = APIHelper::getCertStatus($certId);
+            if ($status['STATUS'][0] == 'ACTIVE') {
+                $exp_date = $status['REGISTRATIONEXPIRATIONDATE'][0];
+                $tpl['displayData']['Expires'] = $exp_date;
 
-            if (isset($status['CSR'])) {
-                $tpl['config']['csr'] = htmlspecialchars(implode(PHP_EOL, $status['CSR']));
-            }
-            if (isset($status['CRT'])) {
-                $tpl['crt'] = htmlspecialchars(implode(PHP_EOL, $status['CRT']));
-            }
-            if (isset($status['CACRT'])) {
-                $tpl['cacrt'] = htmlspecialchars(implode(PHP_EOL, $status['CACRT']));
-            }
-            if (isset($status['STATUS'])) {
-                $tpl['processingstatus'] = htmlspecialchars($status['STATUS'][0]);
-
-                if ($status['STATUS'][0] == 'ACTIVE') {
-                    $exp_date = $status['REGISTRATIONEXPIRATIONDATE'][0];
-                    $tpl['displaydata']['Expires'] = $exp_date;
-
-                    SSLHelper::updateHosting($params['serviceid'], [
-                        'nextduedate' => $exp_date,
-                        'domain' => $status['SSLCERTCN'][0]
-                    ]);
-                } else {
-                    SSLHelper::updateHosting($params['serviceid'], [
-                        'domain' => $status['SSLCERTCN'][0]
-                    ]);
-                }
-
-                $tpl['displaydata']['CN'] = htmlspecialchars($status['SSLCERTCN'][0]);
+                SSLHelper::updateHosting($params['serviceid'], [
+                    'nextduedate' => $exp_date,
+                    'domain' => $status['SSLCERTCN'][0]
+                ]);
+            } else {
+                SSLHelper::updateHosting($params['serviceid'], [
+                    'domain' => $status['SSLCERTCN'][0]
+                ]);
             }
 
-            if (isset($status['STATUSDETAILS'])) {
-                $tpl['processingdetails'] = htmlspecialchars(urldecode($status['STATUSDETAILS'][0]));
-            }
+            $tpl['displayData']['CN'] = htmlspecialchars($status['SSLCERTCN'][0]);
+        }
+
+        if (isset($status['STATUSDETAILS'])) {
+            $tpl['processingdetails'] = htmlspecialchars(urldecode($status['STATUSDETAILS'][0]));
         }
     }
 
@@ -429,35 +408,35 @@ function ispapissl_ClientArea($params)
         }
     }
 
-    if (isset($certId)) {
-        //provide user a possibility to resend approver email to selected email id
-        //when user enters a approver email in the text box:
-        if (isset($_REQUEST['sslresendcertapproveremail']) && isset($_REQUEST['approveremail'])) {
-            $tpl['approveremail'] = $_REQUEST['approveremail'];
-            try {
-                APIHelper::resendEmail($certId, $_REQUEST['approveremail']);
-                unset($_REQUEST['sslresendcertapproveremail']);
-                $tpl['successmessage'] = 'Successfully resent the approver email';
-            } catch (Exception $e) {
-                $tpl['errormessage'] = $e->getMessage();
-            }
-        }
-        //when user chooses from the listed approver emails
+    if ($certId > 0) {
         if (isset($_REQUEST['sslresendcertapproveremail'])) {
-            $tpl['sslresendcertapproveremail'] = 1;
-            $tpl['approveremails'] = [];
+            if (isset($_REQUEST['approverEmail'])) {
+                $approverEmail = !empty($_REQUEST['customApproverEmail']) ? $_REQUEST['customApproverEmail'] : $_REQUEST['approverEmail'];
+                $tpl['approverEmail'] = $approverEmail;
+                try {
+                    APIHelper::resendEmail($certId, $approverEmail);
+                    $tpl['successMessage'] = 'Successfully resent the approver email';
+                } catch (Exception $e) {
+                    $tpl['errorMessage'] = $e->getMessage();
+                }
+            } else {
+                //when user chooses from the listed approver emails
+                $tpl['sslresendcertapproveremail'] = 1;
+                $tpl['approverEmails'] = [];
 
-            $appemail_response = APIHelper::getCertEmail($certId);
-            if (isset($appemail_response['EMAIL'])) {
-                $tpl['approveremails'] = $appemail_response['EMAIL'];
-            } elseif (isset($status)) {
-                $domain = explode('.', preg_replace('/^\*\./', '', $status['SSLCERTCN'][0]));
-                if (count($domain) < 2) {
-                    $tpl['errormessage'] = 'Invalid Domain';
-                } else {
-                    $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
-                    $response = APIHelper::getValidationAddresses($certClass, $domain);
-                    $tpl['approveremails'] = $response['EMAIL'];
+                $response = APIHelper::getCertEmail($certId);
+                if (isset($response['EMAIL'])) {
+                    $tpl['approverEmails'] = $response['EMAIL'];
+                }
+                if (isset($status)) {
+                    $domain = preg_replace('/^\*\./', '', $status['SSLCERTCN'][0]);
+                    if (count(explode('.', $domain)) < 2) {
+                        $tpl['errorMessage'] = 'Invalid Domain';
+                    } else {
+                        $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
+                        $response = APIHelper::getValidationAddresses($certClass, $domain);
+                        $tpl['approverEmails'] = array_unique(array_merge($tpl['approverEmails'], $response['EMAIL']));
+                    }
                 }
             }
         }
