@@ -21,7 +21,7 @@ class SSLHelper
         }
     }
 
-    public static function sendConfigurationEmail($serviceId, $sslOrderId)
+    public static function sendConfigurationEmail(int $serviceId, int $sslOrderId)
     {
         global $CONFIG;
         $sslconfigurationlink = $CONFIG['SystemURL'] . '/configuressl.php?cert=' . md5($sslOrderId);
@@ -35,7 +35,7 @@ class SSLHelper
         localAPI('SendEmail', $postData);
     }
 
-    public static function orderExists($serviceId)
+    public static function orderExists(int $serviceId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
@@ -43,7 +43,7 @@ class SSLHelper
             ->exists();
     }
 
-    public static function getOrderId($serviceId)
+    public static function getOrderId(int $serviceId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
@@ -51,7 +51,7 @@ class SSLHelper
             ->value('id');
     }
 
-    public static function getOrder($serviceId, $addonId)
+    public static function getOrder(int $serviceId, int $addonId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
@@ -61,7 +61,7 @@ class SSLHelper
             ->first();
     }
 
-    public static function createOrder($userId, $serviceId, $orderId, $certClass)
+    public static function createOrder(int $userId, int $serviceId, int $orderId, string $certClass)
     {
         return DB::table('tblsslorders')->insertGetId([
             'userid' => $userId,
@@ -73,7 +73,7 @@ class SSLHelper
         ]);
     }
 
-    public static function updateOrder($serviceId, $addonId, $data)
+    public static function updateOrder(int $serviceId, int $addonId, array $data)
     {
         DB::table('tblsslorders')
             ->where('serviceid', $serviceId)
@@ -82,7 +82,7 @@ class SSLHelper
             ->update($data);
     }
 
-    public static function updateHosting($serviceId, $data)
+    public static function updateHosting(int $serviceId, array $data)
     {
         DB::table('tblhosting')
             ->where('id', $serviceId)
@@ -99,12 +99,12 @@ class SSLHelper
         return $productGroups;
     }
 
-    public static function getProductGroupId($productGroupName)
+    public static function getProductGroupId(string $productGroupName)
     {
         return DB::table('tblproductgroups')->where('name', $productGroupName)->value('id');
     }
 
-    public static function getProductId($certificateClass, $gid)
+    public static function getProductId(string $certificateClass, int $gid)
     {
         return DB::table('tblproducts')
             ->where('configoption1', $certificateClass)
@@ -112,7 +112,7 @@ class SSLHelper
             ->value('id');
     }
 
-    public static function getProductCurrencies($productId)
+    public static function getProductCurrencies(int $productId)
     {
         return DB::table('tblpricing')
             ->where('relid', $productId)
@@ -120,7 +120,7 @@ class SSLHelper
             ->pluck('currency');
     }
 
-    public static function createProduct($productName, $productGroupId, $certificateClass)
+    public static function createProduct(string $productName, int $productGroupId, string $certificateClass)
     {
         return DB::table('tblproducts')->insertGetId([
             'type' => 'other',
@@ -134,7 +134,7 @@ class SSLHelper
         ]);
     }
 
-    public static function updatePricing($productId, $currency, $price)
+    public static function updatePricing(int $productId, int $currency, float $price)
     {
         DB::table('tblpricing')
             ->where('relid', $productId)
@@ -142,7 +142,7 @@ class SSLHelper
             ->update(['annually' => $price]);
     }
 
-    public static function createPricing($productId, $currency, $price)
+    public static function createPricing(int $productId, int $currency, float $price)
     {
         DB::table('tblpricing')->insert([
             'type' => 'product',
@@ -163,7 +163,7 @@ class SSLHelper
         ]);
     }
 
-    public static function getProductName($certificateClass)
+    public static function getProductName(string $certificateClass)
     {
         $certificateNames = [
             'COMODO_ESSENTIALSSL' => 'Sectigo Essential SSL',
@@ -212,27 +212,7 @@ class SSLHelper
         return ucwords($certificateName);
     }
 
-    public static function formatArrayKeys(&$array)
-    {
-        $array = array_change_key_case($array, CASE_LOWER);
-        $array = array_combine(array_map(function ($str) {
-            $str = str_replace('_', ' ', $str);
-            $str = str_replace('ssl', 'SSL', $str);
-            $str = str_replace(' ev', ' EV', $str);
-            $str = str_replace(' san', ' SAN', $str);
-            $str = str_replace('truebizid', 'True BusinessID', $str);
-            $str = str_replace('securesite', 'Secure Site', $str);
-            $str = str_replace('domainvetted', 'Domain-Vetted ', $str);
-            return ucwords($str);
-        }, array_keys($array)), array_values($array));
-        foreach ($array as $key => $val) {
-            if (is_array($val)) {
-                self::formatArrayKeys($array[$key]);
-            }
-        }
-    }
-
-    public static function calculateProfitMargin($products, $profitMargin)
+    public static function calculateProfitMargin(array $products, int $profitMargin)
     {
         foreach ($products as $certificateClass => $product) {
             $newPrice = $product['NewPrice'] + ($profitMargin / 100) * $product['NewPrice'];

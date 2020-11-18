@@ -3,6 +3,7 @@
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
+use HEXONET\ResponseParser as RP;
 
 class APIHelper
 {
@@ -14,19 +15,18 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function createCertificate($certClass)
+    public static function createCertificate(string $certClass)
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
             'ORDER' => 'CREATE',
             'SSLCERTCLASS' => $certClass,
-            'PERIOD' => 1,
-            'INCOMPLETE' => 1
+            'PERIOD' => 1
         ];
         return self::getResponse($command);
     }
 
-    public static function replaceCertificate($orderId, $certClass, $csr, $serverType, $domain, $contact)
+    public static function replaceCertificate(int $orderId, string $certClass, string $csr, string $serverType, string $domain, array $contact)
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
@@ -42,7 +42,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function updateCertificate($orderId, $certClass, $email)
+    public static function updateCertificate(int $orderId, string $certClass, string $email)
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
@@ -55,45 +55,63 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function renewCertificate($certId)
+    public static function renewCertificate(int $orderId)
     {
+        $order = self::getOrder($orderId);
         $command = [
             'COMMAND' => 'RenewSSLCert',
-            'SSLCERTID' => $certId
+            'SSLCERTID' => $order['SSLCERTID']
         ];
         return self::getResponse($command);
     }
 
-    public static function reissueCertificate($certId, $csr)
+    public static function reissueCertificate(int $orderId, string $csr)
     {
+        $order = self::getOrder($orderId);
         $command = [
             'COMMAND' => 'ReissueSSLCert',
-            'SSLCERTID' => $certId,
+            'SSLCERTID' => $order['SSLCERTID'],
             'CSR' => explode(PHP_EOL, $csr)
         ];
         return self::getResponse($command);
     }
 
-    public static function revokeCertificate($certId)
+    public static function revokeCertificate(int $orderId)
     {
+        $order = self::getOrder($orderId);
         $command = [
             'COMMAND' => 'RevokeSSLCert',
-            'SSLCERTID' => $certId,
+            'SSLCERTID' => $order['SSLCERTID'],
             'REASON' => 'WHMCS'
         ];
         return self::getResponse($command);
     }
 
-    public static function getOrder($orderId)
+    public static function getOrder(int $orderId)
     {
         $command = [
             'COMMAND' => 'QueryOrderList',
             'ORDERID' => $orderId
         ];
-        return self::getResponse($command);
+        $response = self::getResponse($command);
+
+        $sslCertId = 0;
+        if (isset($response['LASTRESPONSE'][0])) {
+            $lastResponse = RP::parse(urldecode($response['LASTRESPONSE'][0]));
+            $sslCertId = $lastResponse['PROPERTY']['SSLCERTID'][0];
+        }
+        $response['SSLCERTID'] = $sslCertId;
+
+        $orderCommand = [];
+        if (isset($response['ORDERCOMMAND'][0])) {
+            $orderCommand = RP::parse(urldecode($response['ORDERCOMMAND'][0]));
+        }
+        $response['COMMAND'] = $orderCommand;
+
+        return $response;
     }
 
-    public static function executeOrder($orderId)
+    public static function executeOrder(int $orderId)
     {
         $command = [
             'COMMAND' => 'ExecuteOrder',
@@ -102,7 +120,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function parseCSR($csr)
+    public static function parseCSR(string $csr)
     {
         $command = [
             'COMMAND' => 'ParseSSLCertCSR',
@@ -111,7 +129,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getCertStatus($certId)
+    public static function getCertStatus(int $certId)
     {
         $command = [
             'COMMAND' => 'StatusSSLCert',
@@ -120,7 +138,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getCertEmail($certId)
+    public static function getCertEmail(int $certId)
     {
         $command = [
             'COMMAND' => 'QuerySSLCertDCVEmailAddressList',
@@ -129,7 +147,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getEmailAddress($certClass, $csr)
+    public static function getEmailAddress(string $certClass, string $csr)
     {
         $command = [
             'COMMAND' => 'QuerySSLCertDCVEmailAddressList',
@@ -139,7 +157,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getValidationAddresses($certClass, $domain)
+    public static function getValidationAddresses(string $certClass, string $domain)
     {
         $command = [
             'COMMAND' => 'QuerySSLCertDCVEMailAddressList',
@@ -149,7 +167,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function resendEmail($certId, $email)
+    public static function resendEmail(int $certId, string $email)
     {
         $command = [
             'COMMAND' => 'ResendSSLCertEmail',
@@ -167,7 +185,7 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    private static function getResponse($command)
+    private static function getResponse(array $command)
     {
         $response = Ispapi::call($command);
         if ($response['CODE'] != 200) {
