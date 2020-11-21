@@ -26,8 +26,6 @@ The ISPAPI SSL Module supports the following functions and features:
 * [Release Notes](https://github.com/hexonet/whmcs-ispapi-ssl/releases)
 * [Development Guide](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Development-Guide)
 
-NOTE: We introduced sematic-release starting with v7.1.0. This is why older Release Versions do not appear in the [current changelog](https://github.com/hexonet/whmcs-ispapi-ssl/blob/master/HISTORY.md). But these versions appear in the [release overview](https://github.com/hexonet/whmcs-ispapi-ssl/releases) and in the [old changelog](https://github.com/hexonet/whmcs-ispapi-ssl/blob/master/HISTORY.old).
-
 ## Usage Guide ##
 
 Download the ZIP archive including the latest release version [here](https://github.com/hexonet/whmcs-ispapi-ssl/raw/master/whmcs-ispapi-ssl-latest.zip).
