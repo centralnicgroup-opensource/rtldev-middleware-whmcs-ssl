@@ -396,17 +396,7 @@ function ispapissl_ClientArea(array $params)
         $tpl['config']['servertype'] = '1000'; // OTHER
     }
 
-    $_LANG = [
-        'sslcrt' => 'Certificate',
-        'sslcacrt' => 'CA / Intermediate Certificate',
-        'sslprocessingstatus' => 'Processing Status',
-        'sslresendcertapproveremail' => 'Resend Approver Email'
-    ];
-    foreach ($_LANG as $key => $value) {
-        if (!isset($GLOBALS['_LANG'][$key])) {
-            $GLOBALS['_LANG'][$key] = $value;
-        }
-    }
+    SSLHelper::loadLanguage();
 
     if ($certId > 0) {
         if (isset($_REQUEST['sslresendcertapproveremail'])) {
@@ -415,7 +405,7 @@ function ispapissl_ClientArea(array $params)
                 $tpl['approverEmail'] = $approverEmail;
                 try {
                     APIHelper::resendEmail($certId, $approverEmail);
-                    $tpl['successMessage'] = 'Successfully resent the approver email';
+                    $tpl['successMessage'] = $GLOBALS['_LANG']['sslresendsuccess'];
                 } catch (Exception $e) {
                     $tpl['errorMessage'] = $e->getMessage();
                 }
@@ -431,7 +421,7 @@ function ispapissl_ClientArea(array $params)
                 if (isset($status)) {
                     $domain = preg_replace('/^\*\./', '', $status['SSLCERTCN'][0]);
                     if (count(explode('.', $domain)) < 2) {
-                        $tpl['errorMessage'] = 'Invalid Domain';
+                        $tpl['errorMessage'] = $GLOBALS['_LANG']['orderForm']['domainInvalid'];
                     } else {
                         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
                         $response = APIHelper::getValidationAddresses($certClass, $domain);
