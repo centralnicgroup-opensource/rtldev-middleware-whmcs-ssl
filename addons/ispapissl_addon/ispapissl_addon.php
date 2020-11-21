@@ -1,12 +1,14 @@
 <?php
 
 use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
+use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
 session_start();
 
 require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
+require_once(__DIR__ . '/../../servers/ispapissl/lib/DBHelper.php');
 require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
 
 /*
@@ -60,7 +62,7 @@ function ispapissl_addon_output()
     $user = APIHelper::getUserStatus();
 
     $currencies = SSLHelper::getCurrencies();
-    $defaultCurrency = SSLHelper::getDefaultCurrency();
+    $defaultCurrency = DBHelper::getDefaultCurrency();
     $exchangeRates = APIHelper::getExchangeRates();
 
     $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/';
@@ -121,7 +123,7 @@ function ispapissl_addon_output()
 
     $step = 2;
     $smarty->assign('logo', SSLHelper::getLogo());
-    $smarty->assign('productGroups', SSLHelper::getProductGroups());
+    $smarty->assign('productGroups', DBHelper::getProductGroups());
 
     if (isset($_POST['loadcertificates'])) {
         $_SESSION['selectedproductgroup'] = $productGroupName;
