@@ -108,6 +108,16 @@ class APIHelper
         }
         $response['COMMAND'] = $orderCommand;
 
+        $csr = [];
+        $i = 0;
+        while (isset($response['COMMAND']['CSR' . $i])) {
+            if (strlen($response['COMMAND']['CSR' . $i])) {
+                $csr[] = $response['COMMAND']['CSR' . $i];
+            }
+            $i++;
+        }
+        $response['CSR'] = implode(PHP_EOL, $csr);
+
         return $response;
     }
 
