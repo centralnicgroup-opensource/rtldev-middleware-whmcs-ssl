@@ -13,10 +13,10 @@
 
     <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails">
         <input type="hidden" name="id" value="{$id}" />
-        <label for="customApproverEmail">Please enter your approver email here:</label>
+        <label for="customApproverEmail">{$LANG.sslcertapproveremail}</label>
         <input type="text" name="customApproverEmail" id="customApproverEmail" />
         <br />
-        or
+        /
         <p>
         {foreach from=$approverEmails item=approverEmail key=num}
             <input type="radio" class="radio-button" name="approverEmail" id="approverEmail{$num}" value="{$approverEmail}"{if $num eq 0} checked{/if} />

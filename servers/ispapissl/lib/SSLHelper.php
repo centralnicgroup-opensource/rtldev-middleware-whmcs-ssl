@@ -275,4 +275,35 @@ class SSLHelper
         $data = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/logo.png');
         return 'data:image/png;base64,' . base64_encode($data);
     }
+
+    public static function loadLanguage()
+    {
+        $language = isset($GLOBALS["CONFIG"]["Language"]) ? $GLOBALS["CONFIG"]["Language"] : 'english';
+        if (isset($_SESSION["adminid"])) {
+            $language = DB::table("tbladmins")->where("id", $_SESSION['adminid'])->value('language');
+        } elseif ($_SESSION["uid"]) {
+            $language = DB::table("tblclients")->where("id", $_SESSION['uid'])->value('language');
+        }
+
+        $dir = realpath(__DIR__ . "/../lang");
+        $englishFile = $dir . "/english.php";
+        $languageFile = $dir . "/" . strtolower($language) . ".php";
+
+        $_LANG = [];
+        $translations = [];
+        if (file_exists($englishFile)) {
+            require $englishFile;
+            $translations = $_LANG;
+        }
+        if (file_exists($languageFile)) {
+            require $languageFile;
+            $translations = array_merge($translations, $_LANG);
+        }
+
+        foreach ($translations as $key => $value) {
+            if (!isset($GLOBALS['_LANG'][$key])) {
+                $GLOBALS['_LANG'][$key] = $value;
+            }
+        }
+    }
 }
