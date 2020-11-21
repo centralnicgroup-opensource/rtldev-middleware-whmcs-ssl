@@ -293,143 +293,134 @@ function ispapissl_SSLStepThree(array $params)
  */
 function ispapissl_ClientArea(array $params)
 {
-    $data = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
+    try {
+        SSLHelper::loadLanguage();
 
-    $tpl = [
-        'id' => $params['serviceid'],
-        'md5certId' => md5($data->id),
-        'status' => $data->status
-    ];
+        $data = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
 
-    $response = APIHelper::getOrder($data->remoteid);
+        $tpl = [
+            'id' => $params['serviceid'],
+            'md5certId' => md5($data->id),
+            'status' => $data->status
+        ];
 
-    $csr = [];
-    $i = 0;
-    while (isset($response['COMMAND']['CSR' . $i])) {
-        if (strlen($response['COMMAND']['CSR' . $i])) {
-            $csr[] = $response['COMMAND']['CSR' . $i];
+        $response = APIHelper::getOrder($data->remoteid);
+
+        if (strlen($response['CSR'])) {
+            $tpl['config']['csr'] = htmlspecialchars($response['CSR']);
         }
-        $i++;
-    }
-    $csr = implode(PHP_EOL, $csr);
-    if (strlen($csr)) {
-        $tpl['config']['csr'] = htmlspecialchars($csr);
-    }
 
-    $contactMappings = [
-        'firstname' => 'ADMINCONTACTFIRSTNAME',
-        'lastname' => 'ADMINCONTACTLASTNAME',
-        'orgname' => 'ADMINCONTACTORGANIZATION',
-        'jobtitle' => 'ADMINCONTACTJOBTITLE',
-        'email' => 'ADMINCONTACTEMAIL',
-        'address1' => 'ADMINCONTACTSTREET',
-        'city' => 'ADMINCONTACTCITY',
-        'state' => 'ADMINCONTACTPROVINCE',
-        'postcode' => 'ADMINCONTACTZIP',
-        'country' => 'ADMINCONTACTCOUNTRY',
-        'phonenumber' => 'ADMINCONTACTPHONE'
-    ];
-    foreach ($contactMappings as $key => $item) {
-        if (isset($response['COMMAND'][$item])) {
-            $tpl['config'][$key] = htmlspecialchars($response['COMMAND'][$item]);
+        $contactMappings = [
+            'firstname' => 'ADMINCONTACTFIRSTNAME',
+            'lastname' => 'ADMINCONTACTLASTNAME',
+            'orgname' => 'ADMINCONTACTORGANIZATION',
+            'jobtitle' => 'ADMINCONTACTJOBTITLE',
+            'email' => 'ADMINCONTACTEMAIL',
+            'address1' => 'ADMINCONTACTSTREET',
+            'city' => 'ADMINCONTACTCITY',
+            'state' => 'ADMINCONTACTPROVINCE',
+            'postcode' => 'ADMINCONTACTZIP',
+            'country' => 'ADMINCONTACTCOUNTRY',
+            'phonenumber' => 'ADMINCONTACTPHONE'
+        ];
+        foreach ($contactMappings as $key => $item) {
+            if (isset($response['COMMAND'][$item])) {
+                $tpl['config'][$key] = htmlspecialchars($response['COMMAND'][$item]);
+            }
         }
-    }
 
-    $certId = $response['SSLCERTID'];
-    if ($certId > 0) {
-        $status = APIHelper::getCertStatus($certId);
-        if (isset($status['CSR'])) {
-            $tpl['config']['csr'] = htmlspecialchars(implode(PHP_EOL, $status['CSR']));
-        }
-        if (isset($status['CRT'])) {
-            $tpl['crt'] = htmlspecialchars(implode(PHP_EOL, $status['CRT']));
-        }
-        if (isset($status['CACRT'])) {
-            $tpl['cacrt'] = htmlspecialchars(implode(PHP_EOL, $status['CACRT']));
-        }
-        if (isset($status['STATUS'])) {
-            $tpl['processingStatus'] = htmlspecialchars($status['STATUS'][0]);
+        $certId = $response['SSLCERTID'];
+        if ($certId > 0) {
+            $status = APIHelper::getCertStatus($certId);
+            if (isset($status['CSR'])) {
+                $tpl['config']['csr'] = htmlspecialchars(implode(PHP_EOL, $status['CSR']));
+            }
+            if (isset($status['CRT'])) {
+                $tpl['crt'] = htmlspecialchars(implode(PHP_EOL, $status['CRT']));
+            }
+            if (isset($status['CACRT'])) {
+                $tpl['cacrt'] = htmlspecialchars(implode(PHP_EOL, $status['CACRT']));
+            }
+            if (isset($status['STATUS'])) {
+                $tpl['processingStatus'] = htmlspecialchars($status['STATUS'][0]);
 
-            if ($status['STATUS'][0] == 'ACTIVE') {
-                $exp_date = $status['REGISTRATIONEXPIRATIONDATE'][0];
-                $tpl['displayData']['Expires'] = $exp_date;
+                if ($status['STATUS'][0] == 'ACTIVE') {
+                    $exp_date = $status['REGISTRATIONEXPIRATIONDATE'][0];
+                    $tpl['displayData']['Expires'] = $exp_date;
 
-                SSLHelper::updateHosting($params['serviceid'], [
-                    'nextduedate' => $exp_date,
-                    'domain' => $status['SSLCERTCN'][0]
-                ]);
-            } else {
-                SSLHelper::updateHosting($params['serviceid'], [
-                    'domain' => $status['SSLCERTCN'][0]
-                ]);
+                    SSLHelper::updateHosting($params['serviceid'], [
+                        'nextduedate' => $exp_date,
+                        'domain' => $status['SSLCERTCN'][0]
+                    ]);
+                } else {
+                    SSLHelper::updateHosting($params['serviceid'], [
+                        'domain' => $status['SSLCERTCN'][0]
+                    ]);
+                }
+
+                $tpl['displayData']['CN'] = htmlspecialchars($status['SSLCERTCN'][0]);
             }
 
-            $tpl['displayData']['CN'] = htmlspecialchars($status['SSLCERTCN'][0]);
+            if (isset($status['STATUSDETAILS'])) {
+                $tpl['processingdetails'] = htmlspecialchars(urldecode($status['STATUSDETAILS'][0]));
+            }
         }
 
-        if (isset($status['STATUSDETAILS'])) {
-            $tpl['processingdetails'] = htmlspecialchars(urldecode($status['STATUSDETAILS'][0]));
+        $contactMappings = [
+            'firstname' => 'firstname',
+            'lastname' => 'lastname',
+            'orgname' => 'companyname',
+            'jobtitle' => '',
+            'email' => 'email',
+            'address1' => 'address1',
+            'address2' => 'address2',
+            'city' => 'city',
+            'state' => 'state',
+            'postcode' => 'postcode',
+            'country' => 'country',
+            'phonenumber' => 'phonenumber'
+        ];
+        foreach ($contactMappings as $key => $item) {
+            if (!isset($tpl['config'][$key])) {
+                $tpl['config'][$key] = htmlspecialchars($params['clientsdetails'][$item]);
+            }
         }
-    }
 
-    $contactMappings = [
-        'firstname' => 'firstname',
-        'lastname' => 'lastname',
-        'orgname' => 'companyname',
-        'jobtitle' => '',
-        'email' => 'email',
-        'address1' => 'address1',
-        'address2' => 'address2',
-        'city' => 'city',
-        'state' => 'state',
-        'postcode' => 'postcode',
-        'country' => 'country',
-        'phonenumber' => 'phonenumber'
-    ];
-    foreach ($contactMappings as $key => $item) {
-        if (!isset($tpl['config'][$key])) {
-            $tpl['config'][$key] = htmlspecialchars($params['clientsdetails'][$item]);
+        if (!isset($tpl['config']['servertype'])) {
+            $tpl['config']['servertype'] = '1000'; // OTHER
         }
-    }
 
-    if (!isset($tpl['config']['servertype'])) {
-        $tpl['config']['servertype'] = '1000'; // OTHER
-    }
-
-    SSLHelper::loadLanguage();
-
-    if ($certId > 0) {
-        if (isset($_REQUEST['sslresendcertapproveremail'])) {
-            if (isset($_REQUEST['approverEmail'])) {
-                $approverEmail = !empty($_REQUEST['customApproverEmail']) ? $_REQUEST['customApproverEmail'] : $_REQUEST['approverEmail'];
-                $tpl['approverEmail'] = $approverEmail;
-                try {
+        if ($certId > 0) {
+            if (isset($_REQUEST['sslresendcertapproveremail'])) {
+                if (isset($_REQUEST['approverEmail'])) {
+                    $approverEmail = !empty($_REQUEST['customApproverEmail']) ? $_REQUEST['customApproverEmail'] : $_REQUEST['approverEmail'];
+                    $tpl['approverEmail'] = $approverEmail;
                     APIHelper::resendEmail($certId, $approverEmail);
                     $tpl['successMessage'] = $GLOBALS['_LANG']['sslresendsuccess'];
-                } catch (Exception $e) {
-                    $tpl['errorMessage'] = $e->getMessage();
-                }
-            } else {
-                //when user chooses from the listed approver emails
-                $tpl['sslresendcertapproveremail'] = 1;
-                $tpl['approverEmails'] = [];
+                } else {
+                    //when user chooses from the listed approver emails
+                    $tpl['sslresendcertapproveremail'] = 1;
+                    $tpl['approverEmails'] = [];
 
-                $response = APIHelper::getCertEmail($certId);
-                if (isset($response['EMAIL'])) {
-                    $tpl['approverEmails'] = $response['EMAIL'];
-                }
-                if (isset($status)) {
-                    $domain = preg_replace('/^\*\./', '', $status['SSLCERTCN'][0]);
-                    if (count(explode('.', $domain)) < 2) {
-                        $tpl['errorMessage'] = $GLOBALS['_LANG']['orderForm']['domainInvalid'];
-                    } else {
-                        $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
-                        $response = APIHelper::getValidationAddresses($certClass, $domain);
-                        $tpl['approverEmails'] = array_unique(array_merge($tpl['approverEmails'], $response['EMAIL']));
+                    $response = APIHelper::getCertEmail($certId);
+                    if (isset($response['EMAIL'])) {
+                        $tpl['approverEmails'] = $response['EMAIL'];
+                    }
+                    if (isset($status)) {
+                        $domain = preg_replace('/^\*\./', '', $status['SSLCERTCN'][0]);
+                        if (count(explode('.', $domain)) < 2) {
+                            $tpl['errorMessage'] = $GLOBALS['_LANG']['orderForm']['domainInvalid'];
+                        } else {
+                            $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
+                            $response = APIHelper::getValidationAddresses($certClass, $domain);
+                            $tpl['approverEmails'] = array_unique(array_merge($tpl['approverEmails'], $response['EMAIL']));
+                        }
                     }
                 }
             }
         }
+    } catch (Exception $e) {
+        $tpl['errorMessage'] = $e->getMessage();
     }
 
     $tpl['LANG'] = $GLOBALS['_LANG'];
