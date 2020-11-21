@@ -295,16 +295,16 @@ function ispapissl_ClientArea(array $params)
 {
     try {
         SSLHelper::loadLanguage();
-
-        $data = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
+        $order = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
 
         $tpl = [
             'id' => $params['serviceid'],
-            'md5certId' => md5($data->id),
-            'status' => $data->status
+            'md5certId' => md5($order->id),
+            'status' => $order->status,
+            'LANG' => $GLOBALS['_LANG']
         ];
 
-        $response = APIHelper::getOrder($data->remoteid);
+        $response = APIHelper::getOrder($order->remoteid);
 
         if (strlen($response['CSR'])) {
             $tpl['config']['csr'] = htmlspecialchars($response['CSR']);
@@ -326,6 +326,26 @@ function ispapissl_ClientArea(array $params)
         foreach ($contactMappings as $key => $item) {
             if (isset($response['COMMAND'][$item])) {
                 $tpl['config'][$key] = htmlspecialchars($response['COMMAND'][$item]);
+            }
+        }
+
+        $contactMappings = [
+            'firstname' => 'firstname',
+            'lastname' => 'lastname',
+            'orgname' => 'companyname',
+            'jobtitle' => '',
+            'email' => 'email',
+            'address1' => 'address1',
+            'address2' => 'address2',
+            'city' => 'city',
+            'state' => 'state',
+            'postcode' => 'postcode',
+            'country' => 'country',
+            'phonenumber' => 'phonenumber'
+        ];
+        foreach ($contactMappings as $key => $item) {
+            if (!isset($tpl['config'][$key])) {
+                $tpl['config'][$key] = htmlspecialchars($params['clientsdetails'][$item]);
             }
         }
 
@@ -364,33 +384,11 @@ function ispapissl_ClientArea(array $params)
             if (isset($status['STATUSDETAILS'])) {
                 $tpl['processingdetails'] = htmlspecialchars(urldecode($status['STATUSDETAILS'][0]));
             }
-        }
 
-        $contactMappings = [
-            'firstname' => 'firstname',
-            'lastname' => 'lastname',
-            'orgname' => 'companyname',
-            'jobtitle' => '',
-            'email' => 'email',
-            'address1' => 'address1',
-            'address2' => 'address2',
-            'city' => 'city',
-            'state' => 'state',
-            'postcode' => 'postcode',
-            'country' => 'country',
-            'phonenumber' => 'phonenumber'
-        ];
-        foreach ($contactMappings as $key => $item) {
-            if (!isset($tpl['config'][$key])) {
-                $tpl['config'][$key] = htmlspecialchars($params['clientsdetails'][$item]);
+            if (!isset($tpl['config']['servertype'])) {
+                $tpl['config']['servertype'] = '1000'; // OTHER
             }
-        }
 
-        if (!isset($tpl['config']['servertype'])) {
-            $tpl['config']['servertype'] = '1000'; // OTHER
-        }
-
-        if ($certId > 0) {
             if (isset($_REQUEST['sslresendcertapproveremail'])) {
                 if (isset($_REQUEST['approverEmail'])) {
                     $approverEmail = !empty($_REQUEST['customApproverEmail']) ? $_REQUEST['customApproverEmail'] : $_REQUEST['approverEmail'];
@@ -398,10 +396,7 @@ function ispapissl_ClientArea(array $params)
                     APIHelper::resendEmail($certId, $approverEmail);
                     $tpl['successMessage'] = $GLOBALS['_LANG']['sslresendsuccess'];
                 } else {
-                    //when user chooses from the listed approver emails
-                    $tpl['sslresendcertapproveremail'] = 1;
                     $tpl['approverEmails'] = [];
-
                     $response = APIHelper::getCertEmail($certId);
                     if (isset($response['EMAIL'])) {
                         $tpl['approverEmails'] = $response['EMAIL'];
@@ -416,17 +411,21 @@ function ispapissl_ClientArea(array $params)
                             $tpl['approverEmails'] = array_unique(array_merge($tpl['approverEmails'], $response['EMAIL']));
                         }
                     }
+                    return [
+                        'templatefile' => "templates/approval.tpl",
+                        'vars' => $tpl
+                    ];
                 }
             }
         }
+        return [
+            'templatefile' => "templates/clientarea.tpl",
+            'vars' => $tpl
+        ];
     } catch (Exception $e) {
-        $tpl['errorMessage'] = $e->getMessage();
+        return [
+            'templatefile' => "templates/error.tpl",
+            'vars' => ['errorMessage' => $e->getMessage()]
+        ];
     }
-
-    $tpl['LANG'] = $GLOBALS['_LANG'];
-
-    return [
-        'tabOverviewReplacementTemplate' => "templates/clientarea.tpl",
-        'templateVariables' => $tpl
-    ];
 }
