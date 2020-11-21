@@ -10,10 +10,12 @@
  */
 
 use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
+use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Carbon;
 
 require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
+require_once(__DIR__ . '/../../servers/ispapissl/lib/DBHelper.php');
 require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
 
 /**
@@ -42,7 +44,7 @@ function ispapissl_MetaData()
  */
 function ispapissl_ConfigOptions()
 {
-    SSLHelper::createEmailTemplateIfNotExisting();
+    DBHelper::createEmailTemplateIfNotExisting();
 
     return [
         'Certificate Class' => [
@@ -58,13 +60,13 @@ function ispapissl_ConfigOptions()
 function ispapissl_CreateAccount(array $params)
 {
     try {
-        if (SSLHelper::orderExists($params['serviceid'])) {
+        if (DBHelper::orderExists($params['serviceid'])) {
             throw new Exception("An SSL Order already exists for this order");
         }
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
         $response = APIHelper::createCertificate($certClass);
         $orderId = $response['ORDERID'][0];
-        $sslOrderId = SSLHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $orderId, $certClass);
+        $sslOrderId = DBHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $orderId, $certClass);
         SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
     } catch (Exception $e) {
         logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
@@ -75,17 +77,17 @@ function ispapissl_CreateAccount(array $params)
 
 function ispapissl_TerminateAccount(array $params)
 {
-    $order = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
+    $order = DBHelper::getOrder($params['serviceid'], $params['addonId']);
     if (!$order || $order->status == "Awaiting Configuration") {
         return "SSL Either not Provisioned or Not Awaiting Configuration so unable to cancel";
     }
-    SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['status' => 'Cancelled']);
+    DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['status' => 'Cancelled']);
     return "success";
 }
 
 function ispapissl_AdminServicesTabFields(array $params)
 {
-    $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+    $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
     $remoteId = '-';
     if ($order && $order->remoteid) {
         $remoteId = $order->remoteid;
@@ -108,7 +110,7 @@ function ispapissl_AdminCustomButtonArray()
 function ispapissl_Resend(array $params)
 {
     try {
-        $sslOrderId = SSLHelper::getOrderId($params['serviceid']);
+        $sslOrderId = DBHelper::getOrderId($params['serviceid']);
         if (!$sslOrderId) {
             throw new Exception('No SSL Order exists for this product');
         }
@@ -123,7 +125,7 @@ function ispapissl_Resend(array $params)
 function ispapissl_Revoke(array $params)
 {
     try {
-        $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+        $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
         if (!$order) {
             return 'Could not find certificate';
         }
@@ -138,7 +140,7 @@ function ispapissl_Revoke(array $params)
 function ispapissl_Reissue(array $params)
 {
     try {
-        $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+        $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
         if (!$order) {
             return 'Could not find certificate';
         }
@@ -153,7 +155,7 @@ function ispapissl_Reissue(array $params)
 function ispapissl_Renew(array $params)
 {
     try {
-        $order = SSLHelper::getOrder($params["serviceid"], $params["addonId"]);
+        $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
         if (!$order) {
             return 'Could not find certificate';
         }
@@ -176,9 +178,9 @@ function ispapissl_SSLStepOne(array $params)
             $order = APIHelper::getOrder($orderId);
             if ($order['SSLCERTID'] > 0) {
                 $_SESSION['ispapisslcert'][$orderId]['id'] = $order['SSLCERTID'];
-                SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now(), 'status' => 'Completed']);
+                DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now(), 'status' => 'Completed']);
             } else {
-                SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => '', 'status' => 'waiting Configuration']);
+                DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => '', 'status' => 'waiting Configuration']);
             }
         }
     } catch (Exception $e) {
@@ -251,7 +253,7 @@ function ispapissl_SSLStepTwo(array $params)
                 $serverType = 'OTHER';
         }
         APIHelper::replaceCertificate($orderId, $certClass, $params['csr'], $serverType, $csr['CN'][0], $contact);
-        SSLHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
+        DBHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
         logModuleCall(
             'ispapissl',
@@ -274,7 +276,7 @@ function ispapissl_SSLStepThree(array $params)
 
         APIHelper::updateCertificate($orderId, $certClass, $params['approveremail']);
         APIHelper::executeOrder($orderId);
-        SSLHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now()]);
+        DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now()]);
         return null;
     } catch (Exception $e) {
         logModuleCall(
@@ -295,7 +297,7 @@ function ispapissl_ClientArea(array $params)
 {
     try {
         SSLHelper::loadLanguage();
-        $order = SSLHelper::getOrder($params['serviceid'], $params['addonId']);
+        $order = DBHelper::getOrder($params['serviceid'], $params['addonId']);
 
         $tpl = [
             'id' => $params['serviceid'],
@@ -368,12 +370,12 @@ function ispapissl_ClientArea(array $params)
                     $exp_date = $status['REGISTRATIONEXPIRATIONDATE'][0];
                     $tpl['displayData']['Expires'] = $exp_date;
 
-                    SSLHelper::updateHosting($params['serviceid'], [
+                    DBHelper::updateHosting($params['serviceid'], [
                         'nextduedate' => $exp_date,
                         'domain' => $status['SSLCERTCN'][0]
                     ]);
                 } else {
-                    SSLHelper::updateHosting($params['serviceid'], [
+                    DBHelper::updateHosting($params['serviceid'], [
                         'domain' => $status['SSLCERTCN'][0]
                     ]);
                 }
