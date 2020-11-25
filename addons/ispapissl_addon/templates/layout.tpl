@@ -5,7 +5,7 @@
 </div>
 
 {if $error}
-    <div class="alert alert-warning">
+    <div class="alert alert-danger">
         <i class="fas fa-exclamation-circle"></i>
         <strong>Error!</strong> {$error}
     </div>

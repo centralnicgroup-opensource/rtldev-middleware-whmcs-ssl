@@ -79,18 +79,30 @@ class SSLHelper
     public static function importProducts()
     {
         $currencies = self::getCurrencies();
-        $productGroupId = DBHelper::getProductGroupId($_POST['SelectedProductGroup']);
+        $productGroupId = DBHelper::getProductGroupId($_POST['ProductGroup']);
 
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
             $productName = self::getProductName($certificateClass);
-            $productId = DBHelper::getProductId($certificateClass, $productGroupId);
+            $productId = DBHelper::getProductId($certificateClass);
             if (!$productId) {
-                $productId = DBHelper::createProduct($productName, $productGroupId, $certificateClass);
+                $productId = DBHelper::createProduct($productName, $productGroupId, $certificateClass, $_POST['AutoSetup']);
+            } else {
+                DBHelper::updateProduct($productId, $_POST['AutoSetup']);
             }
 
             $productPrices = [];
             foreach ($currencies as $currency) {
-                $productPrices[$currency['id']] = round($_POST['SalePrice'][$certificateClass] * $currency['rate'], 2);
+                $newPrice = round($_POST['NewPrice'][$certificateClass] * $currency['rate'], 2);
+                if ($_POST['RoundAllCurrencies'] && !empty($_POST['Rounding'])) {
+                    $whole = floor($newPrice);
+                    $fraction = $newPrice - $whole;
+                    $roundTo = $_POST['Rounding'];
+                    $newPrice = $whole + $roundTo;
+                    if ($fraction > $roundTo) {
+                        $newPrice += 1;
+                    }
+                }
+                $productPrices[$currency['id']] = $newPrice;
             }
 
             $productCurrencies = DBHelper::getProductCurrencies($productId);
