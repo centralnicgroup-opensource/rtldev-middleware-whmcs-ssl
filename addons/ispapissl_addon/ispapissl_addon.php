@@ -5,8 +5,6 @@ use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
-session_start();
-
 require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
 require_once(__DIR__ . '/../../servers/ispapissl/lib/DBHelper.php');
 require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
@@ -59,8 +57,27 @@ function ispapissl_addon_output()
         return;
     }
 
-    $user = APIHelper::getUserStatus();
+    $smarty = new Smarty();
+    $smarty->setTemplateDir(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
+    $smarty->setCompileDir($templates_compiledir);
+    $smarty->caching = false;
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!$_POST['ProductGroup']) {
+            $smarty->assign('error', 'Please select a product group');
+        } elseif (count($_POST['SelectedCertificate']) == 0) {
+            $smarty->assign('error', 'Please select at least one certificate');
+        } else {
+            try {
+                SSLHelper::importProducts();
+                $smarty->assign('success', count($_POST['SelectedCertificate']) . ' products have been imported');
+            } catch (Exception $ex) {
+                $smarty->assign('error', $ex->getMessage());
+            }
+        }
+    }
+
+    $user = APIHelper::getUserStatus();
     $currencies = SSLHelper::getCurrencies();
     $defaultCurrency = DBHelper::getDefaultCurrency();
     $exchangeRates = APIHelper::getExchangeRates();
@@ -84,7 +101,7 @@ function ispapissl_addon_output()
             if ($arrayKey === false) {
                 if (in_array($currency, $exchangeRates['CURRENCYFROM'])) {
                     // Product currency is same as ISPAPI base currency
-                    $exchangeKey = array_search($defaultCurrency, $exchangeRates['CURRENCYTO']);
+                    $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
                     if ($exchangeKey === false) {
                         continue;
                     }
@@ -96,9 +113,9 @@ function ispapissl_addon_output()
                         continue;
                     }
                     $price = round($price / $exchangeRates['RATE'][$exchangeKey], 2);
-                    if ($defaultCurrency != $exchangeRates['CURRENCYFROM'][$exchangeKey]) {
+                    if ($defaultCurrency->code != $exchangeRates['CURRENCYFROM'][$exchangeKey]) {
                         // Convert to WHMCS default currency
-                        $exchangeKey = array_search($defaultCurrency, $exchangeRates['CURRENCYTO']);
+                        $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
                         $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
                     }
                 }
@@ -107,54 +124,30 @@ function ispapissl_addon_output()
             }
 
             $products[$productKey] = [
+                'id' => 0,
                 'Name' => SSLHelper::getProductName($productKey),
-                'Price' => $price,
-                'NewPrice' => $price
+                'Cost' => $price,
+                'Margin' => 0,
+                'AutoSetup' => false
             ];
+
+            $existingProduct = DBHelper::getProduct($productKey);
+            if ($existingProduct) {
+                $products[$productKey]['id'] = $existingProduct->id;
+                $products[$productKey]['AutoSetup'] = $existingProduct->autosetup ? true : false;
+                $products[$productKey]['Price'] = DBHelper::getProductPricing($existingProduct->id, $defaultCurrency->id);
+                $products[$productKey]['Margin'] = round(((($products[$productKey]['Price'] / $products[$productKey]['Cost']) * 100) - 100), 2);
+            }
         }
     }
 
-    $productGroupName = htmlspecialchars($_POST['selectedproductgroup']);
-
-    $smarty = new Smarty();
-    $smarty->setTemplateDir(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
-    $smarty->setCompileDir($templates_compiledir);
-    $smarty->caching = false;
-
-    $step = 2;
     $smarty->assign('logo', SSLHelper::getLogo());
     $smarty->assign('productGroups', DBHelper::getProductGroups());
-
-    if (isset($_POST['loadcertificates'])) {
-        $_SESSION['selectedproductgroup'] = $productGroupName;
-        if (empty($productGroupName)) {
-            $smarty->assign('error', 'Please select a product group');
-            $step = 1;
-        }
-    } elseif (isset($_POST['AddProfitMargin'])) {
-        $profitMargin = $_POST['ProfitMargin'];
-        if (!empty($profitMargin)) {
-            $products = SSLHelper::calculateProfitMargin($products, $profitMargin);
-        }
-    } elseif (isset($_POST['import'])) {
-        if (isset($_POST['SelectedCertificate'])) {
-            SSLHelper::importProducts();
-            $smarty->assign('success', "Your product list has been updated successfully");
-            $step = 3;
-        } else {
-            $smarty->assign('error', 'Please select an SSL Certificate');
-        }
-    } else {
-        $step = 1;
-    }
-
-    if ($step == 2) {
-        $smarty->assign('products', $products);
-        $smarty->assign('currency', $defaultCurrency);
-    }
+    $smarty->assign('products', $products);
+    $smarty->assign('currency', $defaultCurrency->code);
 
     try {
-        $smarty->display("step{$step}.tpl");
+        $smarty->display("import.tpl");
     } catch (Exception $e) {
         echo "ERROR - Unable to render template: {$e->getMessage()}";
     }

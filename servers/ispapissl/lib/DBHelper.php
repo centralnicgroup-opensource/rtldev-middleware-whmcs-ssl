@@ -90,12 +90,20 @@ class DBHelper
         return DB::table('tblproductgroups')->where('name', $productGroupName)->value('id');
     }
 
-    public static function getProductId(string $certificateClass, int $gid)
+    public static function getProductId(string $certificateClass)
     {
         return DB::table('tblproducts')
             ->where('configoption1', $certificateClass)
-            ->where('gid', $gid)
+            ->where('servertype', 'ispapissl')
             ->value('id');
+    }
+
+    public static function getProduct(string $certificateClass)
+    {
+        return DB::table('tblproducts')
+            ->where('configoption1', $certificateClass)
+            ->where('servertype', 'ispapissl')
+            ->first();
     }
 
     public static function getProductCurrencies(int $productId)
@@ -106,54 +114,73 @@ class DBHelper
             ->pluck('currency');
     }
 
-    public static function createProduct(string $productName, int $productGroupId, string $certificateClass)
+    public static function getProductPricing(int $productId, int $currencyId)
     {
-        return DB::table('tblproducts')->insertGetId([
-            'type' => 'other',
-            'gid' => $productGroupId,
-            'name' => $productName,
-            'paytype' => 'recurring',
-            'autosetup' => 'payment',
-            'servertype' => 'ispapissl',
-            'configoption1' => $certificateClass,
-            'tax' => 1
-        ]);
+        return DB::table('tblpricing')
+            ->where('relid', $productId)
+            ->where('type', 'product')
+            ->where('currency', $currencyId)
+            ->value('annually');
+    }
+
+    public static function createProduct(string $productName, int $productGroupId, string $certificateClass, string $autoSetup)
+    {
+        return DB::table('tblproducts')
+            ->insertGetId([
+                'type' => 'other',
+                'gid' => $productGroupId,
+                'name' => $productName,
+                'paytype' => 'recurring',
+                'autosetup' => $autoSetup,
+                'servertype' => 'ispapissl',
+                'configoption1' => $certificateClass,
+                'tax' => 1
+            ]);
+    }
+
+    public static function updateProduct(int $productId, string $autoSetup)
+    {
+        return DB::table('tblproducts')
+            ->where('id', $productId)
+            ->update(['autosetup' => $autoSetup]);
     }
 
     public static function updatePricing(int $productId, int $currency, float $price)
     {
         DB::table('tblpricing')
             ->where('relid', $productId)
+            ->where('type', 'product')
             ->where('currency', $currency)
             ->update(['annually' => $price]);
     }
 
     public static function createPricing(int $productId, int $currency, float $price)
     {
-        DB::table('tblpricing')->insert([
-            'type' => 'product',
-            'currency' => $currency,
-            'relid' => $productId,
-            'msetupfee' => 0,
-            'qsetupfee' => 0,
-            'ssetupfee' => 0,
-            'asetupfee' => 0,
-            'bsetupfee' => 0,
-            'tsetupfee' => 0,
-            'monthly' => -1,
-            'quarterly' => -1,
-            'semiannually' => -1,
-            'annually' => $price,
-            'biennially' => -1,
-            'triennially' => -1
-        ]);
+        DB::table('tblpricing')
+            ->insert([
+                'type' => 'product',
+                'currency' => $currency,
+                'relid' => $productId,
+                'msetupfee' => 0,
+                'qsetupfee' => 0,
+                'ssetupfee' => 0,
+                'asetupfee' => 0,
+                'bsetupfee' => 0,
+                'tsetupfee' => 0,
+                'monthly' => -1,
+                'quarterly' => -1,
+                'semiannually' => -1,
+                'annually' => $price,
+                'biennially' => -1,
+                'triennially' => -1
+            ]);
     }
 
     public static function getDefaultCurrency()
     {
         return DB::table('tblcurrencies')
             ->where('default', 1)
-            ->value('code');
+            ->first();
     }
 
     public static function getAdminLanguage($adminId)
