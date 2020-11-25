@@ -302,15 +302,13 @@ function ispapissl_ClientArea(array $params)
         $tpl = [
             'id' => $params['serviceid'],
             'md5certId' => md5($order->id),
-            'status' => $order->status,
-            'LANG' => $GLOBALS['_LANG']
+            'orderStatus' => $order->status,
+            'LANG' => $GLOBALS['_LANG'],
+            'config' => [],
+            'cert' => []
         ];
 
         $response = APIHelper::getOrder($order->remoteid);
-
-        if (strlen($response['CSR'])) {
-            $tpl['config']['csr'] = htmlspecialchars($response['CSR']);
-        }
 
         $contactMappings = [
             'firstname' => 'ADMINCONTACTFIRSTNAME',
@@ -354,24 +352,14 @@ function ispapissl_ClientArea(array $params)
         $certId = $response['SSLCERTID'];
         if ($certId > 0) {
             $status = APIHelper::getCertStatus($certId);
-            if (isset($status['CSR'])) {
-                $tpl['config']['csr'] = htmlspecialchars(implode(PHP_EOL, $status['CSR']));
+            foreach ($status as $key => $val) {
+                $tpl['cert'][strtolower($key)] = htmlspecialchars(implode(PHP_EOL, $val));
             }
-            if (isset($status['CRT'])) {
-                $tpl['crt'] = htmlspecialchars(implode(PHP_EOL, $status['CRT']));
-            }
-            if (isset($status['CACRT'])) {
-                $tpl['cacrt'] = htmlspecialchars(implode(PHP_EOL, $status['CACRT']));
-            }
+
             if (isset($status['STATUS'])) {
-                $tpl['processingStatus'] = htmlspecialchars($status['STATUS'][0]);
-
-                if ($status['STATUS'][0] == 'ACTIVE') {
-                    $exp_date = $status['REGISTRATIONEXPIRATIONDATE'][0];
-                    $tpl['displayData']['Expires'] = $exp_date;
-
+                if (in_array($status['STATUS'][0], ['ACTIVE', 'REPLACED'])) {
                     DBHelper::updateHosting($params['serviceid'], [
-                        'nextduedate' => $exp_date,
+                        'nextduedate' => $status['REGISTRATIONEXPIRATIONDATE'][0],
                         'domain' => $status['SSLCERTCN'][0]
                     ]);
                 } else {
@@ -379,12 +367,6 @@ function ispapissl_ClientArea(array $params)
                         'domain' => $status['SSLCERTCN'][0]
                     ]);
                 }
-
-                $tpl['displayData']['CN'] = htmlspecialchars($status['SSLCERTCN'][0]);
-            }
-
-            if (isset($status['STATUSDETAILS'])) {
-                $tpl['processingdetails'] = htmlspecialchars(urldecode($status['STATUSDETAILS'][0]));
             }
 
             if (!isset($tpl['config']['servertype'])) {
