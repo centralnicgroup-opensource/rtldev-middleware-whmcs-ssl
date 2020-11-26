@@ -122,7 +122,7 @@
                 <tr>
                     <th class="tld-check-all-th">
                         <label>
-                            <input type="checkbox" class="check-all-products" name="SelectedCertificate[{$certificateClass}]">
+                            <input type="checkbox" class="check-all-products">
                         </label>
                     </th>
                     <th style="width: 350px;">SSL Certificate</th>

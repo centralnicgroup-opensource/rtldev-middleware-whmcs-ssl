@@ -1,6 +1,5 @@
 <?php
 
-use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
@@ -9,8 +8,9 @@ require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
 require_once(__DIR__ . '/../../servers/ispapissl/lib/DBHelper.php');
 require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
 
-/*
+/**
  * Configuration of the addon module.
+ * @return string[]
  */
 function ispapissl_addon_config()
 {
@@ -23,26 +23,29 @@ function ispapissl_addon_config()
     ];
 }
 
-/*
+/**
  * This function will be called with the activation of the add-on module.
+ * @return string[]
  */
 function ispapissl_addon_activate()
 {
     return ['status' => 'success','description' => 'Installed'];
 }
 
-/*
+/**
  * This function will be called with the deactivation of the add-on module.
-*/
+ * @return string[]
+ */
 function ispapissl_addon_deactivate()
 {
     return ['status' => 'success','description' => 'Uninstalled'];
 }
 
-/*
+/**
  * Module interface functionality
+ * @param $vars
  */
-function ispapissl_addon_output()
+function ispapissl_addon_output($vars)
 {
     global $templates_compiledir;
 
@@ -61,90 +64,26 @@ function ispapissl_addon_output()
     $smarty->setTemplateDir(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
     $smarty->setCompileDir($templates_compiledir);
     $smarty->caching = false;
+    $smarty->assign('lang', $vars['_lang']);
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (!$_POST['ProductGroup']) {
-            $smarty->assign('error', 'Please select a product group');
-        } elseif (count($_POST['SelectedCertificate']) == 0) {
-            $smarty->assign('error', 'Please select at least one certificate');
-        } else {
-            try {
+    try {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!$_POST['ProductGroup']) {
+                $smarty->assign('error', 'Please select a product group');
+            } elseif (count($_POST['SelectedCertificate']) == 0) {
+                $smarty->assign('error', 'Please select at least one certificate');
+            } else {
                 SSLHelper::importProducts();
                 $smarty->assign('success', count($_POST['SelectedCertificate']) . ' products have been imported');
-            } catch (Exception $ex) {
-                $smarty->assign('error', $ex->getMessage());
             }
         }
+        $smarty->assign('logo', SSLHelper::getLogo());
+        $smarty->assign('productGroups', DBHelper::getProductGroups());
+        $smarty->assign('products', SSLHelper::getProducts());
+        $smarty->assign('currency', DBHelper::getDefaultCurrency()->code);
+    } catch (Exception $ex) {
+        $smarty->assign('error', $ex->getMessage());
     }
-
-    $user = APIHelper::getUserStatus();
-    $currencies = SSLHelper::getCurrencies();
-    $defaultCurrency = DBHelper::getDefaultCurrency();
-    $exchangeRates = APIHelper::getExchangeRates();
-
-    $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/';
-    $products = [];
-    $certs = preg_grep($pattern, $user['RELATIONTYPE']);
-    if (is_array($certs)) {
-        foreach ($certs as $key => $val) {
-            preg_match($pattern, $val, $matches);
-            $productKey = $matches[1];
-
-            $price = $user['RELATIONVALUE'][$key];
-            $currencyKey = array_search("PRICE_CLASS_SSLCERT_{$productKey}_CURRENCY", $user['RELATIONTYPE']);
-            if ($currencyKey === false) {
-                continue;
-            }
-            $currency = $user['RELATIONVALUE'][$currencyKey];
-
-            $arrayKey = array_search($currency, array_column($currencies, 'code'));
-            if ($arrayKey === false) {
-                if (in_array($currency, $exchangeRates['CURRENCYFROM'])) {
-                    // Product currency is same as ISPAPI base currency
-                    $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
-                    if ($exchangeKey === false) {
-                        continue;
-                    }
-                    $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
-                } else {
-                    // Convert to ISPAPI base currency
-                    $exchangeKey = array_search($currency, $exchangeRates['CURRENCYTO']);
-                    if ($exchangeKey === false) {
-                        continue;
-                    }
-                    $price = round($price / $exchangeRates['RATE'][$exchangeKey], 2);
-                    if ($defaultCurrency->code != $exchangeRates['CURRENCYFROM'][$exchangeKey]) {
-                        // Convert to WHMCS default currency
-                        $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
-                        $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
-                    }
-                }
-            } else {
-                $price = round($price / $currencies[$arrayKey]['rate'], 2);
-            }
-
-            $products[$productKey] = [
-                'id' => 0,
-                'Name' => SSLHelper::getProductName($productKey),
-                'Cost' => $price,
-                'Margin' => 0,
-                'AutoSetup' => false
-            ];
-
-            $existingProduct = DBHelper::getProduct($productKey);
-            if ($existingProduct) {
-                $products[$productKey]['id'] = $existingProduct->id;
-                $products[$productKey]['AutoSetup'] = $existingProduct->autosetup ? true : false;
-                $products[$productKey]['Price'] = DBHelper::getProductPricing($existingProduct->id, $defaultCurrency->id);
-                $products[$productKey]['Margin'] = round(((($products[$productKey]['Price'] / $products[$productKey]['Cost']) * 100) - 100), 2);
-            }
-        }
-    }
-
-    $smarty->assign('logo', SSLHelper::getLogo());
-    $smarty->assign('productGroups', DBHelper::getProductGroups());
-    $smarty->assign('products', $products);
-    $smarty->assign('currency', $defaultCurrency->code);
 
     try {
         $smarty->display("import.tpl");
