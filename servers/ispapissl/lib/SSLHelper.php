@@ -67,11 +67,71 @@ class SSLHelper
         return ucwords($certificateName);
     }
 
-    public static function calculateProfitMargin(array $products, int $profitMargin)
+    public static function getProducts()
     {
-        foreach ($products as $certificateClass => $product) {
-            $newPrice = $product['NewPrice'] + ($profitMargin / 100) * $product['NewPrice'];
-            $products[$certificateClass]['NewPrice'] = number_format((float)$newPrice, 2, '.', '');
+        $user = APIHelper::getUserStatus();
+        $currencies = self::getCurrencies();
+        $defaultCurrency = DBHelper::getDefaultCurrency();
+        $exchangeRates = APIHelper::getExchangeRates();
+
+        $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/';
+        $products = [];
+        $certs = preg_grep($pattern, $user['RELATIONTYPE']);
+        if (!is_array($certs)) {
+            return $products;
+        }
+        foreach ($certs as $key => $val) {
+            preg_match($pattern, $val, $matches);
+            $productKey = $matches[1];
+
+            $price = $user['RELATIONVALUE'][$key];
+            $currencyKey = array_search("PRICE_CLASS_SSLCERT_{$productKey}_CURRENCY", $user['RELATIONTYPE']);
+            if ($currencyKey === false) {
+                continue;
+            }
+            $currency = $user['RELATIONVALUE'][$currencyKey];
+
+            $arrayKey = array_search($currency, array_column($currencies, 'code'));
+            if ($arrayKey === false) {
+                if (in_array($currency, $exchangeRates['CURRENCYFROM'])) {
+                    // Product currency is same as ISPAPI base currency
+                    $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
+                    if ($exchangeKey === false) {
+                        continue;
+                    }
+                    $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
+                } else {
+                    // Convert to ISPAPI base currency
+                    $exchangeKey = array_search($currency, $exchangeRates['CURRENCYTO']);
+                    if ($exchangeKey === false) {
+                        continue;
+                    }
+                    $price = round($price / $exchangeRates['RATE'][$exchangeKey], 2);
+                    if ($defaultCurrency->code != $exchangeRates['CURRENCYFROM'][$exchangeKey]) {
+                        // Convert to WHMCS default currency
+                        $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
+                        $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
+                    }
+                }
+            } else {
+                $price = round($price / $currencies[$arrayKey]['rate'], 2);
+            }
+
+            $products[$productKey] = [
+                'id' => 0,
+                'Name' => self::getProductName($productKey),
+                'Cost' => number_format($price, 2),
+                'Margin' => 0,
+                'AutoSetup' => false
+            ];
+
+            $existingProduct = DBHelper::getProduct($productKey);
+            if ($existingProduct) {
+                $products[$productKey]['id'] = $existingProduct->id;
+                $products[$productKey]['AutoSetup'] = $existingProduct->autosetup ? true : false;
+                $products[$productKey]['Price'] = DBHelper::getProductPricing($existingProduct->id, $defaultCurrency->id);
+                $products[$productKey]['Margin'] = round(((($products[$productKey]['Price'] / $products[$productKey]['Cost']) * 100) - 100), 2);
+            }
         }
         return $products;
     }
@@ -151,19 +211,14 @@ class SSLHelper
 
         $_LANG = [];
         $translations = [];
-        if (file_exists($englishFile)) {
-            require $englishFile;
-            $translations = $_LANG;
-        }
         if (file_exists($languageFile)) {
             require $languageFile;
-            $translations = array_merge($translations, $_LANG);
+            $translations = $_LANG;
         }
-
-        foreach ($translations as $key => $value) {
-            if (!isset($GLOBALS['_LANG'][$key])) {
-                $GLOBALS['_LANG'][$key] = $value;
-            }
+        if (file_exists($englishFile)) {
+            require $englishFile;
+            $translations += $_LANG;
         }
+        $GLOBALS['_LANG'] += $translations;
     }
 }

@@ -15,15 +15,16 @@
                         <td>
                             <table cellpadding="0" cellspacing="0">
                                 <tr>
-                                    <td><b>{$orderStatus}</b></td>
+                                    <td>
+                                        <b>{$orderStatus}</b>
+                                    </td>
                                     {if in_array($orderStatus, ['Incomplete', 'Awaiting Configuration'])}
                                     <td>
                                         <form method="post" action="{$systemsslurl}configuressl.php?cert={$md5certId}">
                                         {foreach from=$config key=configName item=configValue}
-                                            <input type="hidden" name='{$configdataname}' value='{$configdatavalue}' />
                                             <input type="hidden" name='{$configName}' value='{$configValue}' />
                                         {/foreach}
-                                            <input type="submit" value="{$LANG.sslconfsslcertificate}" />
+                                            &nbsp;<button type="submit" class="btn btn-primary">{$LANG.sslconfsslcertificate}</button>
                                         </form>
                                     </td>
                                     {/if}
@@ -31,7 +32,7 @@
                                     <td>
                                         <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails">
                                             <input type="hidden" name="id" value="{$id}" />
-                                            <input type="submit" name="sslresendcertapproveremail" value="{$LANG.sslresendcertapproveremail}" />
+                                            &nbsp;<button type="submit" class="btn btn-info" name="sslresendcertapproveremail">{$LANG.sslresendcertapproveremail}</button>
                                         </form>
                                     </td>
                                     {/if}
@@ -39,12 +40,11 @@
                             </table>
                         </td>
                     </tr>
-                    {if $cert.status}
+                    {if $cert}
                     <tr>
                         <td class="fieldarea">{$LANG.sslprocessingstatus}:</td>
                         <td><b>{$cert.status}{if $cert.statusdetails} ({$cert.statusdetails}){/if}</b></td>
                     </tr>
-                    {/if}
                     <tr>
                         <td class="fieldarea">CN:</td>
                         <td><b>{$cert.cn}</b></td>
@@ -73,13 +73,14 @@
                         <td class="fieldarea">Vendor Order ID:</td>
                         <td><b>{$cert.supplierorderid}</b></td>
                     </tr>
+                    {/if}
                 </table>
             </td>
         </tr>
     </table>
 
+    {if $cert}
     <br />
-
     <ul class="nav nav-tabs" id="contactTab" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="owner-tab" data-toggle="tab" href="#owner" role="tab" aria-controls="crt" aria-selected="true">
@@ -282,10 +283,15 @@
     </div>
 
     <br />
-
     <ul class="nav nav-tabs" id="certTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <a class="nav-link active" id="crt-tab" data-toggle="tab" href="#crt" role="tab" aria-controls="crt" aria-selected="true"{if !$cert.crt} disabled{/if}>
+            <a class="nav-link active" id="csr-tab" data-toggle="tab" href="#csr" role="tab" aria-controls="csr" aria-selected="true"{if !$cert.csr} disabled{/if}>
+                {$LANG.sslcsr}
+            </a>
+        </li>
+        {if !in_array($cert.status, ['REQUESTED', 'REQUESTEDCREATE', 'PENDING', 'PENDINGCREATE'])}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="crt-tab" data-toggle="tab" href="#crt" role="tab" aria-controls="crt" aria-selected="false"{if !$cert.crt} disabled{/if}>
                 {$LANG.sslcrt}
             </a>
         </li>
@@ -294,23 +300,21 @@
                 {$LANG.sslcacrt}
             </a>
         </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="csr-tab" data-toggle="tab" href="#csr" role="tab" aria-controls="csr" aria-selected="false"{if !$cert.csr} disabled{/if}>
-                {$LANG.sslcsr}
-            </a>
-        </li>
+        {/if}
     </ul>
     <div class="tab-content" id="certTabContent">
-        <div class="tab-pane fade show active mt-2" id="crt" role="tabpanel" aria-labelledby="crt-tab">
+        <div class="tab-pane fade show active mt-2" id="csr" role="tabpanel" aria-labelledby="csr-tab">
+            <pre>{$cert.csr}</pre>
+        </div>
+        {if !in_array($cert.status, ['REQUESTED', 'REQUESTEDCREATE', 'PENDING', 'PENDINGCREATE'])}
+        <div class="tab-pane fade mt-2" id="crt" role="tabpanel" aria-labelledby="crt-tab">
             <pre>{$cert.crt}</pre>
         </div>
         <div class="tab-pane fade mt-2" id="ca" role="tabpanel" aria-labelledby="ca-tab">
             <pre>{$cert.cacrt}</pre>
         </div>
-        <div class="tab-pane fade mt-2" id="csr" role="tabpanel" aria-labelledby="csr-tab">
-            Organization: {$cert.csrorganization}<br />
-            <pre>{$cert.csr}</pre>
-        </div>
+        {/if}
     </div>
+    {/if}
 
 </div>
