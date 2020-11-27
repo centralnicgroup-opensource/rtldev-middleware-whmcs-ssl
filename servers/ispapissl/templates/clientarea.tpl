@@ -54,23 +54,23 @@
                         <td><b><a href="mailto:{$cert.validationemail}">{$cert.validationemail}</a></b></td>
                     </tr>
                     <tr>
-                        <td class="fieldarea">Created:</td>
+                        <td class="fieldarea">{$LANG.created}:</td>
                         <td><b>{$cert.createddate}</b></td>
                     </tr>
                     <tr>
-                        <td class="fieldarea">Updated:</td>
+                        <td class="fieldarea">{$LANG.updated}:</td>
                         <td><b>{$cert.updateddate}</b></td>
                     </tr>
                     <tr>
-                        <td class="fieldarea">Expiration:</td>
+                        <td class="fieldarea">{$LANG.expiration}:</td>
                         <td><b>{$cert.registrationexpirationdate}</b></td>
                     </tr>
                     <tr>
-                        <td class="fieldarea">Order ID:</td>
+                        <td class="fieldarea">{$LANG.orderId}:</td>
                         <td><b>{$cert.orderid}</b></td>
                     </tr>
                     <tr>
-                        <td class="fieldarea">Vendor Order ID:</td>
+                        <td class="fieldarea">{$LANG.vendorId}:</td>
                         <td><b>{$cert.supplierorderid}</b></td>
                     </tr>
                     {/if}
@@ -84,22 +84,22 @@
     <ul class="nav nav-tabs" id="contactTab" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="owner-tab" data-toggle="tab" href="#owner" role="tab" aria-controls="crt" aria-selected="true">
-                Owner
+                {$LANG.owner}
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link" id="admin-tab" data-toggle="tab" href="#admin" role="tab" aria-controls="ca" aria-selected="false">
-                Admin Contact
+                {$LANG.adminContact}
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link" id="tech-tab" data-toggle="tab" href="#tech" role="tab" aria-controls="csr" aria-selected="false">
-                Tech Contact
+                {$LANG.techContact}
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link" id="billing-tab" data-toggle="tab" href="#billing" role="tab" aria-controls="csr" aria-selected="false"}>
-                Billing Contact
+                {$LANG.billingContact}
             </a>
         </li>
     </ul>
@@ -107,43 +107,43 @@
         <div class="tab-pane fade show active mt-2" id="owner" role="tabpanel" aria-labelledby="owner-tab">
             <table width="100%" cellpadding="2">
                 <tr>
-                    <td class="fieldarea" width="200">Name</td>
+                    <td class="fieldarea" width="200">{$LANG.domaincontactdetails['Contact Name']}</td>
                     <td><b>{$cert.name}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Title</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Job Title']}</td>
                     <td><b>{$cert.jobtitle}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Organization</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Organisation Name']}</td>
                     <td><b>{$cert.organization}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">e-mail</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Email Address']}</td>
                     <td><b><a href="mailto:{$cert.email}">{$cert.email}</a></b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Phone</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Phone Number']}</td>
                     <td><b>{$cert.phone}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Address</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Address']}</td>
                     <td><b>{$cert.street}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">ZIP</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['ZIP Code']}</td>
                     <td><b>{$cert.zip}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">City</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['City']}</td>
                     <td><b>{$cert.city}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Province</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['State']}</td>
                     <td><b>{$cert.province}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Country</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Country']}</td>
                     <td><b>{$cert.country}</b></td>
                 </tr>
             </table>
@@ -151,43 +151,43 @@
         <div class="tab-pane fade mt-2" id="admin" role="tabpanel" aria-labelledby="admin-tab">
             <table width="100%" cellpadding="2">
                 <tr>
-                    <td class="fieldarea" width="200">Name</td>
+                    <td class="fieldarea" width="200">{$LANG.domaincontactdetails['Contact Name']}</td>
                     <td><b>{$cert.admincontactname}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Title</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Job Title']}</td>
                     <td><b>{$cert.admincontactjobtitle}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Organization</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Organisation Name']}</td>
                     <td><b>{$cert.admincontactorganization}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">e-mail</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Email Address']}</td>
                     <td><b><a href="mailto:{$cert.admincontactemail}">{$cert.admincontactemail}</a></b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Phone</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Phone Number']}</td>
                     <td><b>{$cert.admincontactphone}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Address</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Address']}</td>
                     <td><b>{$cert.admincontactstreet}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">ZIP</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['ZIP Code']}</td>
                     <td><b>{$cert.admincontactzip}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">City</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['City']}</td>
                     <td><b>{$cert.admincontactcity}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Province</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['State']}</td>
                     <td><b>{$cert.admincontactprovince}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Country</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Country']}</td>
                     <td><b>{$cert.admincontactcountry}</b></td>
                 </tr>
             </table>
@@ -195,43 +195,43 @@
         <div class="tab-pane fade mt-2" id="tech" role="tabpanel" aria-labelledby="tech-tab">
             <table width="100%" cellpadding="2">
                 <tr>
-                    <td class="fieldarea" width="200">Name</td>
+                    <td class="fieldarea" width="200">{$LANG.domaincontactdetails['Contact Name']}</td>
                     <td><b>{$cert.techcontactname}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Title</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Job Title']}</td>
                     <td><b>{$cert.techcontactjobtitle}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Organization</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Organisation Name']}</td>
                     <td><b>{$cert.techcontactorganization}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">e-mail</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Email Address']}</td>
                     <td><b><a href="mailto:{$cert.techcontactemail}">{$cert.techcontactemail}</a></b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Phone</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Phone Number']}</td>
                     <td><b>{$cert.techcontactphone}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Address</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Address']}</td>
                     <td><b>{$cert.techcontactstreet}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">ZIP</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['ZIP Code']}</td>
                     <td><b>{$cert.techcontactzip}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">City</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['City']}</td>
                     <td><b>{$cert.techcontactcity}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Province</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['State']}</td>
                     <td><b>{$cert.techcontactprovince}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Country</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Country']}</td>
                     <td><b>{$cert.techcontactcountry}</b></td>
                 </tr>
             </table>
@@ -239,43 +239,43 @@
         <div class="tab-pane fade mt-2" id="billing" role="tabpanel" aria-labelledby="billing-tab">
             <table width="100%" cellpadding="2">
                 <tr>
-                    <td class="fieldarea" width="200">Name</td>
+                    <td class="fieldarea" width="200">{$LANG.domaincontactdetails['Contact Name']}</td>
                     <td><b>{$cert.billingcontactname}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Title</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Job Title']}</td>
                     <td><b>{$cert.billingcontactjobtitle}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Organization</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Organisation Name']}</td>
                     <td><b>{$cert.billingcontactorganization}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">e-mail</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Email Address']}</td>
                     <td><b><a href="mailto:{$cert.billingcontactemail}">{$cert.billingcontactemail}</a></b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Phone</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Phone Number']}</td>
                     <td><b>{$cert.billingcontactphone}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Address</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Address']}</td>
                     <td><b>{$cert.billingcontactstreet}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">ZIP</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['ZIP Code']}</td>
                     <td><b>{$cert.billingcontactzip}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">City</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['City']}</td>
                     <td><b>{$cert.billingcontactcity}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Province</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['State']}</td>
                     <td><b>{$cert.billingcontactprovince}</b></td>
                 </tr>
                 <tr>
-                    <td class="fieldarea">Country</td>
+                    <td class="fieldarea">{$LANG.domaincontactdetails['Country']}</td>
                     <td><b>{$cert.billingcontactcountry}</b></td>
                 </tr>
             </table>

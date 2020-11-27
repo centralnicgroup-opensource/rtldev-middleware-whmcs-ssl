@@ -199,10 +199,10 @@ class SSLHelper
     public static function loadLanguage()
     {
         $language = isset($GLOBALS["CONFIG"]["Language"]) ? $GLOBALS["CONFIG"]["Language"] : 'english';
-        if (isset($_SESSION["adminid"])) {
-            $language = DBHelper::getAdminLanguage($_SESSION['adminid']);
-        } elseif ($_SESSION["uid"]) {
+        if ($_SESSION["uid"]) {
             $language = DBHelper::getUserLanguage($_SESSION['uid']);
+        } elseif (isset($_SESSION["adminid"])) {
+            $language = DBHelper::getAdminLanguage($_SESSION['adminid']);
         }
 
         $dir = realpath(__DIR__ . "/../lang");
