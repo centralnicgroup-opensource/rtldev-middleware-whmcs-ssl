@@ -360,6 +360,23 @@ function ispapissl_ClientArea(array $params)
                         ];
                     }
                 }
+            } elseif (extension_loaded('openssl') && $params['domain']) {
+                $dn = [
+                    "countryName" => $params['clientsdetails']['countrycode'],
+                    "stateOrProvinceName" => $params['clientsdetails']['statecode'] ?? 'n/a',
+                    "localityName" => $params['clientsdetails']['city'],
+                    "organizationName" => $params['clientsdetails']['companyname'] ?? $params['clientsdetails']['fullname'],
+                    "organizationalUnitName" => "NET",
+                    "commonName" => $params['domain'],
+                    "emailAddress" => $params['clientsdetails']['email']
+                ];
+                $privateKey = openssl_pkey_new([
+                    "private_key_bits" => 2048,
+                    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+                ]);
+                $csr = openssl_csr_new($dn, $privateKey, ['digest_alg' => 'sha256']);
+                openssl_csr_export($csr, $csrString);
+                $tpl['config']['csr'] = $csrString;
             }
         }
         return [
