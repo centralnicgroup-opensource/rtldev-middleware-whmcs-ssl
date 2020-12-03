@@ -1,7 +1,7 @@
 {extends file="layout.tpl"}
 
 {block name="content"}
-    <h2>Bulk Pricing update</h2>
+    <h2>{AdminLang::trans('setup.tldImport', ['TLD' => 'SSL'])}</h2>
 
     <div class="tld-import-step top-margin-10">
 
@@ -9,8 +9,8 @@
             <div class="admin-tabs-v2">
                 <div class="form-group">
                     <label for="ProductGroup" class="col-md-4 col-sm-6 control-label">
-                        Product Group<br>
-                        <small>Choose product group new products should be assigned to</small>
+                        {AdminLang::trans('products.productgroup')}<br>
+                        <small>{$lang.productGroupDescription}</small>
                     </label>
                     <div class="col-md-4 col-sm-6">
                         <select class="form-control select-inline" name="ProductGroup" id="ProductGroup">
@@ -23,20 +23,20 @@
                 </div>
                 <div class="form-group">
                     <label for="inputMarginType" class="col-md-4 col-sm-6 control-label">
-                        Margin Type<br>
-                        <small>Choose the type of markup to apply to cost prices </small>
+                        {AdminLang::trans('domains.tldImport.marginType')}<br>
+                        <small>{AdminLang::trans('domains.tldImport.fixedOrPercentage')}</small>
                     </label>
                     <div class="col-md-4 col-sm-6">
                         <select id="inputMarginType" name="MarginType" class="form-control select-inline">
-                            <option value="percentage"{if $smarty.post.MarginType eq 'percentage'} selected{/if}>Percentage</option>
-                            <option value="fixed"{if $smarty.post.MarginType eq 'fixed'} selected{/if}>Fixed Amount</option>
+                            <option value="percentage"{if $smarty.post.MarginType eq 'percentage'} selected{/if}>{AdminLang::trans('promos.percentage')}</option>
+                            <option value="fixed"{if $smarty.post.MarginType eq 'fixed'} selected{/if}>{AdminLang::trans('promos.fixedamount')}</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputMarginPercent" class="col-md-4 col-sm-6 control-label">
-                        Profit Margin<br>
-                        <small>The markup amount to apply to cost prices</small>
+                        {AdminLang::trans('domains.tldImport.profitMargin')}<br>
+                        <small>{AdminLang::trans('domains.tldImport.profitMarginDescription')}</small>
                     </label>
                     <div class="col-md-4 col-sm-6">
                         <div class="tld-import-percentage-margin{if $smarty.post.MarginType eq 'fixed'} hidden{/if}">
@@ -55,12 +55,12 @@
                 </div>
                 <div class="form-group">
                     <label for="inputRoundingValue" class="col-md-4 col-sm-6 control-label">
-                        Round to Next <br>
-                        <small>Use to round prices to a common human friendly number</small>
+                        {AdminLang::trans('domains.tldImport.rounding')}<br>
+                        <small>{AdminLang::trans('domains.tldImport.roundingDescription')}</small>
                     </label>
                     <div class="col-md-4 col-sm-6">
                         <select id="inputRoundingValue" name="Rounding" class="form-control select-inline">
-                            <option value="-1"{if $smarty.post.Rounding eq ''} selected{/if}>No Rounding</option>
+                            <option value="-1"{if $smarty.post.Rounding eq ''} selected{/if}>{AdminLang::trans('domains.tldImport.noRounding')}</option>
                             <option value="0.00"{if $smarty.post.Rounding eq '0.00'} selected{/if}>x.00</option>
                             <option value="0.09"{if $smarty.post.Rounding eq '0.09'} selected{/if}>x.09</option>
                             <option value="0.19"{if $smarty.post.Rounding eq '0.19'} selected{/if}>x.19</option>
@@ -80,42 +80,42 @@
                 </div>
                 <div class="form-group">
                     <label for="inputRoundAllCurrencies" class="col-md-4 col-sm-6 control-label">
-                        Apply rounding to all currencies<br>
-                        <small>Also round the converted prices</small>
+                        {$lang.roundAllCurrencies}<br>
+                        <small>{$lang.roundAllCurrenciesDescription}</small>
                     </label>
                     <div class="col-md-4 col-sm-6">
                         <div class="bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-off bootstrap-switch-id-inputSetAutoRegistrar bootstrap-switch-animate">
                             <div class="bootstrap-switch-container">
-                                <input id="inputRoundAllCurrencies" type="checkbox" name="RoundAllCurrencies" value="1" data-on-text="Yes" data-off-text="No"{if $smarty.post.RoundAllCurrencies} checked{/if}>
+                                <input id="inputRoundAllCurrencies" type="checkbox" name="RoundAllCurrencies" value="1" data-on-text="{AdminLang::trans('global.yes')}" data-off-text="{AdminLang::trans('global.no')}"{if $smarty.post.RoundAllCurrencies} checked{/if}>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputSetAutoSetup" class="col-md-4 col-sm-6 control-label">
-                        Automatic Registration<br>
-                        <small>Enable auto-register upon payment for synced products</small>
+                        {AdminLang::trans('domains.tldImport.setAutoRegistrar')}<br>
+                        <small>{AdminLang::trans('domains.tldImport.setAutoRegistrarDescription')}</small>
                     </label>
                     <div class="col-md-4 col-sm-6">
                         <select id="inputSetAutoSetup" class="form-control select-inline" name="AutoSetup">
-                            <option value=""{if $smarty.post.AutoSetup eq ''} selected{/if}>Disabled</option>
-                            <option value="order"{if $smarty.post.AutoSetup eq 'order'} selected{/if}>On Order</option>
-                            <option value="payment"{if !$smarty.post or $smarty.post.AutoSetup eq 'payment'} selected{/if}>On Payment</option>
-                            <option value="on"{if $smarty.post.AutoSetup eq 'on'} selected{/if}>On Accept</option>
+                            <option value=""{if $smarty.post.AutoSetup eq ''} selected{/if}>{AdminLang::trans('products.off')}</option>
+                            <option value="order"{if $smarty.post.AutoSetup eq 'order'} selected{/if}>{AdminLang::trans('products.asetupinstantlyafterorder')}</option>
+                            <option value="payment"{if !$smarty.post or $smarty.post.AutoSetup eq 'payment'} selected{/if}>{AdminLang::trans('products.asetupafterpay')}</option>
+                            <option value="on"{if $smarty.post.AutoSetup eq 'on'} selected{/if}>{AdminLang::trans('products.asetupafteracceptpendingorder')}</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-md-12 text-right">
                         <button type="submit" class="btn btn-primary">
-                            Import <span id="importCount">0</span> products
+                            {AdminLang::trans('global.import')} <span id="importCount">0</span> {$lang.products}
                         </button>
                     </div>
                 </div>
             </div>
 
             <div class="alert alert-warning text-center" role="alert" style="padding: 4px 15px;">
-                All prices below are shown converted to your system default currency {$currency}.
+                {AdminLang::trans('domains.tldImport.defaultCurrency', [':currency' => $currency])}
             </div>
             <table class="table table-striped table-hover">
                 <thead>
@@ -125,25 +125,25 @@
                             <input type="checkbox" class="check-all-products">
                         </label>
                     </th>
-                    <th style="width: 350px;">SSL Certificate</th>
+                    <th style="width: 350px;">{$lang.certificate}</th>
                     <th class="tld-import-list text-center"></th>
-                    <th class="tld-import-list text-center">Existing Product</th>
-                    <th class="tld-import-list text-center">Reg Period</th>
+                    <th class="tld-import-list text-center">{AdminLang::trans('products.existingproduct')}</th>
+                    <th class="tld-import-list text-center">{AdminLang::trans('fields.regperiod')}</th>
                     <th class="text-center">
                         <span class="inline-block tld-pricing">
-                            <span class="local-pricing">Current</span>
+                            <span class="local-pricing">{AdminLang::trans('domains.tldImport.local')}</span>
                             <br>
-                            <span class="remote-pricing">Cost</span>
+                            <span class="remote-pricing">{AdminLang::trans('domains.tldImport.cost')}</span>
                         </span>
-                        <span class="tld-margin">Margin</span>
+                        <span class="tld-margin">{AdminLang::trans('domains.tldImport.margin')}</span>
                     </th>
                     <th class="text-center">
                         <span class="inline-block tld-pricing">
-                            <span class="local-pricing">New</span>
+                            <span class="local-pricing">{AdminLang::trans('global.new')}</span>
                             <br>
-                            <span class="remote-pricing">Cost</span>
+                            <span class="remote-pricing">{AdminLang::trans('domains.tldImport.cost')}</span>
                         </span>
-                        <span class="tld-margin">Margin</span>
+                        <span class="tld-margin">{AdminLang::trans('domains.tldImport.margin')}</span>
                     </th>
                     <th>&nbsp;</th>
                 </tr>
@@ -159,7 +159,7 @@
                     </td>
                     <td class="text-center">
                         {if $product.AutoSetup}
-                            <i class="fas fa-cog text-success" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Auto-registration enabled"></i>
+                            <i class="fas fa-cog text-success" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="{$lang.autoRegistration}"></i>
                         {/if}
                     </td>
                     <td class="text-center">
@@ -167,7 +167,7 @@
                             <i class="fas fa-check text-success"></i>
                         {/if}
                     </td>
-                    <td class="text-center">1 Year</td>
+                    <td class="text-center">1 {AdminLang::trans('domains.year')}</td>
                     <td class="text-center tld-pricing-td register-pricing">
                         {if $product.id}
                         <span class="tld-pricing inline-block">
@@ -195,8 +195,8 @@
                     </td>
                     <td class="text-center pricing-button">
                         {if $product.id}
-                        <a class="btn btn-default btn-sm" href="configproducts.php?action=edit&id={$product.id}#tab=2">
-                            Pricing
+                        <a class="btn btn-default btn-sm" href="configproducts.php?action=edit&id={$product.id}#tab=2" target="_blank">
+                            {AdminLang::trans('global.pricing')}
                         </a>
                         {/if}
                     </td>
