@@ -19,7 +19,7 @@ function ispapissl_addon_config()
         "description" => "Quickly add and configure SSL Certificates",
         "author" => '<a href="https://www.hexonet.net/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="HEXONET" /></a>',
         "language" => "english",
-        "version" => "8.0.1"
+        "version" => "9.0.0"
     ];
 }
 
