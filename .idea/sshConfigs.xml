@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="SshConfigs">
-    <configs>
-      <sshConfig host="burrow.bluerabbit.solutions" id="568c2750-db81-424b-b7c8-5c611a604e89" keyPath="$USER_HOME$/OneDrive/BlueRabbIT/sebastian.ppk" port="22" nameFormat="DESCRIPTIVE" username="bluerabbit" />
-    </configs>
-  </component>
-</project>

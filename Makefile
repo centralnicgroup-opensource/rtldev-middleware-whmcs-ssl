@@ -17,7 +17,7 @@ buildsources:
 	cp -a servers/ispapissl $(FOLDER)/install/modules/servers
 	cp -a addons/ispapissl_addon $(FOLDER)/install/modules/addons
 	# create the docs
-	cp README.md HISTORY.md HISTORY.old CONTRIBUTING.md LICENSE /tmp/$(REPOID)/*.md $(FOLDER)/docs
+	cp README.md HISTORY.md CONTRIBUTING.md LICENSE /tmp/$(REPOID)/*.md $(FOLDER)/docs
 	# Cleanup files
 	rm -rf $(FOLDER)/docs/_*.md $(FOLDER)/docs/Home.md /tmp/$(REPOID)
 	find $(FOLDER)/install -name "*~" | xargs rm -f
