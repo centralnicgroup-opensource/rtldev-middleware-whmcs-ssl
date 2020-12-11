@@ -1,3 +1,36 @@
+# [9.0.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v8.0.1...v9.0.0) (2020-12-11)
+
+
+### Bug Fixes
+
+* **release:** fix release process ([4bb79d7](https://github.com/hexonet/whmcs-ispapi-ssl/commit/4bb79d74083eef9cd4c8728ea63c497c1b36d746))
+* **release:** fix release process ([57e197e](https://github.com/hexonet/whmcs-ispapi-ssl/commit/57e197e3a67bee41f4646c95f5265c370c27f714))
+
+
+### Code Refactoring
+
+* **whmcs:** WHMCS v8 and PHP v7.2 are now minimum requirements ([0ca4ef4](https://github.com/hexonet/whmcs-ispapi-ssl/commit/0ca4ef4825b4ff159dff5714abdbb9cfc7ac0d71))
+
+
+### Features
+
+* **api:** implement revoke, reissue and renew operations ([ed75e6e](https://github.com/hexonet/whmcs-ispapi-ssl/commit/ed75e6e1bddad70d0d37d35d3e900bc8e087d958))
+* **api:** implement termination ([e62f70d](https://github.com/hexonet/whmcs-ispapi-ssl/commit/e62f70dc2d75f1a8076a3e2a3cde815a3a9696ca))
+* **clientarea:** display more details about certificate in client area ([43e2374](https://github.com/hexonet/whmcs-ispapi-ssl/commit/43e2374aa7bb2f3a992f83e1928dca5df2bfd1d8))
+* **create-cert:** set certificate to incomplete until last step ([c909cc8](https://github.com/hexonet/whmcs-ispapi-ssl/commit/c909cc850610bcd8f34be77ff78e32ea3ecf9d03))
+* **csr:** auto-generate csr with client data ([43f8b4a](https://github.com/hexonet/whmcs-ispapi-ssl/commit/43f8b4a80620f514d66a40761c88617129a9d438))
+* **gui:** show ISPAPI order ID and configuration status in admin view ([c465853](https://github.com/hexonet/whmcs-ispapi-ssl/commit/c465853381ee6727a5d0dfc62019044e775c34c7))
+* **import:** complete rewrite of product import addon ([f66656a](https://github.com/hexonet/whmcs-ispapi-ssl/commit/f66656af5acc1d7127e93671f0cfc9d3dccbb4c8))
+* **localization:** full localization of client area page and add german language ([d85728f](https://github.com/hexonet/whmcs-ispapi-ssl/commit/d85728f2b70008d0b2e6524b75ecd7fa92983dea))
+* **localization:** implement language files for server module ([6720d89](https://github.com/hexonet/whmcs-ispapi-ssl/commit/6720d899f5a3b32cc23eb2fa06107be740d9a470))
+* **localization:** localize addon and add italian translations ([c2eaa7e](https://github.com/hexonet/whmcs-ispapi-ssl/commit/c2eaa7e30fa6ab84c30e390e14579aab4b152eca))
+
+
+### BREAKING CHANGES
+
+* **whmcs:** This module will no longer work on PHP older than 7.2. While tecnically able to run
+on WHMCS v7.5+, it will only be tested and supported on WHMCS v8
+
 ## [8.0.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v8.0.0...v8.0.1) (2020-05-27)
 
 
