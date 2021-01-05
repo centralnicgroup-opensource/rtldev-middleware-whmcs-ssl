@@ -1,0 +1,18 @@
+{
+  "name": "hexonet/whmcs-ispapi-ssl",
+  "description": "ISPAPI SSL Provisioning & Addon Modules for WHMCS",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sebastian Vassiliou",
+      "email": "svassiliou@hexonet.net"
+    }
+  ],
+  "config": {
+    "vendor-dir": "servers/ispapissl/vendor"
+  },
+  "autoload": {
+    "psr-4": {"HEXONET\\WHMCS\\ISPAPI\\SSL\\": "servers/ispapissl/lib/"}
+  }
+}

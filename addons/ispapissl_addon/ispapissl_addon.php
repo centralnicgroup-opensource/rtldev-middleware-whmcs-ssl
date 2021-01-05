@@ -1,12 +1,10 @@
 <?php
 
+require_once(__DIR__ . '/../../servers/ispapissl/vendor/autoload.php');
+
 use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
-
-require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
-require_once(__DIR__ . '/../../servers/ispapissl/lib/DBHelper.php');
-require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
 
 /**
  * Configuration of the addon module.

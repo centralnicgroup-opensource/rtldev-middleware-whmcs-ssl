@@ -15,3 +15,6 @@ pkg
 
 # IntelliJ
 .idea
+
+# macOS
+.DS_Store
