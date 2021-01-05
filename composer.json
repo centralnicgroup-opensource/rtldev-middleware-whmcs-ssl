@@ -14,5 +14,11 @@
   },
   "autoload": {
     "psr-4": {"HEXONET\\WHMCS\\ISPAPI\\SSL\\": "servers/ispapissl/lib/"}
+  },
+  "scripts": {
+    "test": [
+      "@composer update",
+      "phpunit"
+    ]
   }
 }

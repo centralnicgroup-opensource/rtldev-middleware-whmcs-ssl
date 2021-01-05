@@ -1,12 +1,12 @@
 {
   "schema": "1.0",
-  "type": "whmcs-servers",
-  "name": "ispapissl",
+  "type": "whmcs-addons",
+  "name": "ispapissl-addon",
   "license": "MIT",
   "category": "digitalservices",
   "description": {
-    "name": "ISPAPI SSL v9.0.0",
-    "tagline": "Sell SSL Certificates using a HEXONET reseller account.",
+    "name": "ISPAPI SSL Addon v9.0.0",
+    "tagline": "Import and synchronize SSL products",
     "long": "",
     "features": [
       "Resell all certificate classes offered by HEXONET",

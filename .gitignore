@@ -16,5 +16,8 @@ pkg
 # IntelliJ
 .idea
 
+# Gulp
+build
+
 # macOS
 .DS_Store
