@@ -9,14 +9,12 @@
  * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
  */
 
+require_once(__DIR__ . '/vendor/autoload.php');
+
 use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
 use WHMCS\Carbon;
-
-require_once(__DIR__ . '/../../servers/ispapissl/lib/APIHelper.php');
-require_once(__DIR__ . '/../../servers/ispapissl/lib/DBHelper.php');
-require_once(__DIR__ . '/../../servers/ispapissl/lib/SSLHelper.php');
 
 /**
  * Define module related meta data.
