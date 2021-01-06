@@ -1,0 +1,22 @@
+parameters:
+    level: 8
+    fileExtensions:
+        - php
+        - module
+        - inc
+    paths:
+        - .
+    scanFiles:
+    scanDirectories:
+        - addons
+        - servers
+        - tests
+    excludes_analyse:
+        - node_modules
+        - servers/ispapissl/vendor
+        - build
+        - tests 
+    bootstrapFiles:
+        - tests/_bootstrap.phpstan.php
+        - servers/ispapissl/vendor/autoload.php
+        
