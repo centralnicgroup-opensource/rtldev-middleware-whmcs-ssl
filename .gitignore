@@ -19,5 +19,8 @@ pkg
 # Gulp
 build
 
+# PHPStan
+tests/phpstan.config.php
+
 # macOS
 .DS_Store
