@@ -4,10 +4,15 @@ namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 class SSLHelper
 {
-    public static function sendConfigurationEmail(int $serviceId, int $sslOrderId)
+    /**
+     * Send SSL configuration e-mail to the customer
+     * @param int $serviceId
+     * @param int $sslOrderId
+     */
+    public static function sendConfigurationEmail(int $serviceId, int $sslOrderId): void
     {
         global $CONFIG;
-        $sslconfigurationlink = $CONFIG['SystemURL'] . '/configuressl.php?cert=' . md5($sslOrderId);
+        $sslconfigurationlink = $CONFIG['SystemURL'] . '/configuressl.php?cert=' . md5((string)$sslOrderId);
 
         $sslconfigurationlink = '<a href="' . $sslconfigurationlink . '">' . $sslconfigurationlink . '</a>';
         $postData = [
@@ -18,7 +23,12 @@ class SSLHelper
         localAPI('SendEmail', $postData);
     }
 
-    public static function getProductName(string $certificateClass)
+    /**
+     * Get human readable product name based on certificate class
+     * @param string $certificateClass
+     * @return string
+     */
+    public static function getProductName(string $certificateClass): string
     {
         $certificateNames = [
             'COMODO_ESSENTIALSSL' => 'Sectigo Essential SSL',
@@ -67,7 +77,11 @@ class SSLHelper
         return ucwords($certificateName);
     }
 
-    public static function getProducts()
+    /**
+     * Get available SSL products from HEXONET
+     * @return array<int|string, array<string, mixed>>
+     */
+    public static function getProducts(): array
     {
         $user = APIHelper::getUserStatus();
         $currencies = self::getCurrencies();
@@ -121,6 +135,7 @@ class SSLHelper
                 'id' => 0,
                 'Name' => self::getProductName($productKey),
                 'Cost' => number_format($price, 2),
+                'Price' => 0,
                 'Margin' => 0,
                 'AutoSetup' => false
             ];
@@ -136,7 +151,10 @@ class SSLHelper
         return $products;
     }
 
-    public static function importProducts()
+    /**
+     * Import the SSL products
+     */
+    public static function importProducts(): void
     {
         $currencies = self::getCurrencies();
         $productGroupId = DBHelper::getProductGroupId($_POST['ProductGroup']);
@@ -181,7 +199,11 @@ class SSLHelper
         }
     }
 
-    public static function getCurrencies()
+    /**
+     * Get list of available currencies
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getCurrencies(): array
     {
         $currencies = localAPI('GetCurrencies', []);
         if ($currencies['result'] == 'success') {
@@ -190,13 +212,20 @@ class SSLHelper
         return [];
     }
 
-    public static function getLogo()
+    /**
+     * Get the base64 encoded HEXONET logo
+     * @return string
+     */
+    public static function getLogo(): string
     {
         $data = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/logo.png');
-        return 'data:image/png;base64,' . base64_encode($data);
+        return $data ? 'data:image/png;base64,' . base64_encode($data) : '';
     }
 
-    public static function loadLanguage()
+    /**
+     * Load appropriate language strings
+     */
+    public static function loadLanguage(): void
     {
         $language = isset($GLOBALS["CONFIG"]["Language"]) ? $GLOBALS["CONFIG"]["Language"] : 'english';
         if ($_SESSION["uid"]) {

@@ -2,7 +2,7 @@
 
 // This is the bootstrap for PHPStan.
 
-$whmcsPath = __DIR__ . '/../../whmcs';
+$whmcsPath = realpath(__DIR__ . '/../../whmcs');
 $configFile = __DIR__ . '/phpstan.config.php';
 if (file_exists($configFile)) {
     include($configFile);

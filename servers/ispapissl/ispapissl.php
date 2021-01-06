@@ -7,6 +7,7 @@
  *
  * For more information, please refer to the online documentation.
  * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
+ * @noinspection PhpUnused
  */
 
 require_once(__DIR__ . '/vendor/autoload.php');
@@ -24,9 +25,9 @@ use WHMCS\Carbon;
  *
  * @see https://developers.whmcs.com/provisioning-modules/meta-data-params/
  *
- * @return array
+ * @return array<string, mixed>
  */
-function ispapissl_MetaData()
+function ispapissl_MetaData(): array
 {
     return [
         "DisplayName" => "ISPAPI SSL Certificates",
@@ -37,10 +38,11 @@ function ispapissl_MetaData()
     ];
 }
 
-/*
+/**
  * Config options of the module.
+ * @return array<string, array<string, string>>
  */
-function ispapissl_ConfigOptions()
+function ispapissl_ConfigOptions(): array
 {
     DBHelper::createEmailTemplateIfNotExisting();
 
@@ -52,10 +54,12 @@ function ispapissl_ConfigOptions()
     ];
 }
 
-/*
+/**
  * Account will be created under Client Profile page > Products/Services when ordered a ssl certificate
+ * @param array<string, mixed> $params
+ * @return string
  */
-function ispapissl_CreateAccount(array $params)
+function ispapissl_CreateAccount(array $params): string
 {
     try {
         if (DBHelper::orderExists($params['serviceid'])) {
@@ -73,7 +77,11 @@ function ispapissl_CreateAccount(array $params)
     return 'success';
 }
 
-function ispapissl_TerminateAccount(array $params)
+/**
+ * @param array<string, mixed> $params
+ * @return string
+ */
+function ispapissl_TerminateAccount(array $params): string
 {
     $order = DBHelper::getOrder($params['serviceid'], $params['addonId']);
     if (!$order || $order->status == "Awaiting Configuration") {
@@ -83,7 +91,11 @@ function ispapissl_TerminateAccount(array $params)
     return "success";
 }
 
-function ispapissl_AdminServicesTabFields(array $params)
+/**
+ * @param array<string, mixed> $params
+ * @return array<string, mixed>
+ */
+function ispapissl_AdminServicesTabFields(array $params): array
 {
     $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
     $remoteId = '-';
@@ -94,7 +106,10 @@ function ispapissl_AdminServicesTabFields(array $params)
     return ["ISPAPI Order ID" => $remoteId, "SSL Configuration Status" => $status];
 }
 
-function ispapissl_AdminCustomButtonArray()
+/**
+ * @return array<string, string>
+ */
+function ispapissl_AdminCustomButtonArray(): array
 {
     return [
         'Revoke' => 'Revoke',
@@ -102,10 +117,12 @@ function ispapissl_AdminCustomButtonArray()
     ];
 }
 
-/*
- * Resend configuration link if the product exists. click on 'Resend Configuration Email' button on the admin area.
+/**
+ * Resend configuration link if the product exists
+ * @param array<string, mixed> $params
+ * @return string
  */
-function ispapissl_Resend(array $params)
+function ispapissl_Resend(array $params): string
 {
     try {
         $sslOrderId = DBHelper::getOrderId($params['serviceid']);
@@ -120,7 +137,12 @@ function ispapissl_Resend(array $params)
     return 'success';
 }
 
-function ispapissl_Revoke(array $params)
+/**
+ * Revoke certificate
+ * @param array<string, mixed> $params
+ * @return string
+ */
+function ispapissl_Revoke(array $params): string
 {
     try {
         $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -135,7 +157,12 @@ function ispapissl_Revoke(array $params)
     return 'success';
 }
 
-function ispapissl_Reissue(array $params)
+/**
+ * Reissue certificate
+ * @param array<string, mixed> $params
+ * @return string
+ */
+function ispapissl_Reissue(array $params): string
 {
     try {
         $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -150,7 +177,12 @@ function ispapissl_Reissue(array $params)
     return 'success';
 }
 
-function ispapissl_Renew(array $params)
+/**
+ * Renew certificate
+ * @param array<string, mixed> $params
+ * @return string
+ */
+function ispapissl_Renew(array $params): string
 {
     try {
         $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -168,7 +200,10 @@ function ispapissl_Renew(array $params)
 /*
  * The following three steps are essential to setup the ssl certificate. When the customer clicks on the configuration email, he will be guided to complete these steps.
  */
-function ispapissl_SSLStepOne(array $params)
+/**
+ * @param array<string, mixed> $params
+ */
+function ispapissl_SSLStepOne(array $params): void
 {
     try {
         $order = APIHelper::getOrder($params['remoteid']);
@@ -182,7 +217,11 @@ function ispapissl_SSLStepOne(array $params)
     }
 }
 
-function ispapissl_SSLStepTwo(array $params)
+/**
+ * @param array<string, mixed> $params
+ * @return array<string, mixed>
+ */
+function ispapissl_SSLStepTwo(array $params): array
 {
     try {
         if (!strlen($params['jobtitle'])) {
@@ -255,7 +294,11 @@ function ispapissl_SSLStepTwo(array $params)
     return $values;
 }
 
-function ispapissl_SSLStepThree(array $params)
+/**
+ * @param array<string, mixed> $params
+ * @return array<string, string>
+ */
+function ispapissl_SSLStepThree(array $params): array
 {
     try {
         $orderId = $params['remoteid'];
@@ -264,17 +307,19 @@ function ispapissl_SSLStepThree(array $params)
         APIHelper::updateCertificate($orderId, $certClass, $params['approveremail']);
         APIHelper::executeOrder($orderId);
         DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now()]);
-        return null;
+        return [];
     } catch (Exception $e) {
         logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return ["error" => $e->getMessage()];
     }
 }
 
-/*
- * On ClientArea, product details page - the status of the purchased SSL certificate will be displayed.
+/**
+ * Display certificate details in the client area
+ * @param array<string, mixed> $params
+ * @return array<string, mixed>
  */
-function ispapissl_ClientArea(array $params)
+function ispapissl_ClientArea(array $params): array
 {
     try {
         SSLHelper::loadLanguage();
@@ -342,15 +387,13 @@ function ispapissl_ClientArea(array $params)
                         if (isset($response['EMAIL'])) {
                             $tpl['approverEmails'] = $response['EMAIL'];
                         }
-                        if (isset($status)) {
-                            $domain = preg_replace('/^\*\./', '', $status['SSLCERTCN'][0]);
-                            if (count(explode('.', $domain)) < 2) {
-                                $tpl['errorMessage'] = $GLOBALS['_LANG']['orderForm']['domainInvalid'];
-                            } else {
-                                $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
-                                $response = APIHelper::getValidationAddresses($certClass, $domain);
-                                $tpl['approverEmails'] = array_unique(array_merge($tpl['approverEmails'], $response['EMAIL']));
-                            }
+                        $domain = preg_replace('/^\*\./', '', $status['SSLCERTCN'][0]);
+                        if (count(explode('.', $domain)) < 2) {
+                            $tpl['errorMessage'] = $GLOBALS['_LANG']['orderForm']['domainInvalid'];
+                        } else {
+                            $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
+                            $response = APIHelper::getValidationAddresses($certClass, $domain);
+                            $tpl['approverEmails'] = array_unique(array_merge($tpl['approverEmails'], $response['EMAIL']));
                         }
                         return [
                             'templatefile' => "templates/approval.tpl",
@@ -373,8 +416,10 @@ function ispapissl_ClientArea(array $params)
                     "private_key_type" => OPENSSL_KEYTYPE_RSA,
                 ]);
                 $csr = openssl_csr_new($dn, $privateKey, ['digest_alg' => 'sha256']);
-                openssl_csr_export($csr, $csrString);
-                $tpl['config']['csr'] = $csrString;
+                if ($csr) {
+                    openssl_csr_export($csr, $csrString);
+                    $tpl['config']['csr'] = $csrString;
+                }
             }
         }
         return [

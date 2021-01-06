@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * ISPAPI SSL Addon for WHMCS
+ *
+ * SSL Certificates Registration using WHMCS & HEXONET
+ *
+ * For more information, please refer to the online documentation.
+ * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
+ * @noinspection PhpUnused
+ */
+
 require_once(__DIR__ . '/../../servers/ispapissl/vendor/autoload.php');
 
 use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
@@ -8,9 +18,9 @@ use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
 /**
  * Configuration of the addon module.
- * @return string[]
+ * @return array<string, string>
  */
-function ispapissl_addon_config()
+function ispapissl_addon_config(): array
 {
     return [
         "name" => "ISPAPI SSL",
@@ -23,27 +33,27 @@ function ispapissl_addon_config()
 
 /**
  * This function will be called with the activation of the add-on module.
- * @return string[]
+ * @return array<string, string>
  */
-function ispapissl_addon_activate()
+function ispapissl_addon_activate(): array
 {
     return ['status' => 'success','description' => 'Installed'];
 }
 
 /**
  * This function will be called with the deactivation of the add-on module.
- * @return string[]
+ * @return array<string, string>
  */
-function ispapissl_addon_deactivate()
+function ispapissl_addon_deactivate(): array
 {
     return ['status' => 'success','description' => 'Uninstalled'];
 }
 
 /**
  * Module interface functionality
- * @param $vars
+ * @param array<string, mixed> $vars
  */
-function ispapissl_addon_output($vars)
+function ispapissl_addon_output(array $vars): void
 {
     global $templates_compiledir;
 
@@ -61,7 +71,7 @@ function ispapissl_addon_output($vars)
     $smarty = new Smarty();
     $smarty->setTemplateDir(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
     $smarty->setCompileDir($templates_compiledir);
-    $smarty->caching = false;
+    $smarty->setCaching(Smarty::CACHING_OFF);
     $smarty->assign('lang', $vars['_lang']);
 
     try {

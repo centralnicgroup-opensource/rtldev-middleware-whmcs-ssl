@@ -28,5 +28,8 @@
       "@composer update",
       "phpunit"
     ]
+  },
+  "require": {
+    "ext-openssl": "*"
   }
 }

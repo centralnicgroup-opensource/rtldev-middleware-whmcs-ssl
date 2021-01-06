@@ -2,12 +2,18 @@
 
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
+use Exception;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 use HEXONET\ResponseParser as RP;
 
 class APIHelper
 {
-    public static function getUserStatus()
+    /**
+     * Get user status
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function getUserStatus(): array
     {
         $command = [
             'COMMAND' => 'StatusUser'
@@ -15,7 +21,13 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function createCertificate(string $certClass)
+    /**
+     * Create certificate
+     * @param string $certClass
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function createCertificate(string $certClass): array
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
@@ -26,7 +38,18 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function replaceCertificate(int $orderId, string $certClass, string $csr, string $serverType, string $domain, array $contact)
+    /**
+     * Replace certificate
+     * @param int $orderId
+     * @param string $certClass
+     * @param string $csr
+     * @param string $serverType
+     * @param string $domain
+     * @param array<string, mixed> $contact
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function replaceCertificate(int $orderId, string $certClass, string $csr, string $serverType, string $domain, array $contact): array
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
@@ -42,7 +65,15 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function updateCertificate(int $orderId, string $certClass, string $email)
+    /**
+     * Update certificate
+     * @param int $orderId
+     * @param string $certClass
+     * @param string $email
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function updateCertificate(int $orderId, string $certClass, string $email): array
     {
         $command = [
             'COMMAND' => 'CreateSSLCert',
@@ -55,7 +86,13 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function renewCertificate(int $orderId)
+    /**
+     * Renew certificate
+     * @param int $orderId
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function renewCertificate(int $orderId): array
     {
         $order = self::getOrder($orderId);
         $command = [
@@ -65,7 +102,14 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function reissueCertificate(int $orderId, string $csr)
+    /**
+     * Reissue certificate
+     * @param int $orderId
+     * @param string $csr
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function reissueCertificate(int $orderId, string $csr): array
     {
         $order = self::getOrder($orderId);
         $command = [
@@ -76,7 +120,13 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function revokeCertificate(int $orderId)
+    /**
+     * Revoke certificate
+     * @param int $orderId
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function revokeCertificate(int $orderId): array
     {
         $order = self::getOrder($orderId);
         $command = [
@@ -87,7 +137,13 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getOrder(int $orderId)
+    /**
+     * Get order
+     * @param int $orderId
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function getOrder(int $orderId): array
     {
         $command = [
             'COMMAND' => 'QueryOrderList',
@@ -121,7 +177,13 @@ class APIHelper
         return $response;
     }
 
-    public static function executeOrder(int $orderId)
+    /**
+     * Execute order
+     * @param int $orderId
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function executeOrder(int $orderId): array
     {
         $command = [
             'COMMAND' => 'ExecuteOrder',
@@ -130,7 +192,13 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function parseCSR(string $csr)
+    /**
+     * Parse CSR
+     * @param string $csr
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function parseCSR(string $csr): array
     {
         $command = [
             'COMMAND' => 'ParseSSLCertCSR',
@@ -139,7 +207,13 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getCertStatus(int $certId)
+    /**
+     * Get certificate status
+     * @param int $certId
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function getCertStatus(int $certId): array
     {
         $command = [
             'COMMAND' => 'StatusSSLCert',
@@ -148,7 +222,13 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getCertEmail(int $certId)
+    /**
+     * Get e-mail addreses for certificate
+     * @param int $certId
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function getCertEmail(int $certId): array
     {
         $command = [
             'COMMAND' => 'QuerySSLCertDCVEmailAddressList',
@@ -157,7 +237,14 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getEmailAddress(string $certClass, string $csr)
+    /**
+     * Get e-mail addresses for CSR
+     * @param string $certClass
+     * @param string $csr
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function getEmailAddress(string $certClass, string $csr): array
     {
         $command = [
             'COMMAND' => 'QuerySSLCertDCVEmailAddressList',
@@ -167,7 +254,14 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function getValidationAddresses(string $certClass, string $domain)
+    /**
+     * Get email addresses for domain
+     * @param string $certClass
+     * @param string $domain
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function getValidationAddresses(string $certClass, string $domain): array
     {
         $command = [
             'COMMAND' => 'QuerySSLCertDCVEMailAddressList',
@@ -177,7 +271,14 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    public static function resendEmail(int $certId, string $email)
+    /**
+     * Resend SSL activation e-mail
+     * @param int $certId
+     * @param string $email
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function resendEmail(int $certId, string $email): array
     {
         $command = [
             'COMMAND' => 'ResendSSLCertEmail',
@@ -187,6 +288,11 @@ class APIHelper
         return self::getResponse($command);
     }
 
+    /**
+     * Get current exchange rates
+     * @return array<string, mixed>
+     * @throws Exception
+     */
     public static function getExchangeRates()
     {
         $command = [
@@ -195,12 +301,18 @@ class APIHelper
         return self::getResponse($command);
     }
 
-    private static function getResponse(array $command)
+    /**
+     * Make an API call and process the response
+     * @param array<string, mixed> $command
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    private static function getResponse(array $command): array
     {
         $response = Ispapi::call($command);
         if ($response['CODE'] != 200) {
-            throw new \Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
+            throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
         }
-        return $response['PROPERTY'];
+        return isset($response['PROPERTY']) ? $response['PROPERTY'] : [];
     }
 }
