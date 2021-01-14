@@ -3,8 +3,7 @@
 
 ### Bug Fixes
 
-* **release:** fix release process ([4bb79d7](https://github.com/hexonet/whmcs-ispapi-ssl/commit/4bb79d74083eef9cd4c8728ea63c497c1b36d746))
-* **release:** fix release process ([57e197e](https://github.com/hexonet/whmcs-ispapi-ssl/commit/57e197e3a67bee41f4646c95f5265c370c27f714))
+* **release:** fix release process ([25440f3](https://github.com/hexonet/whmcs-ispapi-ssl/commit/25440f37c05148fc3e3c1f5e903d0e99c5738b50))
 
 
 ### Code Refactoring
