@@ -1,7 +1,7 @@
 # WHMCS "ISPAPI" SSL Provisioning Module #
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-[![Build Status](https://travis-ci.com/hexonet/whmcs-ispapi-ssl.svg?branch=master)](https://travis-ci.com/hexonet/whmcs-ispapi-ssl)
+[![Build Status](https://github.com/hexonet/whmcs-ispapi-ssl/workflows/Release/badge.svg?branch=master)](https://github.com/hexonet/whmcs-ispapi-ssl/workflows/Release/badge.svg?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/hexonet/whmcs-ispapi-ssl/blob/master/CONTRIBUTING.md)
 
@@ -11,14 +11,14 @@ This Repository covers the WHMCS SSL Module of HEXONET. It provides the followin
 
 The ISPAPI SSL Module supports the following functions and features:
 
-  * Unified handling of different suppliers
-  * Support for testing environment
-  * Certificate products directly connected to the ISPAPI Registrar Module
-  * Create, renew and revoke certificates
-  * SSL addon
-       * Load available SSL certificates and import them under a product group
-       * Bulk price update by using a profit margin
-       * Multicurrency support
+* Unified handling of different suppliers
+* Support for testing environment
+* Certificate products directly connected to the ISPAPI Registrar Module
+* Create, renew and revoke certificates
+* SSL addon
+  * Load available SSL certificates and import them under a product group
+  * Bulk price update by using a profit margin
+  * Multicurrency support
 
 ## Resources ##
 
@@ -34,7 +34,6 @@ Read the following to get more information ...
 
 * [Getting started](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Usage-Guide#getting-started)
 * [Configuration](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Usage-Guide#configuration)
-
 
 ## Minimum Requirements ##
 
