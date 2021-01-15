@@ -98,16 +98,34 @@ function doTar() {
         .pipe(dest('./pkg'))
 }
 
-exports.prepare = series(
+exports.lint = series(
     doComposerUpdate,
-    doLint,
+    doLint
+)
+
+exports.copy = series(
     doDistClean,
     doCopyFiles
 )
-exports.default = series(
-    exports.prepare,
+
+exports.prepare = series(
+    exports.lint,
+    exports.copy
+)
+
+exports.archives = series(
     doGitZip,
     doZip,
-    doTar,
+    doTar
+)
+
+exports.default = series(
+    exports.prepare,
+    exports.archives,
+    doFullClean
+)
+exports.release = series(
+    exports.copy,
+    exports.archives,
     doFullClean
 )
