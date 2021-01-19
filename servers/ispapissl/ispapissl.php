@@ -33,7 +33,7 @@ function ispapissl_MetaData()
         "APIVersion" => "1.1",
         "RequiresServer" => false,
         "AutoGenerateUsernameAndPassword" => false,
-        "MODULEVersion" => "9.1.1" // custom meta data
+        "MODULEVersion" => "9.1.2" // custom meta data
     ];
 }
 

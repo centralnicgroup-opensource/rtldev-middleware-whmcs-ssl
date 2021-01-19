@@ -1,3 +1,10 @@
+## [9.1.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.1...v9.1.2) (2021-01-19)
+
+
+### Bug Fixes
+
+* **semantic-release:** switch back to standard configuration ([dc495c9](https://github.com/hexonet/whmcs-ispapi-ssl/commit/dc495c9da351c9a713881b8b2a8a518e20f8a521))
+
 ## [9.1.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.0...v9.1.1) (2021-01-19)
 
 
