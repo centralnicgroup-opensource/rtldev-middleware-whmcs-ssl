@@ -1,3 +1,10 @@
+## [9.1.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.0...v9.1.1) (2021-01-19)
+
+
+### Bug Fixes
+
+* **github actions:** dep-bump; add persists-credentials ([90c3518](https://github.com/hexonet/whmcs-ispapi-ssl/commit/90c351845f492803767aaf39602d41ad4dcbc3a9))
+
 # [9.1.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.0.0...v9.1.0) (2021-01-19)
 
 
