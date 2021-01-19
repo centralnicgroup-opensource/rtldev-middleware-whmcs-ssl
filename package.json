@@ -45,7 +45,7 @@
     "application"
   ],
   "devDependencies": {
-    "@hexonet/semantic-release-github-whmcs-config": "^1.3.4",
+    "@hexonet/semantic-release-github-whmcs-config": "^1.3.6",
     "semantic-release": "^17.3.2",
     "end-of-stream-promise": "^1.0.0",
     "gulp": "^4.0.2",
