@@ -1,3 +1,10 @@
+# [9.1.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.0.0...v9.1.0) (2021-01-19)
+
+
+### Features
+
+* **composer:** implement composer autoload ([5f3036d](https://github.com/hexonet/whmcs-ispapi-ssl/commit/5f3036d8009d5ed24b79296e62079c9c78a3fe64))
+
 # [9.0.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v8.0.1...v9.0.0) (2020-12-11)
 
 
