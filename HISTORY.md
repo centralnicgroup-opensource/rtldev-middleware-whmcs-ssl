@@ -1,3 +1,10 @@
+## [9.1.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.2...v9.1.3) (2021-01-20)
+
+
+### Bug Fixes
+
+* **build:** add missing vendor folder to archives ([f3b0245](https://github.com/hexonet/whmcs-ispapi-ssl/commit/f3b02453c89a4b099839fdc35996c8c1bf629ef5)), closes [#83](https://github.com/hexonet/whmcs-ispapi-ssl/issues/83)
+
 ## [9.1.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.1...v9.1.2) (2021-01-19)
 
 
