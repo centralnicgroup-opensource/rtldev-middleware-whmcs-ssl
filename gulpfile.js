@@ -125,6 +125,7 @@ exports.default = series(
     doFullClean
 )
 exports.release = series(
+    doComposerUpdate,
     exports.copy,
     exports.archives,
     doFullClean
