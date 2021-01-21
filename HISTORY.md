@@ -1,3 +1,10 @@
+# [9.2.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.3...v9.2.0) (2021-01-21)
+
+
+### Features
+
+* **phpstan:** implement phpstan code validation ([cc9665d](https://github.com/hexonet/whmcs-ispapi-ssl/commit/cc9665dfab8bc7b4c625e9b8103e30dbc666cb0a))
+
 ## [9.1.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.2...v9.1.3) (2021-01-20)
 
 
