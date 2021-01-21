@@ -1,3 +1,10 @@
+## [9.2.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.0...v9.2.1) (2021-01-21)
+
+
+### Bug Fixes
+
+* **dep-bump:** fix auto-version update process ([015f978](https://github.com/hexonet/whmcs-ispapi-ssl/commit/015f978fd48ff81d7d31ae9b76e17dbbb5b4d753))
+
 # [9.2.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.1.3...v9.2.0) (2021-01-21)
 
 
