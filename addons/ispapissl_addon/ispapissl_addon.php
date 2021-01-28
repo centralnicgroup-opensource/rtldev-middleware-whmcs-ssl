@@ -14,7 +14,6 @@ require_once(__DIR__ . '/../../servers/ispapissl/vendor/autoload.php');
 
 use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
 use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
-use WHMCS\Module\Registrar\Ispapi\LoadRegistrars;
 
 /**
  * Configuration of the addon module.
@@ -57,13 +56,17 @@ function ispapissl_addon_output(array $vars): void
 {
     global $templates_compiledir;
 
-    if (!class_exists('WHMCS\Module\Registrar\Ispapi\LoadRegistrars')) {
+    if (!class_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi')) {
         echo "The ISPAPI Registrar Module is required. Please install it and activate it.";
         return;
     }
 
-    $registrars = new LoadRegistrars();
-    if (empty($registrars->getLoadedRegistars())) {
+    if (!method_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi', 'checkAuth')) {
+        echo "The ISPAPI Registrar Module is outdated. Please update it.";
+        return;
+    }
+
+    if (!\WHMCS\Module\Registrar\Ispapi\Ispapi::checkAuth()) {
         echo "The ISPAPI Registrar Module authentication failed! Please verify your registrar credentials and try again.";
         return;
     }
