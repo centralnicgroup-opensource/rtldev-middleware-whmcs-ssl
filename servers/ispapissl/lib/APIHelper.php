@@ -309,6 +309,9 @@ class APIHelper
      */
     private static function getResponse(array $command): array
     {
+        if (!class_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi')) {
+            throw new Exception("The ISPAPI Registrar Module is required. Please install it and activate it.");
+        }
         $response = Ispapi::call($command);
         if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
