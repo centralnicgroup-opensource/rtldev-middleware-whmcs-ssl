@@ -42,9 +42,9 @@ class DBHelper
     /**
      * Get the Order ID for the given Service ID
      * @param int $serviceId
-     * @return int
+     * @return int|null
      */
-    public static function getOrderId(int $serviceId): int
+    public static function getOrderId(int $serviceId)
     {
         return DB::table('tblsslorders')
             ->where('serviceid', '=', $serviceId)
@@ -132,9 +132,9 @@ class DBHelper
     /**
      * Get the product group ID based on its name
      * @param string $productGroupName
-     * @return int
+     * @return int|null
      */
-    public static function getProductGroupId(string $productGroupName): int
+    public static function getProductGroupId(string $productGroupName)
     {
         return DB::table('tblproductgroups')
             ->where('name', '=', $productGroupName)

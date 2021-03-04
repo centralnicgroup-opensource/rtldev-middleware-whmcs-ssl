@@ -153,11 +153,15 @@ class SSLHelper
 
     /**
      * Import the SSL products
+     * @throws \Exception
      */
     public static function importProducts(): void
     {
         $currencies = self::getCurrencies();
         $productGroupId = DBHelper::getProductGroupId($_POST['ProductGroup']);
+        if (!$productGroupId) {
+            throw new \Exception("Product group ID could not be determined for {$_POST['ProductGroup']}");
+        }
 
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
             $productName = self::getProductName($certificateClass);
