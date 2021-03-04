@@ -1,3 +1,10 @@
+## [9.2.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.1...v9.2.2) (2021-03-04)
+
+
+### Bug Fixes
+
+* **db:** fix return declaration for getProductId ([6717fc1](https://github.com/hexonet/whmcs-ispapi-ssl/commit/6717fc1fe4c26e9930061c92c460608e5d7e9a5a))
+
 ## [9.2.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.0...v9.2.1) (2021-01-21)
 
 
