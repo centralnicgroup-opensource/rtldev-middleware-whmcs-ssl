@@ -144,9 +144,9 @@ class DBHelper
     /**
      * Get the product ID based on the certificate class
      * @param string $certificateClass
-     * @return int
+     * @return int|null
      */
-    public static function getProductId(string $certificateClass): int
+    public static function getProductId(string $certificateClass)
     {
         return DB::table('tblproducts')
             ->where('configoption1', '=', $certificateClass)
