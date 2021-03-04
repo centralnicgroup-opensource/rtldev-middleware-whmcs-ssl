@@ -1,3 +1,10 @@
+## [9.2.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.2...v9.2.3) (2021-03-04)
+
+
+### Bug Fixes
+
+* **db:** fix function return definitions that potentially can return null ([051403a](https://github.com/hexonet/whmcs-ispapi-ssl/commit/051403a2a8e0e21b55b738b4ca0909d10db97637))
+
 ## [9.2.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.1...v9.2.2) (2021-03-04)
 
 
