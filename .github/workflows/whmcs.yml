@@ -4,9 +4,6 @@ on: [push, pull_request]
 jobs:
   test:
     name: Test @ PHP ${{ matrix.php-version }} - x86 - ubuntu-latest
-    # Support [skip ci] out of box with github actions Workaround
-    # Only works for push https://github.com/actions/runner/issues/774
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && contains(toJson(github.event.commits), '[skip ci]') == false)
     strategy:
       matrix:
         php-version:
@@ -48,5 +45,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           WHMCSMP_LOGIN: ${{ secrets.WHMCSMP_LOGIN }}
           WHMCSMP_PASSWORD: ${{ secrets.WHMCSMP_PASSWORD }}
-          WHMCSMP_PRODUCTID: ${{ secrets.WHMCSMP_PRODUCTID_ISPAPI_SSL }}
+          WHMCSMP_PRODUCTID: ${{ secrets.WHMCSMP_PRODUCTID }}
         run: npx semantic-release
