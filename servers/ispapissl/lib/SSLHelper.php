@@ -2,6 +2,8 @@
 
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
+use Exception;
+
 class SSLHelper
 {
     /**
@@ -24,62 +26,9 @@ class SSLHelper
     }
 
     /**
-     * Get human readable product name based on certificate class
-     * @param string $certificateClass
-     * @return string
-     */
-    public static function getProductName(string $certificateClass): string
-    {
-        $certificateNames = [
-            'COMODO_ESSENTIALSSL' => 'Sectigo Essential SSL',
-            'COMODO_ESSENTIALSSL_WILDCARD' => 'Sectigo Essential SSL Wildcard',
-            'COMODO_SSL_EV' => 'Sectigo EV SSL',
-            'COMODO_INSTANTSSL' => 'Sectigo Instant SSL',
-            'COMODO_INSTANTSSL_PREMIUM' => 'Sectigo Instant SSL Premium',
-            'COMODO_POSITIVESSL' => 'Sectigo Positive SSL',
-            'COMODO_PREMIUMSSL_WILDCARD' => 'Sectigo Premium SSL Wildcard',
-            'COMODO_SSL' => 'Sectigo DV SSL',
-            'COMODO_SSL_WILDCARD' => 'Sectigo DV SSL Wildcard',
-            'GEOTRUST_QUICKSSL' => 'GeoTrust Quick SSL',
-            'GEOTRUST_QUICKSSLPREMIUM' => 'GeoTrust Quick SSL Premium',
-            'GEOTRUST_QUICKSSLPREMIUM_SAN' => 'GeoTrust Quick SSL Premium SAN Package',
-            'GEOTRUST_RAPIDSSL' => 'GeoTrust Rapid SSL',
-            'GEOTRUST_RAPIDSSL_WILDCARD' => 'GeoTrust Rapid SSL Wildcard',
-            'GEOTRUST_TRUEBIZID' => 'GeoTrust True Business ID',
-            'GEOTRUST_TRUEBIZID_SAN' => 'GeoTrust True Business ID SAN Package',
-            'GEOTRUST_TRUEBIZID_EV' => 'GeoTrust True Business ID EV',
-            'GEOTRUST_TRUEBIZID_EV_SAN' => 'GeoTrust True Business ID EV SAN Package',
-            'GEOTRUST_TRUEBIZID_WILDCARD' => 'GeoTrust True Business ID Wildcard',
-            'SYMANTEC_SECURESITE' => 'Symantec Secure Site',
-            'SYMANTEC_SECURESITE_EV' => 'Symantec Secure Site EV',
-            'SYMANTEC_SECURESITE_PRO' => 'Symantec Secure Site Pro',
-            'SYMANTEC_SECURESITE_PRO_EV' => 'Symantec Secure Site Pro EV',
-            'THAWTE_SSL123' => 'thawte SSL 123',
-            'THAWTE_SSLWEBSERVER' => 'thawte SSL Webserver',
-            'THAWTE_SSLWEBSERVER_EV' => 'thawte SSL Webserver EV',
-            'THAWTE_SSLWEBSERVER_WILDCARD' => 'thawte SSL Webserver Wildcard',
-            'TRUSTWAVE_DOMAINVETTEDSSL' => 'Trustwave Domain vetted SSL',
-            'TRUSTWAVE_PREMIUMSSL' => 'Trustwave Premium SSL',
-            'TRUSTWAVE_PREMIUMSSL_SAN' => 'Trustwave Premium SSL SAN Package',
-            'TRUSTWAVE_PREMIUMSSL_EV' => 'Trustwave Premium SSL EV',
-            'TRUSTWAVE_PREMIUMSSL_EV_SAN' => 'Trustwave Premium SSL EV SAN Package',
-            'TRUSTWAVE_PREMIUMSSL_WILDCARD' => 'Trustwave Premium SSL Wildcard'
-        ];
-        if (isset($certificateNames[$certificateClass])) {
-            return $certificateNames[$certificateClass];
-        }
-
-        $certificateName = str_replace('_', ' ', strtolower($certificateClass));
-        $certificateName = str_replace('ssl', 'SSL', $certificateName);
-        $certificateName = str_replace(' ev', ' EV', $certificateName);
-        $certificateName = str_replace(' san', ' SAN', $certificateName);
-        $certificateName = str_replace('domainvetted', 'Domain-Vetted ', $certificateName);
-        return ucwords($certificateName);
-    }
-
-    /**
      * Get available SSL products from HEXONET
      * @return array<int|string, array<string, mixed>>
+     * @throws Exception
      */
     public static function getProducts(): array
     {
@@ -94,6 +43,14 @@ class SSLHelper
         if (!is_array($certs)) {
             return $products;
         }
+
+        $file = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/products.json');
+        if ($file === false) {
+            return $products;
+        }
+        $json = json_decode($file, true);
+        $defs = array_column($json['certificates'], 'class');
+
         foreach ($certs as $key => $val) {
             preg_match($pattern, $val, $matches);
             $productKey = $matches[1];
@@ -131,9 +88,12 @@ class SSLHelper
                 $price = round($price / $currencies[$arrayKey]['rate'], 2);
             }
 
+            $defKey = array_search($productKey, $defs);
+
             $products[$productKey] = [
                 'id' => 0,
-                'Name' => self::getProductName($productKey),
+                'Provider' => $json['certificates'][$defKey]['provider'],
+                'Name' => $json['certificates'][$defKey]['name'],
                 'Cost' => number_format($price, 2),
                 'Price' => 0,
                 'Margin' => 0,
@@ -143,7 +103,7 @@ class SSLHelper
             $existingProduct = DBHelper::getProduct($productKey);
             if ($existingProduct) {
                 $products[$productKey]['id'] = $existingProduct->id;
-                $products[$productKey]['AutoSetup'] = $existingProduct->autosetup ? true : false;
+                $products[$productKey]['AutoSetup'] = (bool)$existingProduct->autosetup;
                 $products[$productKey]['Price'] = DBHelper::getProductPricing($existingProduct->id, $defaultCurrency->id);
                 $products[$productKey]['Margin'] = round(((($products[$productKey]['Price'] / $products[$productKey]['Cost']) * 100) - 100), 2);
             }
@@ -153,23 +113,71 @@ class SSLHelper
 
     /**
      * Import the SSL products
-     * @throws \Exception
+     * @throws Exception
      */
     public static function importProducts(): void
     {
         $currencies = self::getCurrencies();
-        $productGroupId = DBHelper::getProductGroupId($_POST['ProductGroup']);
-        if (!$productGroupId) {
-            throw new \Exception("Product group ID could not be determined for {$_POST['ProductGroup']}");
-        }
+        $json = self::loadDefinitionFile();
+        $providers = array_column($json['providers'], 'name');
+        $certs = array_column($json['certificates'], 'class');
 
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
-            $productName = self::getProductName($certificateClass);
+            $key = array_search($certificateClass, $certs);
+            $product = $json['certificates'][$key];
+            $productName = $product['name'];
             $productId = DBHelper::getProductId($certificateClass);
+
+            $productDescription = '';
+            if ($_POST['ProductDescriptions']) {
+                $providerKey = array_search($product['provider'], $providers);
+                $logo = $json['providers'][$providerKey]['logo'];
+                $productDescription = '<img src="modules/addons/ispapissl_addon/logos/' . $logo . '" />';
+                if (!isset($product['features']['domains'])) {
+                    $product['features']['domains'] = null;
+                }
+                foreach ($product['features'] as $featKey => $featVal) {
+                    switch ($featKey) {
+                        case 'type':
+                            switch ($featVal) {
+                                case 'DV':
+                                    $productType = 'domain';
+                                    break;
+                                case 'EV':
+                                    $productType = 'extended';
+                                    break;
+                                case 'OV':
+                                    $productType = 'organization';
+                                    break;
+                                default:
+                                    $productType = 'unknown';
+                            }
+                            $productDescription .= PHP_EOL . 'validation: ' . $productType;
+                            break;
+                        case 'wildcard':
+                            $productDescription .= PHP_EOL . 'wildcard: ' . ($featVal ? 'included' : 'no');
+                            break;
+                        case 'domains':
+                            $productDescription .= PHP_EOL . 'additional domains: ' . ($featVal ?? 'no');
+                            break;
+                        case 'subdomains':
+                            $productDescription .= PHP_EOL . 'additional subdomains: ' . $featVal;
+                            break;
+                        default:
+                            $productDescription .= PHP_EOL . $featKey . ': ' . $featVal;
+                    }
+                }
+            }
+
+            $productGroupId = DBHelper::getProductGroupId($product['provider']);
+            if (!$productGroupId) {
+                throw new Exception("Product group ID could not be determined for {$product['provider']}");
+            }
+
             if (!$productId) {
-                $productId = DBHelper::createProduct($productName, $productGroupId, $certificateClass, $_POST['AutoSetup']);
+                $productId = DBHelper::createProduct($productName, $productDescription, $productGroupId, $certificateClass, $_POST['AutoSetup']);
             } else {
-                DBHelper::updateProduct($productId, $_POST['AutoSetup']);
+                DBHelper::updateProduct($productId, $productName, $productDescription, $productGroupId, $_POST['AutoSetup']);
             }
 
             $productPrices = [];
@@ -204,6 +212,36 @@ class SSLHelper
     }
 
     /**
+     * Import the SSL Product Groups
+     * @throws Exception
+     */
+    public static function importProductGroups(): void
+    {
+        $json = self::loadDefinitionFile();
+        foreach ($json['providers'] as $provider) {
+            $productGroupId = DBHelper::getProductGroupId($provider['name']);
+            if ($productGroupId) {
+                DBHelper::updateProductGroup($productGroupId, $provider);
+            } else {
+                DBHelper::createProductGroup($provider);
+            }
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function loadDefinitionFile(): array
+    {
+        $file = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/products.json');
+        if ($file === false) {
+            throw new Exception("Unable to parse products definition file");
+        }
+        return json_decode($file, true);
+    }
+
+    /**
      * Get list of available currencies
      * @return array<int, array<string, mixed>>
      */
@@ -231,7 +269,7 @@ class SSLHelper
      */
     public static function loadLanguage(): void
     {
-        $language = isset($GLOBALS["CONFIG"]["Language"]) ? $GLOBALS["CONFIG"]["Language"] : 'english';
+        $language = $GLOBALS["CONFIG"]["Language"] ?? 'english';
         if ($_SESSION["uid"]) {
             $language = DBHelper::getUserLanguage($_SESSION['uid']);
         } elseif (isset($_SESSION["adminid"])) {

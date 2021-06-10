@@ -57,8 +57,8 @@
   },
   "scripts": {
     "phpCompatibility": "./scripts/phpcompatibility.sh",
-    "codeCheck": "phpcs --standard=PSR12 -q -n --colors --ignore=vendor addons servers tests",
-    "codeFix": "phpcbf --standard=PSR12 -q --ignore=vendor addons servers tests",
+    "codeCheck": "phpcs --standard=PSR12 -q -n --colors --ignore=node_modules,vendor addons servers tests",
+    "codeFix": "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor addons servers tests",
     "phpStan": "./servers/ispapissl/vendor/bin/phpstan analyse",
     "test": "phpunit"
   }
