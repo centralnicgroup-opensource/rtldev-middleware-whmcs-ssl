@@ -2,7 +2,9 @@
 
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
+use Exception;
 use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
@@ -44,7 +46,7 @@ class DBHelper
      * @param int $serviceId
      * @return int|null
      */
-    public static function getOrderId(int $serviceId)
+    public static function getOrderId(int $serviceId): ?int
     {
         return DB::table('tblsslorders')
             ->where('serviceid', '=', $serviceId)
@@ -56,7 +58,7 @@ class DBHelper
      * Get the order for the given Service ID
      * @param int $serviceId
      * @param int $addonId
-     * @return Builder|mixed|null
+     * @return Builder|Model|object|null
      */
     public static function getOrder(int $serviceId, int $addonId)
     {
@@ -116,29 +118,87 @@ class DBHelper
     }
 
     /**
-     * Get a list of product groups
-     * @return Collection<string>
-     */
-    public static function getProductGroups(): Collection
-    {
-        $productGroups = DB::table('tblproductgroups')->pluck('name');
-        if (empty($productGroups)) {
-            DB::table('tblproductgroups')->insert(['name' => 'SSL Certificates']);
-            return DB::table('tblproductgroups')->pluck('name');
-        }
-        return $productGroups;
-    }
-
-    /**
      * Get the product group ID based on its name
      * @param string $productGroupName
      * @return int|null
      */
-    public static function getProductGroupId(string $productGroupName)
+    public static function getProductGroupId(string $productGroupName): ?int
     {
         return DB::table('tblproductgroups')
-            ->where('name', '=', $productGroupName)
+            ->where('name', 'LIKE', "%$productGroupName%")
             ->value('id');
+    }
+
+    /**
+     * Create product group based on provider info
+     * @param array<string, mixed> $provider
+     * @return int
+     */
+    public static function createProductGroup(array $provider): int
+    {
+        $ts = date('Y-m-d H:i:s');
+        $groupOrder = DB::table('tblproductgroups')->max('order') + 1;
+
+        $productGroupId = DB::table('tblproductgroups')
+            ->insertGetId([
+                'name' => $provider['name'] . ' SSL Certificates',
+                'slug' => strtolower($provider['name'] . '-ssl'),
+                'headline' => $provider['headline'],
+                'tagline' => $provider['tagline'],
+                'orderfrmtpl' => 'supreme_comparison',
+                'order' => $groupOrder,
+                'created_at' => $ts,
+                'updated_at' => $ts
+            ]);
+
+        self::setProductGroupFeatures($productGroupId, $provider['features']);
+
+        return $productGroupId;
+    }
+
+    /**
+     * Update product group based on provider info
+     * @param int $productGroupId
+     * @param array<string, mixed> $provider
+     */
+    public static function updateProductGroup(int $productGroupId, array $provider): void
+    {
+        DB::table('tblproductgroups')
+            ->where('id', '=', $productGroupId)
+            ->update([
+                'name' => $provider['name'] . ' SSL Certificates',
+                'slug' => strtolower($provider['name'] . '-ssl'),
+                'headline' => $provider['headline'],
+                'tagline' => $provider['tagline'],
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+        self::setProductGroupFeatures($productGroupId, $provider['features']);
+    }
+
+    /**
+     * @param int $productGroupId
+     * @param array<string, string> $features
+     */
+    private static function setProductGroupFeatures(int $productGroupId, array $features): void
+    {
+        $ts = date('Y-m-d H:i:s');
+        $featureOrder = 1;
+
+        DB::table('tblproduct_group_features')
+            ->where('product_group_id', '=', $productGroupId)
+            ->delete();
+
+        foreach ($features as $feature) {
+            DB::table('tblproduct_group_features')
+                ->insert([
+                    'product_group_id' => $productGroupId,
+                    'feature' => $feature,
+                    'order' => $featureOrder++,
+                    'created_at' => $ts,
+                    'updated_at' => $ts
+                ]);
+        }
     }
 
     /**
@@ -146,7 +206,7 @@ class DBHelper
      * @param string $certificateClass
      * @return int|null
      */
-    public static function getProductId(string $certificateClass)
+    public static function getProductId(string $certificateClass): ?int
     {
         return DB::table('tblproducts')
             ->where('configoption1', '=', $certificateClass)
@@ -157,7 +217,7 @@ class DBHelper
     /**
      * Get the product based on the certificate class
      * @param string $certificateClass
-     * @return Builder|mixed|null
+     * @return Builder|Model|object|null
      */
     public static function getProduct(string $certificateClass)
     {
@@ -198,18 +258,20 @@ class DBHelper
     /**
      * Create a product
      * @param string $productName
+     * @param string $productDescription
      * @param int $productGroupId
      * @param string $certificateClass
      * @param string $autoSetup
      * @return int
      */
-    public static function createProduct(string $productName, int $productGroupId, string $certificateClass, string $autoSetup): int
+    public static function createProduct(string $productName, string $productDescription, int $productGroupId, string $certificateClass, string $autoSetup): int
     {
         return DB::table('tblproducts')
             ->insertGetId([
                 'type' => 'other',
                 'gid' => $productGroupId,
                 'name' => $productName,
+                'description' => $productDescription,
                 'paytype' => 'recurring',
                 'autosetup' => $autoSetup,
                 'servertype' => 'ispapissl',
@@ -221,11 +283,26 @@ class DBHelper
     /**
      * Update a product
      * @param int $productId
+     * @param string $productName
+     * @param string $productDescription
+     * @param int $productGroupId
      * @param string $autoSetup
      * @return int
      */
-    public static function updateProduct(int $productId, string $autoSetup): int
+    public static function updateProduct(int $productId, string $productName, string $productDescription, int $productGroupId, string $autoSetup): int
     {
+        if ($productDescription) {
+            return DB::table('tblproducts')
+                ->where('id', '=', $productId)
+                ->update(
+                    [
+                        'gid' => $productGroupId,
+                        'autosetup' => $autoSetup,
+                        'name' => $productName,
+                        'description' => $productDescription
+                    ]
+                );
+        }
         return DB::table('tblproducts')
             ->where('id', '=', $productId)
             ->update(['autosetup' => $autoSetup]);
@@ -276,13 +353,18 @@ class DBHelper
 
     /**
      * Get default system currency
-     * @return Builder|mixed|null
+     * @return Builder|Model|object
+     * @throws Exception
      */
     public static function getDefaultCurrency()
     {
-        return DB::table('tblcurrencies')
+        $defaultCurrency = DB::table('tblcurrencies')
             ->where('default', '=', 1)
             ->first();
+        if ($defaultCurrency == null) {
+            throw new Exception("Unable to determine default currency");
+        }
+        return $defaultCurrency;
     }
 
     /**

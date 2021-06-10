@@ -8,20 +8,6 @@
         <form action="addonmodules.php?module=ispapissl_addon" id="frmTldImport" class="form-horizontal" method="POST">
             <div class="admin-tabs-v2">
                 <div class="form-group">
-                    <label for="ProductGroup" class="col-md-4 col-sm-6 control-label">
-                        {AdminLang::trans('products.productgroup')}<br>
-                        <small>{$lang.productGroupDescription}</small>
-                    </label>
-                    <div class="col-md-4 col-sm-6">
-                        <select class="form-control select-inline" name="ProductGroup" id="ProductGroup">
-                            <option></option>
-                            {foreach $productGroups as $name}
-                                <option value="{$name}"{if $smarty.post.ProductGroup eq $name} selected{/if}>{$name}</option>
-                            {/foreach}
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
                     <label for="inputMarginType" class="col-md-4 col-sm-6 control-label">
                         {AdminLang::trans('domains.tldImport.marginType')}<br>
                         <small>{AdminLang::trans('domains.tldImport.fixedOrPercentage')}</small>
@@ -106,6 +92,19 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label for="inputProductDescriptions" class="col-md-4 col-sm-6 control-label">
+                        {$lang.productDescriptions}<br>
+                        <small>{$lang.productDescriptionsDescription}</small>
+                    </label>
+                    <div class="col-md-4 col-sm-6">
+                        <div class="bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-off bootstrap-switch-id-inputSetAutoRegistrar bootstrap-switch-animate">
+                            <div class="bootstrap-switch-container">
+                                <input id="inputProductDescriptions" type="checkbox" name="ProductDescriptions" value="1" data-on-text="{AdminLang::trans('global.yes')}" data-off-text="{AdminLang::trans('global.no')}"{if $smarty.post.ProductDescriptions} checked{/if}>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
                     <div class="col-md-12 text-right">
                         <button type="submit" class="btn btn-primary">
                             {AdminLang::trans('global.import')} <span id="importCount">0</span> {$lang.products}
@@ -155,7 +154,7 @@
                         <input type="checkbox" name="SelectedCertificate[{$certificateClass}]" value="1" class="toggle-switch product-checkbox" id="{$certificateClass}">
                     </td>
                     <td>
-                        <label for="{$certificateClass}">{$product.Name}</label>
+                        <label for="{$certificateClass}">{$product.Provider} {$product.Name}</label>
                     </td>
                     <td class="text-center">
                         {if $product.AutoSetup}
@@ -171,7 +170,7 @@
                     <td class="text-center tld-pricing-td register-pricing">
                         {if $product.id}
                         <span class="tld-pricing inline-block">
-                            <span class="current-pricing">{$product.Price}</span><br>
+                            <span class="current-pricing">{$product.Price|number_format:2}</span><br>
                             <span class="remote-pricing">{$product.Cost}</span>
                         </span>
                         <span class="tld-margin">
@@ -210,6 +209,7 @@
     <script type="text/javascript">
         jQuery(document).ready(function() {
             jQuery('#inputRoundAllCurrencies').bootstrapSwitch();
+            jQuery('#inputProductDescriptions').bootstrapSwitch();
             countProducts();
             calculatePrices();
             jQuery(document).on('click', '.check-all-products', function () {
