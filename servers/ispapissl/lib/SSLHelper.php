@@ -37,7 +37,7 @@ class SSLHelper
         $defaultCurrency = DBHelper::getDefaultCurrency();
         $exchangeRates = APIHelper::getExchangeRates();
 
-        $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL$/';
+        $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL1?$/';
         $products = [];
         $certs = preg_grep($pattern, $user['RELATIONTYPE']);
         if (!is_array($certs)) {
@@ -89,6 +89,9 @@ class SSLHelper
             }
 
             $defKey = array_search($productKey, $defs);
+            if (!$defKey) {
+                continue;
+            }
 
             $products[$productKey] = [
                 'id' => 0,

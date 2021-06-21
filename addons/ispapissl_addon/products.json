@@ -63,12 +63,13 @@
     {
       "name": "Trustwave",
       "logo": "trustwave.png",
-      "headline": "",
-      "tagline": "",
+      "headline": "Affordable SSL Certificates from Trustwave",
+      "tagline": "Trustwave SSL helps companies of all sizes reduce SSL costs while maintaining a high level of trust and security.",
       "more": "",
       "features": [
         "2048-bit key with up to 256-bit encryption",
-        "IDNs (Internationalized Domain Names)"
+        "IDNs (Internationalized Domain Names)",
+        "Trustwave Dynamic Site Seal"
       ]
     }
   ],
@@ -118,9 +119,27 @@
       }
     },
     {
+      "class": "COMODO_INSTANTSSL_PRO",
+      "provider": "Sectigo",
+      "name": "Instant SSL Pro",
+      "features": {
+        "type": "OV",
+        "wildcard": false
+      }
+    },
+    {
       "class": "COMODO_POSITIVESSL",
       "provider": "Sectigo",
       "name": "Positive SSL",
+      "features": {
+        "type": "DV",
+        "wildcard": false
+      }
+    },
+    {
+      "class": "COMODO_PREMIUMSSL",
+      "provider": "Sectigo",
+      "name": "Premium SSL",
       "features": {
         "type": "DV",
         "wildcard": false
@@ -151,6 +170,16 @@
       "features": {
         "type": "DV",
         "wildcard": true
+      }
+    },
+    {
+      "class": "COMODO_UCC",
+      "provider": "Sectigo",
+      "name": "UCC SSL",
+      "features": {
+        "type": "OV",
+        "wildcard": false,
+        "domains": "3"
       }
     },
     {
