@@ -21,7 +21,7 @@ parameters:
         - servers/ispapissl/vendor/autoload.php
     ignoreErrors:
         -
-            message: '#Access to an undefined property [a-zA-Z0-9\\_]+::\$(autosetup|code|status|remoteid|id)#'
+            message: '#Access to an undefined property [a-zA-Z0-9\\_]+::\$(autosetup|code|status|remoteid|id|gid)#'
             paths:
                 - addons/ispapissl_addon/ispapissl_addon.php
                 - servers/ispapissl/ispapissl.php

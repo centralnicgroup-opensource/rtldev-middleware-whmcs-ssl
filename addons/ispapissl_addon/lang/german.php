@@ -9,5 +9,7 @@ $_ADDONLANG = [
     'certificate' => "SSL-Zertifikat",
     'autoRegistration' => "Auto-Registrierung aktiviert",
     'productDescriptions' => "Produktbeschreibungen generieren",
-    'productDescriptionsDescription' => "Mit Provider-Logos und Feature-Highlights"
+    'productDescriptionsDescription' => "Mit Provider-Logos und Feature-Highlights",
+    'productGroups' => "Produktgruppen generieren",
+    'productGroupsDescription' => "Eine Produktgruppe pro Hersteller mit gemeinsamen Features"
 ];

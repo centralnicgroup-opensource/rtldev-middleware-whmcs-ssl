@@ -129,7 +129,7 @@ class SSLHelper
             $key = array_search($certificateClass, $certs);
             $product = $json['certificates'][$key];
             $productName = $product['name'];
-            $productId = DBHelper::getProductId($certificateClass);
+            $existingProduct = DBHelper::getProduct($certificateClass);
 
             $productDescription = '';
             if ($_POST['ProductDescriptions']) {
@@ -172,14 +172,19 @@ class SSLHelper
                 }
             }
 
-            $productGroupId = DBHelper::getProductGroupId($product['provider']);
+            if (@$_POST['ProductGroups']) {
+                $productGroupId = DBHelper::getProductGroupId($product['provider']);
+            } else {
+                $productGroupId = $existingProduct ? $existingProduct->gid : DBHelper::getDefaultProductGroup();
+            }
             if (!$productGroupId) {
                 throw new Exception("Product group ID could not be determined for {$product['provider']}");
             }
 
-            if (!$productId) {
+            if (!$existingProduct) {
                 $productId = DBHelper::createProduct($productName, $productDescription, $productGroupId, $certificateClass, $_POST['AutoSetup']);
             } else {
+                $productId = $existingProduct->id;
                 DBHelper::updateProduct($productId, $productName, $productDescription, $productGroupId, $_POST['AutoSetup']);
             }
 
