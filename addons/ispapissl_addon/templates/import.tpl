@@ -105,6 +105,19 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label for="inputProductGroups" class="col-md-4 col-sm-6 control-label">
+                        {$lang.productGroups}<br>
+                        <small>{$lang.productGroupsDescription}</small>
+                    </label>
+                    <div class="col-md-4 col-sm-6">
+                        <div class="bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-off bootstrap-switch-id-inputSetAutoRegistrar bootstrap-switch-animate">
+                            <div class="bootstrap-switch-container">
+                                <input id="inputProductGroups" type="checkbox" name="ProductGroups" value="1" data-on-text="{AdminLang::trans('global.yes')}" data-off-text="{AdminLang::trans('global.no')}"{if $smarty.post.ProductGroups} checked{/if}>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
                     <div class="col-md-12 text-right">
                         <button type="submit" class="btn btn-primary">
                             {AdminLang::trans('global.import')} <span id="importCount">0</span> {$lang.products}
@@ -154,7 +167,13 @@
                         <input type="checkbox" name="SelectedCertificate[{$certificateClass}]" value="1" class="toggle-switch product-checkbox" id="{$certificateClass}">
                     </td>
                     <td>
-                        <label for="{$certificateClass}">{$product.Provider} {$product.Name}</label>
+                        <label for="{$certificateClass}">
+                            {if $product.id}
+                                <a href="configproducts.php?action=edit&id={$product.id}">{$product.Provider} {$product.Name}</a>
+                            {else}
+                                {$product.Provider} {$product.Name}
+                            {/if}
+                        </label>
                     </td>
                     <td class="text-center">
                         {if $product.AutoSetup}
@@ -210,6 +229,7 @@
         jQuery(document).ready(function() {
             jQuery('#inputRoundAllCurrencies').bootstrapSwitch();
             jQuery('#inputProductDescriptions').bootstrapSwitch();
+            jQuery('#inputProductGroups').bootstrapSwitch();
             countProducts();
             calculatePrices();
             jQuery(document).on('click', '.check-all-products', function () {

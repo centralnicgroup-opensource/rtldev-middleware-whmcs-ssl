@@ -130,6 +130,33 @@ class DBHelper
     }
 
     /**
+     * Get default product group for SSL products
+     * @return int
+     */
+    public static function getDefaultProductGroup(): int
+    {
+        $productGroupId = DB::table('tblproducts')
+            ->where('servertype', '=', "ispapissl")
+            ->value('gid');
+        if ($productGroupId) {
+            return $productGroupId;
+        }
+
+        $ts = date('Y-m-d H:i:s');
+        $groupOrder = DB::table('tblproductgroups')->max('order') + 1;
+
+        return DB::table('tblproductgroups')
+            ->insertGetId([
+                'name' => 'SSL Certificates',
+                'slug' => 'ssl-certificates',
+                'orderfrmtpl' => 'supreme_comparison',
+                'order' => $groupOrder,
+                'created_at' => $ts,
+                'updated_at' => $ts
+            ]);
+    }
+
+    /**
      * Create product group based on provider info
      * @param array<string, mixed> $provider
      * @return int

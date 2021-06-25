@@ -80,7 +80,9 @@ function ispapissl_addon_output(array $vars): void
 
     try {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            SSLHelper::importProductGroups();
+            if (@$_POST['ProductGroups']) {
+                SSLHelper::importProductGroups();
+            }
             SSLHelper::importProducts();
             $smarty->assign('success', count($_POST['SelectedCertificate']) . ' products have been imported');
         }
