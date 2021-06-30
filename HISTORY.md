@@ -1,3 +1,16 @@
+# [9.3.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.3...v9.3.0) (2021-06-30)
+
+
+### Bug Fixes
+
+* **import:** fix some products omitted from import ([364bb2a](https://github.com/hexonet/whmcs-ispapi-ssl/commit/364bb2af45e97df2b0087d79ae67a22c6a187779))
+
+
+### Features
+
+* **import:** implement switch for generating separate product groups ([3d80ad9](https://github.com/hexonet/whmcs-ispapi-ssl/commit/3d80ad9d7d9d82e3c71c5aa0eb2b799f58e0c9be))
+* **logos:** implement provider logos and feature highlights in product descriptions ([437a9fa](https://github.com/hexonet/whmcs-ispapi-ssl/commit/437a9faef430bbc2bcd26c9e3f9a321608cb150c))
+
 ## [9.2.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.2...v9.2.3) (2021-03-04)
 
 
