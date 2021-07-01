@@ -1,3 +1,10 @@
+## [9.3.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.0...v9.3.1) (2021-07-01)
+
+
+### Bug Fixes
+
+* **import:** fix missing base url for images ([817bffa](https://github.com/hexonet/whmcs-ispapi-ssl/commit/817bffadd7f0adb87b80708d1c77593d8497c18c)), closes [#96](https://github.com/hexonet/whmcs-ispapi-ssl/issues/96)
+
 # [9.3.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.2.3...v9.3.0) (2021-06-30)
 
 
