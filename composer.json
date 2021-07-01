@@ -13,14 +13,14 @@
     "phpstan/phpstan": "^0.12.56"
   },
   "config": {
-    "vendor-dir": "servers/ispapissl/vendor"
+    "vendor-dir": "modules/servers/ispapissl/vendor"
   },
   "autoload": {
-    "psr-4": {"HEXONET\\WHMCS\\ISPAPI\\SSL\\": "servers/ispapissl/lib/"}
+    "psr-4": {"HEXONET\\WHMCS\\ISPAPI\\SSL\\": "modules/servers/ispapissl/lib/"}
   },
   "scripts": {
     "phpstan": [
-      "rm -rf servers/ispapissl/vendor",
+      "rm -rf modules/servers/ispapissl/vendor",
       "@composer update",
       "phpstan analyze -c phpstan.neon"
     ],

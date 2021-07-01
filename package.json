@@ -57,9 +57,9 @@
   },
   "scripts": {
     "phpCompatibility": "./scripts/phpcompatibility.sh",
-    "codeCheck": "phpcs --standard=PSR12 -q -n --colors --ignore=node_modules,vendor addons servers tests",
-    "codeFix": "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor addons servers tests",
-    "phpStan": "./servers/ispapissl/vendor/bin/phpstan analyse",
+    "codeCheck": "phpcs --standard=PSR12 -q -n --colors --ignore=node_modules,vendor modules tests",
+    "codeFix": "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor modules tests",
+    "phpStan": "./modules/servers/ispapissl/vendor/bin/phpstan analyse",
     "test": "phpunit"
   }
 }

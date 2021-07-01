@@ -8,21 +8,20 @@ parameters:
         - .
     scanFiles:
     scanDirectories:
-        - addons
-        - servers
+        - modules
         - tests
     excludes_analyse:
         - node_modules
-        - servers/ispapissl/vendor
+        - modules/servers/ispapissl/vendor
         - build
         - tests
     bootstrapFiles:
         - tests/_bootstrap.phpstan.php
-        - servers/ispapissl/vendor/autoload.php
+        - modules/servers/ispapissl/vendor/autoload.php
     ignoreErrors:
         -
             message: '#Access to an undefined property [a-zA-Z0-9\\_]+::\$(autosetup|code|status|remoteid|id|gid)#'
             paths:
-                - addons/ispapissl_addon/ispapissl_addon.php
-                - servers/ispapissl/ispapissl.php
-                - servers/ispapissl/lib/SSLHelper.php
+                - modules/addons/ispapissl_addon/ispapissl_addon.php
+                - modules/servers/ispapissl/ispapissl.php
+                - modules/servers/ispapissl/lib/SSLHelper.php
