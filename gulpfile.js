@@ -14,7 +14,7 @@ const cfg = require('./gulpfile.json')
  */
 async function doComposerUpdate() {
     try {
-        await exec(`rm -rf servers/ispapissl/vendor`);
+        await exec(`rm -rf modules/servers/ispapissl/vendor`);
     } catch (e) {
     }
     await eosp(composer("update --no-dev"))

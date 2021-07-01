@@ -3,7 +3,7 @@
     "phpcsfixcmd": "phpcbf --standard=PSR12",
     "phpcschkcmd": "phpcs -n --colors --standard=PSR12",
     "phpcomptcmd": "phpcs -n --colors --standard=PHPCompatibility --runtime-set testVersion \"$(php -r 'echo PHP_MAJOR_VERSION . \".\" . PHP_MINOR_VERSION;')\"",
-    "phpstancmd": "./servers/ispapissl/vendor/bin/phpstan analyse",
+    "phpstancmd": "./modules/servers/ispapissl/vendor/bin/phpstan analyse",
     "archiveFileName": "whmcs-ispapi-ssl",
     "archiveBuildPath": "build",
     "filesForArchive": [
@@ -11,8 +11,8 @@
         "CONTRIBUTING.md",
         "HISTORY.md",
         "LICENSE",
-        "addons/ispapissl_addon/**",
-        "servers/ispapissl/**"
+        "modules/addons/ispapissl_addon/**",
+        "modules/servers/ispapissl/**"
     ],
     "filesForCleanup": [
         "templates_c",
