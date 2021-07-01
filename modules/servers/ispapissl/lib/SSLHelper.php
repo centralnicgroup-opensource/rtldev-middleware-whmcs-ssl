@@ -3,6 +3,7 @@
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 use Exception;
+use WHMCS\Utility\Environment\WebHelper;
 
 class SSLHelper
 {
@@ -124,6 +125,10 @@ class SSLHelper
         $json = self::loadDefinitionFile();
         $providers = array_column($json['providers'], 'name');
         $certs = array_column($json['certificates'], 'class');
+        $webRoot = (string) WebHelper::getBaseUrl();
+        if ($webRoot) {
+            $webRoot .= '/';
+        }
 
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
             $key = array_search($certificateClass, $certs);
@@ -135,7 +140,7 @@ class SSLHelper
             if ($_POST['ProductDescriptions']) {
                 $providerKey = array_search($product['provider'], $providers);
                 $logo = $json['providers'][$providerKey]['logo'];
-                $productDescription = '<img src="modules/addons/ispapissl_addon/logos/' . $logo . '" />';
+                $productDescription = '<img src="' . $webRoot . 'modules/addons/ispapissl_addon/logos/' . $logo . '" />';
                 if (!isset($product['features']['domains'])) {
                     $product['features']['domains'] = null;
                 }
