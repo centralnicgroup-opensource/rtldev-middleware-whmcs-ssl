@@ -3,7 +3,6 @@
 namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 use Exception;
-use WHMCS\Utility\Environment\WebHelper;
 
 class SSLHelper
 {
@@ -125,7 +124,8 @@ class SSLHelper
         $json = self::loadDefinitionFile();
         $providers = array_column($json['providers'], 'name');
         $certs = array_column($json['certificates'], 'class');
-        $webRoot = (string) WebHelper::getBaseUrl();
+        $assetHelper = \DI::make("asset"); // @phpstan-ignore-line
+        $webRoot = (string) $assetHelper->getWebRoot();
         if ($webRoot) {
             $webRoot .= '/';
         }
