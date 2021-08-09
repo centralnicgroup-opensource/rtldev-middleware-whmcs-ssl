@@ -1,3 +1,10 @@
+## [9.3.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.1...v9.3.2) (2021-08-09)
+
+
+### Bug Fixes
+
+* **HX logo:** HX logo.png + configuration ([c8e5841](https://github.com/hexonet/whmcs-ispapi-ssl/commit/c8e5841e89d4cefdc91a8b32a336284c5c10584f))
+
 ## [9.3.1](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.0...v9.3.1) (2021-07-01)
 
 
