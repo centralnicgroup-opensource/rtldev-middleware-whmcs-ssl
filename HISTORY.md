@@ -1,3 +1,10 @@
+## [9.3.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.2...v9.3.3) (2022-01-07)
+
+
+### Bug Fixes
+
+* **dep-bump:** upgrade to semantic-release v8 and test release process ([17fe2e7](https://github.com/hexonet/whmcs-ispapi-ssl/commit/17fe2e7d15019b057b6072be7f629be734731a6f))
+
 ## [9.3.2](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.1...v9.3.2) (2021-08-09)
 
 
