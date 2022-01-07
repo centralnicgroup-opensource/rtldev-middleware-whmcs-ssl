@@ -45,13 +45,13 @@
     "application"
   ],
   "devDependencies": {
-    "@hexonet/semantic-release-github-whmcs-config": "^1.3.7",
+    "@hexonet/semantic-release-github-whmcs-config": "^2.0.0",
     "end-of-stream-promise": "^1.0.0",
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
     "gulp-composer": "^0.4.5",
     "gulp-zip": "^5.0.2",
-    "semantic-release": "^17.3.2"
+    "semantic-release": "^18.0.1"
   },
   "scripts": {
     "phpCompatibility": "./scripts/phpcompatibility.sh",
