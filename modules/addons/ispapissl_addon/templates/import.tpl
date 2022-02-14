@@ -183,6 +183,8 @@
                     <td class="text-center">
                         {if $product.id}
                             <i class="fas fa-check text-success"></i>
+                        {else}
+                            <i class="fas fa-times text-muted"></i>
                         {/if}
                     </td>
                     <td class="text-center">1 {AdminLang::trans('domains.year')}</td>
@@ -195,6 +197,16 @@
                         <span class="tld-margin">
                             <span>
                                 <span class="inline-block percentage-display" style="display: inline;">{$product.Margin}%</span>
+                            </span>
+                        </span>
+                        {else}
+                        <span class="tld-pricing inline-block">
+                            <span class="current-pricing">-</span><br>
+                            <span class="remote-pricing">-</span>
+                        </span>
+                        <span class="tld-margin">
+                            <span>
+                                <span class="inline-block percentage-display" style="display: inline;">-</span>
                             </span>
                         </span>
                         {/if}

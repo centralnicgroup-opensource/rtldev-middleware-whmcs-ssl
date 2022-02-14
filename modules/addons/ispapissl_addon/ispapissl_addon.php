@@ -22,12 +22,10 @@ use WHMCS\Module\Registrar\Ispapi\Ispapi;
  */
 function ispapissl_addon_config(): array
 {
-    $logo_src = file_get_contents(implode(DIRECTORY_SEPARATOR, [ROOTDIR, "modules", "addons", "ispapissl_addon", "logo.png"]));
-    $logo_data = ($logo_src) ? 'data:image/png;base64,' . base64_encode($logo_src) : '';
     return [
         "name" => "ISPAPI SSL",
         "description" => "Quickly add and configure SSL Certificates",
-        "author" => '<a href="https://www.hexonet.net/" target="_blank"><img style="max-width:100px" src="' . $logo_data . '" alt="HEXONET" /></a>',
+        "author" => '<a href="https://www.hexonet.net/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="HEXONET" /></a>',
         "language" => "english",
         "version" => "9.3.3"
     ];
@@ -39,7 +37,7 @@ function ispapissl_addon_config(): array
  */
 function ispapissl_addon_activate(): array
 {
-    return ['status' => 'success','description' => 'Installed'];
+    return ['status' => 'success', 'description' => 'Installed'];
 }
 
 /**
@@ -48,7 +46,7 @@ function ispapissl_addon_activate(): array
  */
 function ispapissl_addon_deactivate(): array
 {
-    return ['status' => 'success','description' => 'Uninstalled'];
+    return ['status' => 'success', 'description' => 'Uninstalled'];
 }
 
 /**
