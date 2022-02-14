@@ -1,3 +1,11 @@
+## [9.3.4](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.3...v9.3.4) (2022-02-14)
+
+
+### Bug Fixes
+
+* **layout:** improve table layout for non existing products ([97d4630](https://github.com/hexonet/whmcs-ispapi-ssl/commit/97d4630160980a4e6bbe9d04e3f07e4012e44073))
+* **logo:** make logo transparent and fix size in template output ([c6a2180](https://github.com/hexonet/whmcs-ispapi-ssl/commit/c6a2180342c5b41dbb0532611d12b27d91aa1d79))
+
 ## [9.3.3](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.2...v9.3.3) (2022-01-07)
 
 
