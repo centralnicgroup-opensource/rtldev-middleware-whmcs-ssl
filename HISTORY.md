@@ -1,3 +1,10 @@
+## [9.3.5](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.4...v9.3.5) (2022-03-08)
+
+
+### Bug Fixes
+
+* **logos:** fix logo url generation ([bfc7dd2](https://github.com/hexonet/whmcs-ispapi-ssl/commit/bfc7dd20ed44d9dc7427f7187d95d4c39ac1edd8))
+
 ## [9.3.4](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.3...v9.3.4) (2022-02-14)
 
 
