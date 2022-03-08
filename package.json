@@ -57,7 +57,7 @@
     "phpCompatibility": "./scripts/phpcompatibility.sh",
     "codeCheck": "phpcs --standard=PSR12 -q -n --colors --ignore=node_modules,vendor modules tests",
     "codeFix": "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor modules tests",
-    "phpStan": "./modules/servers/ispapissl/vendor/bin/phpstan analyse",
+    "phpStan": "./modules/servers/ispapissl/vendor/bin/phpstan analyse --memory-limit 2G",
     "test": "phpunit"
   }
 }

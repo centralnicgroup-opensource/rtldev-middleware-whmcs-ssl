@@ -125,10 +125,7 @@ class SSLHelper
         $providers = array_column($json['providers'], 'name');
         $certs = array_column($json['certificates'], 'class');
         $assetHelper = \DI::make("asset"); // @phpstan-ignore-line
-        $webRoot = (string) $assetHelper->getWebRoot();
-        if ($webRoot) {
-            $webRoot .= '/';
-        }
+        $webRoot = $assetHelper->getWebRoot();
 
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
             $key = array_search($certificateClass, $certs);
@@ -140,7 +137,7 @@ class SSLHelper
             if ($_POST['ProductDescriptions']) {
                 $providerKey = array_search($product['provider'], $providers);
                 $logo = $json['providers'][$providerKey]['logo'];
-                $productDescription = '<img src="' . $webRoot . 'modules/addons/ispapissl_addon/logos/' . $logo . '" />';
+                $productDescription = '<img src="' . $webRoot . '/modules/addons/ispapissl_addon/logos/' . $logo . '" />';
                 if (!isset($product['features']['domains'])) {
                     $product['features']['domains'] = null;
                 }
