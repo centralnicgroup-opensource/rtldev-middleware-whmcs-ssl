@@ -71,6 +71,19 @@ class DBHelper
     }
 
     /**
+     * @param int $remoteId
+     * @return array<string, mixed>
+     */
+    public static function getOrderConfigData(int $remoteId): array
+    {
+        $configData = DB::table('tblsslorders')
+            ->where('remoteid', '=', $remoteId)
+            ->where('module', '=', 'ispapissl')
+            ->value('configdata');
+        return json_decode($configData, true);
+    }
+
+    /**
      * Create an SSL order
      * @param int $userId
      * @param int $serviceId

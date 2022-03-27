@@ -69,20 +69,40 @@ class APIHelper
      * Update certificate
      * @param int $orderId
      * @param string $certClass
+     * @param string $approvalMethod
      * @param string $email
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function updateCertificate(int $orderId, string $certClass, string $email): array
+    public static function updateCertificate(int $orderId, string $certClass, string $approvalMethod, string $email): array
     {
+        $configData = DBHelper::getOrderConfigData($orderId);
+        $subject = openssl_csr_get_subject($configData["csr"]);
+        $serverType = SSLHelper::getServerType($configData['servertype']);
         $command = [
             'COMMAND' => 'CreateSSLCert',
-            'ORDER' => 'UPDATE',
-            'ORDERID' => $orderId,
+            'ORDER' => 'REPLACE',
             'SSLCERTCLASS' => $certClass,
             'PERIOD' => 1,
-            'EMAIL' => $email
+            'ORDERID' => $orderId,
+            'CSR' => explode(PHP_EOL, $configData["csr"]),
+            'SERVERSOFTWARE' => $serverType
         ];
+        if ($subject) {
+            $command["SSLCERTDOMAIN"] = $subject["CN"];
+        }
+        switch ($approvalMethod) {
+            case 'dns-txt-token':
+                $command["VALIDATION0"] = "DNSZONE";
+//                $command["INTERNALDNS"] = 1;
+                break;
+            case 'file':
+                $command["VALIDATION0"] = "URL";
+                break;
+            default:
+                $command["EMAIL"] = $email;
+        }
+
         return self::getResponse($command);
     }
 
