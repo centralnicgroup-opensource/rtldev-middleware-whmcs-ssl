@@ -1,6 +1,6 @@
 {
   "name": "hexonet/whmcs-ispapi-ssl",
-  "description": "ISPAPI SSL Provisioning & Addon Modules for WHMCS",
+  "description": "CentralNic SSL Provisioning & Addon Modules for WHMCS",
   "type": "project",
   "license": "MIT",
   "authors": [
@@ -9,20 +9,34 @@
       "email": "svassiliou@hexonet.net"
     }
   ],
-  "require-dev": {
-    "phpstan/phpstan": "^0.12.56"
-  },
   "config": {
-    "vendor-dir": "modules/servers/ispapissl/vendor"
+    "platform": {
+      "php": "7.4.0"
+    },
+    "vendor-dir": "modules/servers/cnicssl/vendor",
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   },
   "autoload": {
-    "psr-4": {"HEXONET\\WHMCS\\ISPAPI\\SSL\\": "modules/servers/ispapissl/lib/"}
+    "psr-4": {"CNIC\\WHMCS\\SSL\\": "modules/servers/cnicssl/lib/"}
   },
   "scripts": {
-    "phpstan": [
-      "rm -rf modules/servers/ispapissl/vendor",
+    "compatibility": [
       "@composer update",
-      "phpstan analyze -c phpstan.neon"
+      "phpcs --standard=PHPCompatibility -q -n --colors --ignore=node_modules,vendor,templates_c --runtime-set testVersion 7.4 modules"
+    ],
+    "phpstan": [
+      "@composer update",
+      "phpstan analyze -c phpstan.neon --memory-limit 2G"
+    ],
+    "codecheck": [
+      "@composer update",
+      "phpcs --standard=PSR12 -q -n --colors --ignore=node_modules,vendor,templates_c modules tests"
+    ],
+    "codefix": [
+      "@composer update",
+      "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor,templates_c modules tests"
     ],
     "test": [
       "@composer update",
@@ -30,7 +44,15 @@
     ]
   },
   "require": {
+    "php": "^7.4",
     "ext-openssl": "*",
     "ext-json": "*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^0.12.56",
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
+    "roave/security-advisories": "dev-master",
+    "squizlabs/php_codesniffer": "^3.5",
+    "phpcompatibility/php-compatibility": "^9.3"
   }
 }

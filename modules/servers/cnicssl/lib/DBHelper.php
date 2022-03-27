@@ -1,6 +1,6 @@
 <?php
 
-namespace HEXONET\WHMCS\ISPAPI\SSL;
+namespace CNIC\WHMCS\SSL;
 
 use Exception;
 use Illuminate\Database\Capsule\Manager as DB;
@@ -37,7 +37,7 @@ class DBHelper
     {
         return DB::table('tblsslorders')
             ->where('serviceid', '=', $serviceId)
-            ->where('module', '=', 'ispapissl')
+            ->where('module', '=', 'cnicssl')
             ->exists();
     }
 
@@ -50,7 +50,7 @@ class DBHelper
     {
         return DB::table('tblsslorders')
             ->where('serviceid', '=', $serviceId)
-            ->where('module', '=', 'ispapissl')
+            ->where('module', '=', 'cnicssl')
             ->value('id');
     }
 
@@ -65,7 +65,7 @@ class DBHelper
         return DB::table('tblsslorders')
             ->where('serviceid', '=', $serviceId)
             ->where('addon_id', '=', $addonId)
-            ->where('module', '=', 'ispapissl')
+            ->where('module', '=', 'cnicssl')
             ->select(['id', 'remoteid', 'status'])
             ->first();
     }
@@ -84,7 +84,7 @@ class DBHelper
             'userid' => $userId,
             'serviceid' => $serviceId,
             'remoteid' => $orderId,
-            'module' => 'ispapissl',
+            'module' => 'cnicssl',
             'certtype' => $certClass,
             'status' => 'Awaiting Configuration'
         ]);
@@ -101,7 +101,7 @@ class DBHelper
         DB::table('tblsslorders')
             ->where('serviceid', '=', $serviceId)
             ->where('addon_id', '=', $addonId)
-            ->where('module', '=', 'ispapissl')
+            ->where('module', '=', 'cnicssl')
             ->update($data);
     }
 
@@ -136,7 +136,7 @@ class DBHelper
     public static function getDefaultProductGroup(): int
     {
         $productGroupId = DB::table('tblproducts')
-            ->where('servertype', '=', "ispapissl")
+            ->where('servertype', '=', "cnicssl")
             ->value('gid');
         if ($productGroupId) {
             return $productGroupId;
@@ -237,7 +237,7 @@ class DBHelper
     {
         return DB::table('tblproducts')
             ->where('configoption1', '=', $certificateClass)
-            ->where('servertype', '=', 'ispapissl')
+            ->where('servertype', '=', 'cnicssl')
             ->value('id');
     }
 
@@ -250,7 +250,7 @@ class DBHelper
     {
         return DB::table('tblproducts')
             ->where('configoption1', '=', $certificateClass)
-            ->where('servertype', '=', 'ispapissl')
+            ->where('servertype', '=', 'cnicssl')
             ->first();
     }
 
@@ -301,7 +301,7 @@ class DBHelper
                 'description' => $productDescription,
                 'paytype' => 'recurring',
                 'autosetup' => $autoSetup,
-                'servertype' => 'ispapissl',
+                'servertype' => 'cnicssl',
                 'configoption1' => $certificateClass,
                 'tax' => 1
             ]);

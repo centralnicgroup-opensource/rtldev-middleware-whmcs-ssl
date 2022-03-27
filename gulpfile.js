@@ -12,7 +12,7 @@ const cfg = require("./gulpfile.json");
  */
 async function doComposerUpdate() {
   try {
-    await exec(`rm -rf modules/servers/ispapissl/vendor`);
+    await exec(`rm -rf modules/servers/cnicssl/vendor`);
   } catch (e) {}
   await eosp(composer("update --no-dev"));
 }
@@ -23,14 +23,14 @@ async function doComposerUpdate() {
 async function doLint() {
   // these may fail, it's fine
   try {
-    await exec(`${cfg.phpcsfixcmd} ${cfg.phpcsparams}`);
+    await exec(`${cfg.phpcsfixcmd}`);
   } catch (e) {}
 
   // these shouldn't fail
   try {
-    await exec(`${cfg.phpcschkcmd} ${cfg.phpcsparams}`);
-    await exec(`${cfg.phpcomptcmd} ${cfg.phpcsparams}`);
-    // await exec(`${cfg.phpstancmd}`);
+    await exec(`${cfg.phpcschkcmd}`);
+    await exec(`${cfg.phpcomptcmd}`);
+    await exec(`${cfg.phpstancmd}`);
   } catch (e) {
     await Promise.reject(e.message);
   }

@@ -12,4 +12,4 @@ require_once $whmcsPath . '/vendor/autoload.php';
 require_once $whmcsPath . '/includes/functions.php';
 require_once $whmcsPath . '/modules/registrars/ispapi/lib/Ispapi.php';
 
-stream_wrapper_restore('phar');
+//stream_wrapper_restore('phar');

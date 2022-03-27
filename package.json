@@ -1,6 +1,6 @@
 {
-  "name": "whmcs-ispapi-ssl",
-  "description": "WHMCS ISPAPI SSL Module",
+  "name": "whmcs-ssl",
+  "description": "WHMCS CentralNic SSL Module",
   "version": "0.0.0-development",
   "private": true,
   "author": {
@@ -12,9 +12,9 @@
     "node": ">=16.15.1",
     "npm": ">=8.11.1"
   },
-  "homepage": "https://github.com/hexonet/whmcs-ispapi-ssl",
-  "repository": "github:hexonet/whmcs-ispapi-ssl",
-  "bugs": "https://github.com/hexonet/whmcs-ispapi-ssl/issues",
+  "homepage": "https://github.com/centralnic-reseller/whmcs-ssl",
+  "repository": "github:centralnic-reseller/whmcs-ssl",
+  "bugs": "https://github.com/centralnic-reseller/whmcs-ssl/issues",
   "maintainers": [
     {
       "name": "Kai Schwarz",
@@ -31,6 +31,9 @@
     "ssl module",
     "hexonet",
     "ispapi",
+    "rrpproxy",
+    "cnic",
+    "centralnic",
     "domain",
     "isp",
     "ssl",
@@ -55,11 +58,11 @@
     "semantic-release": "^19.0.3"
   },
   "scripts": {
-    "phpCompatibility": "./scripts/phpcompatibility.sh",
-    "codeCheck": "phpcs --standard=PSR12 -q -n --colors --ignore=node_modules,vendor modules tests",
-    "codeFix": "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor modules tests",
-    "phpStan": "./modules/servers/ispapissl/vendor/bin/phpstan analyse --memory-limit 2G",
-    "test": "phpunit"
+    "phpCompatibility": "composer run-script compatibility",
+    "codeCheck": "composer run-script codecheck",
+    "codeFix": "composer run-script codefix",
+    "phpStan": "composer run-script phpstan",
+    "test": "composer run-script test"
   },
   "config": {
     "commitizen": {

@@ -1,11 +1,11 @@
 <?php
 
-namespace IspapiTest;
+namespace CnicTest;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * ISPAPI SSL Module Test
+ * CentralNic SSL Module Test
  *
  * PHPUnit test that asserts the fundamental requirements of a WHMCS
  * provisioning module.
@@ -13,13 +13,13 @@ use PHPUnit\Framework\TestCase;
  * Custom module tests are added in addtion.
  *
  * @copyright Copyright (c) HEXONET GmbH 2018
- * @license https://github.com/hexonet/whmcs-ispapi-ssl/LICENSE
+ * @license https://github.com/centralnic-reseller/whmcs-ssl/LICENSE
  */
 
-class IspapiSSLModuleTest extends TestCase
+class CnicSSLModuleTest extends TestCase
 {
     /** @var string $moduleName */
-    protected $moduleName = 'ispapissl';
+    protected $moduleName = 'cnicssl';
 
     /**
      * Asserts the required config options function is defined.

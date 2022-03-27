@@ -1,20 +1,20 @@
 <?php
 
 /**
- * ISPAPI SSL Module for WHMCS
+ * CentralNic SSL Module for WHMCS
  *
- * SSL Certificates Registration using WHMCS & HEXONET
+ * SSL Certificates Registration using WHMCS & HEXONET or RRPproxy
  *
  * For more information, please refer to the online documentation.
- * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
+ * @see https://centralnic-reseller.github.io/centralnic-reseller/docs/cnic/whmcs/whmcs-ssl/
  * @noinspection PhpUnused
  */
 
 require_once(__DIR__ . '/vendor/autoload.php');
 
-use HEXONET\WHMCS\ISPAPI\SSL\APIHelper;
-use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
-use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
+use CNIC\WHMCS\SSL\APIHelper;
+use CNIC\WHMCS\SSL\DBHelper;
+use CNIC\WHMCS\SSL\SSLHelper;
 use WHMCS\Carbon;
 
 /**
@@ -27,10 +27,10 @@ use WHMCS\Carbon;
  *
  * @return array<string, mixed>
  */
-function ispapissl_MetaData(): array
+function cnicssl_MetaData(): array
 {
     return [
-        "DisplayName" => "ISPAPI SSL Certificates",
+        "DisplayName" => "CNIC SSL Certificates",
         "APIVersion" => "1.1",
         "RequiresServer" => false,
         "AutoGenerateUsernameAndPassword" => false,
@@ -42,7 +42,7 @@ function ispapissl_MetaData(): array
  * Config options of the module.
  * @return array<string, array<string, string>>
  */
-function ispapissl_ConfigOptions(): array
+function cnicssl_ConfigOptions(): array
 {
     DBHelper::createEmailTemplateIfNotExisting();
 
@@ -59,7 +59,7 @@ function ispapissl_ConfigOptions(): array
  * @param array<string, mixed> $params
  * @return string
  */
-function ispapissl_CreateAccount(array $params): string
+function cnicssl_CreateAccount(array $params): string
 {
     try {
         if (DBHelper::orderExists($params['serviceid'])) {
@@ -71,7 +71,7 @@ function ispapissl_CreateAccount(array $params): string
         $sslOrderId = DBHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $orderId, $certClass);
         SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
     }
     return 'success';
@@ -81,7 +81,7 @@ function ispapissl_CreateAccount(array $params): string
  * @param array<string, mixed> $params
  * @return string
  */
-function ispapissl_TerminateAccount(array $params): string
+function cnicssl_TerminateAccount(array $params): string
 {
     $order = DBHelper::getOrder($params['serviceid'], $params['addonId']);
     if (!$order || $order->status == "Awaiting Configuration") {
@@ -95,7 +95,7 @@ function ispapissl_TerminateAccount(array $params): string
  * @param array<string, mixed> $params
  * @return array<string, mixed>
  */
-function ispapissl_AdminServicesTabFields(array $params): array
+function cnicssl_AdminServicesTabFields(array $params): array
 {
     $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
     $remoteId = '-';
@@ -109,7 +109,7 @@ function ispapissl_AdminServicesTabFields(array $params): array
 /**
  * @return array<string, string>
  */
-function ispapissl_AdminCustomButtonArray(): array
+function cnicssl_AdminCustomButtonArray(): array
 {
     return [
         'Revoke' => 'Revoke',
@@ -122,7 +122,7 @@ function ispapissl_AdminCustomButtonArray(): array
  * @param array<string, mixed> $params
  * @return string
  */
-function ispapissl_Resend(array $params): string
+function cnicssl_Resend(array $params): string
 {
     try {
         $sslOrderId = DBHelper::getOrderId($params['serviceid']);
@@ -131,7 +131,7 @@ function ispapissl_Resend(array $params): string
         }
         SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
     }
     return 'success';
@@ -142,7 +142,7 @@ function ispapissl_Resend(array $params): string
  * @param array<string, mixed> $params
  * @return string
  */
-function ispapissl_Revoke(array $params): string
+function cnicssl_Revoke(array $params): string
 {
     try {
         $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -151,7 +151,7 @@ function ispapissl_Revoke(array $params): string
         }
         APIHelper::revokeCertificate($order->remoteid);
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
     }
     return 'success';
@@ -162,7 +162,7 @@ function ispapissl_Revoke(array $params): string
  * @param array<string, mixed> $params
  * @return string
  */
-function ispapissl_Reissue(array $params): string
+function cnicssl_Reissue(array $params): string
 {
     try {
         $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -171,7 +171,7 @@ function ispapissl_Reissue(array $params): string
         }
         APIHelper::reissueCertificate($order->remoteid, $params['csr']);
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
     }
     return 'success';
@@ -182,7 +182,7 @@ function ispapissl_Reissue(array $params): string
  * @param array<string, mixed> $params
  * @return string
  */
-function ispapissl_Renew(array $params): string
+function cnicssl_Renew(array $params): string
 {
     try {
         $order = DBHelper::getOrder($params["serviceid"], $params["addonId"]);
@@ -191,7 +191,7 @@ function ispapissl_Renew(array $params): string
         }
         APIHelper::renewCertificate($order->remoteid);
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return $e->getMessage();
     }
     return 'success';
@@ -203,7 +203,7 @@ function ispapissl_Renew(array $params): string
 /**
  * @param array<string, mixed> $params
  */
-function ispapissl_SSLStepOne(array $params): void
+function cnicssl_SSLStepOne(array $params): void
 {
     try {
         $order = APIHelper::getOrder($params['remoteid']);
@@ -213,7 +213,7 @@ function ispapissl_SSLStepOne(array $params): void
             DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => '', 'status' => 'Awaiting Configuration']);
         }
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
     }
 }
 
@@ -221,7 +221,7 @@ function ispapissl_SSLStepOne(array $params): void
  * @param array<string, mixed> $params
  * @return array<string, mixed>
  */
-function ispapissl_SSLStepTwo(array $params): array
+function cnicssl_SSLStepTwo(array $params): array
 {
     try {
         if (!strlen($params['jobtitle'])) {
@@ -287,7 +287,7 @@ function ispapissl_SSLStepTwo(array $params): array
         APIHelper::replaceCertificate($params['remoteid'], $certClass, $params['csr'], $serverType, $csr['CN'][0], $contact);
         DBHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return ["error" => $e->getMessage()];
     }
 
@@ -298,7 +298,7 @@ function ispapissl_SSLStepTwo(array $params): array
  * @param array<string, mixed> $params
  * @return array<string, string>
  */
-function ispapissl_SSLStepThree(array $params): array
+function cnicssl_SSLStepThree(array $params): array
 {
     try {
         $orderId = $params['remoteid'];
@@ -309,7 +309,7 @@ function ispapissl_SSLStepThree(array $params): array
         DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now()]);
         return [];
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return ["error" => $e->getMessage()];
     }
 }
@@ -319,7 +319,7 @@ function ispapissl_SSLStepThree(array $params): array
  * @param array<string, mixed> $params
  * @return array<string, mixed>
  */
-function ispapissl_ClientArea(array $params): array
+function cnicssl_ClientArea(array $params): array
 {
     try {
         SSLHelper::loadLanguage();
@@ -427,7 +427,7 @@ function ispapissl_ClientArea(array $params): array
             'vars' => $tpl
         ];
     } catch (Exception $e) {
-        logModuleCall('ispapissl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
         return [
             'templatefile' => "templates/error.tpl",
             'vars' => ['errorMessage' => $e->getMessage()]
