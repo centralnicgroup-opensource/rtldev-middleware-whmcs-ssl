@@ -1,6 +1,6 @@
 <?php
 
-namespace HEXONET\WHMCS\ISPAPI\SSL;
+namespace CNIC\WHMCS\SSL;
 
 use Exception;
 
@@ -44,7 +44,7 @@ class SSLHelper
             return $products;
         }
 
-        $file = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/products.json');
+        $file = file_get_contents(__DIR__ . '/../../../addons/cnicssl_addon/products.json');
         if ($file === false) {
             return $products;
         }
@@ -137,7 +137,7 @@ class SSLHelper
             if ($_POST['ProductDescriptions']) {
                 $providerKey = array_search($product['provider'], $providers);
                 $logo = $json['providers'][$providerKey]['logo'];
-                $productDescription = '<img src="' . $webRoot . '/modules/addons/ispapissl_addon/logos/' . $logo . '" />';
+                $productDescription = '<img src="' . $webRoot . '/modules/addons/cnicssl_addon/logos/' . $logo . '" />';
                 if (!isset($product['features']['domains'])) {
                     $product['features']['domains'] = null;
                 }
@@ -244,7 +244,7 @@ class SSLHelper
      */
     public static function loadDefinitionFile(): array
     {
-        $file = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/products.json');
+        $file = file_get_contents(__DIR__ . '/../../../addons/cnicssl_addon/products.json');
         if ($file === false) {
             throw new Exception("Unable to parse products definition file");
         }
@@ -270,7 +270,7 @@ class SSLHelper
      */
     public static function getLogo(): string
     {
-        $data = file_get_contents(__DIR__ . '/../../../addons/ispapissl_addon/logo.png');
+        $data = file_get_contents(__DIR__ . '/../../../addons/cnicssl_addon/logo.png');
         return $data ? 'data:image/png;base64,' . base64_encode($data) : '';
     }
 

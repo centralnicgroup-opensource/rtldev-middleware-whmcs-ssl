@@ -1,6 +1,6 @@
 <?php
 
-namespace HEXONET\WHMCS\ISPAPI\SSL;
+namespace CNIC\WHMCS\SSL;
 
 use Exception;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
@@ -313,7 +313,7 @@ class APIHelper
             throw new Exception("The ISPAPI Registrar Module is required. Please install it and activate it.");
         }
         $response = Ispapi::call($command);
-        logModuleCall('ispapissl', $command['COMMAND'], $command, $response);
+        logModuleCall('cnicssl', $command['COMMAND'], $command, $response);
         if ($response['CODE'] != 200) {
             throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
         }

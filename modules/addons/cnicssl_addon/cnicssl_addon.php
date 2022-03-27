@@ -1,31 +1,31 @@
 <?php
 
 /**
- * ISPAPI SSL Addon for WHMCS
+ * CentralNic SSL Addon for WHMCS
  *
- * SSL Certificates Registration using WHMCS & HEXONET
+ * SSL Certificates Registration using WHMCS & HEXONET or RRPproxy
  *
  * For more information, please refer to the online documentation.
- * @see https://wiki.hexonet.net/wiki/WHMCS_Modules
+ * @see https://centralnic-reseller.github.io/centralnic-reseller/docs/cnic/whmcs/whmcs-ssl/
  * @noinspection PhpUnused
  */
 
-require_once(__DIR__ . '/../../servers/ispapissl/vendor/autoload.php');
+require_once(__DIR__ . '/../../servers/cnicssl/vendor/autoload.php');
 
-use HEXONET\WHMCS\ISPAPI\SSL\DBHelper;
-use HEXONET\WHMCS\ISPAPI\SSL\SSLHelper;
+use CNIC\WHMCS\SSL\DBHelper;
+use CNIC\WHMCS\SSL\SSLHelper;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
 
 /**
  * Configuration of the addon module.
  * @return array<string, string>
  */
-function ispapissl_addon_config(): array
+function cnicssl_addon_config(): array
 {
     return [
-        "name" => "ISPAPI SSL",
+        "name" => "CNIC SSL",
         "description" => "Quickly add and configure SSL Certificates",
-        "author" => '<a href="https://www.hexonet.net/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="HEXONET" /></a>',
+        "author" => '<a href="https://www.centralnicgroup.com/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="CentralNic" /></a>',
         "language" => "english",
         "version" => "10.0.0"
     ];
@@ -35,7 +35,7 @@ function ispapissl_addon_config(): array
  * This function will be called with the activation of the add-on module.
  * @return array<string, string>
  */
-function ispapissl_addon_activate(): array
+function cnicssl_addon_activate(): array
 {
     return ['status' => 'success', 'description' => 'Installed'];
 }
@@ -44,7 +44,7 @@ function ispapissl_addon_activate(): array
  * This function will be called with the deactivation of the add-on module.
  * @return array<string, string>
  */
-function ispapissl_addon_deactivate(): array
+function cnicssl_addon_deactivate(): array
 {
     return ['status' => 'success', 'description' => 'Uninstalled'];
 }
@@ -53,7 +53,7 @@ function ispapissl_addon_deactivate(): array
  * Module interface functionality
  * @param array<string, mixed> $vars
  */
-function ispapissl_addon_output(array $vars): void
+function cnicssl_addon_output(array $vars): void
 {
     global $templates_compiledir;
 

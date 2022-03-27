@@ -1,18 +1,17 @@
 {
-    "phpcsparams": "--extensions=php --ignore=node_modules,vendor,templates_c -q .",
-    "phpcsfixcmd": "phpcbf --standard=PSR12",
-    "phpcschkcmd": "phpcs -n --colors --standard=PSR12",
-    "phpcomptcmd": "phpcs -n --colors --standard=PHPCompatibility --runtime-set testVersion \"$(php -r 'echo PHP_MAJOR_VERSION . \".\" . PHP_MINOR_VERSION;')\"",
-    "phpstancmd": "./modules/servers/ispapissl/vendor/bin/phpstan analyse",
-    "archiveFileName": "whmcs-ispapi-ssl",
+    "phpcsfixcmd": "composer run-script codefix",
+    "phpcschkcmd": "composer run-script codecheck",
+    "phpcomptcmd": "composer run-script compatibility",
+    "phpstancmd": "composer run-script phpstan",
+    "archiveFileName": "whmcs-cnic-ssl",
     "archiveBuildPath": "build",
     "filesForArchive": [
         "README.md",
         "CONTRIBUTING.md",
         "HISTORY.md",
         "LICENSE",
-        "modules/addons/ispapissl_addon/**",
-        "modules/servers/ispapissl/**"
+        "modules/addons/cnicssl_addon/**",
+        "modules/servers/cnicssl/**"
     ],
     "filesForCleanup": [
         "templates_c",

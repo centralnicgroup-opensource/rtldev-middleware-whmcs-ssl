@@ -5,7 +5,7 @@
     bootstrap="tests/_bootstrap.php"
     cacheTokens="false">
     <testsuites>
-        <testsuite name="WHMCS ISPAPI SSL Module Tests">
+        <testsuite name="WHMCS CNIC SSL Module Tests">
             <directory suffix=".php">./tests/</directory>
         </testsuite>
     </testsuites>
