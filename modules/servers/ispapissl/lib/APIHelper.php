@@ -4,7 +4,7 @@ namespace HEXONET\WHMCS\ISPAPI\SSL;
 
 use Exception;
 use WHMCS\Module\Registrar\Ispapi\Ispapi;
-use HEXONET\ResponseParser as RP;
+use CNIC\HEXONET\ResponseParser as RP;
 
 class APIHelper
 {
