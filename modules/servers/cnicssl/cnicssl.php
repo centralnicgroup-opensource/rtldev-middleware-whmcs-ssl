@@ -244,16 +244,25 @@ function cnicssl_SSLStepTwo(array $params): array
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
 
         $response = APIHelper::getEmailAddress($certClass, $params['csr']);
-        if (isset($response['EMAIL'])) {
-            $values['approveremails'] = $response['EMAIL'];
-        } else {
+        if (!isset($response['EMAIL'])) {
             $domain = preg_replace('/^\*\./', '', $csr['CN'][0]);
             if (count(explode('.', $domain)) < 2) {
                 throw new Exception("Invalid CN in CSR");
             }
             $response = APIHelper::getValidationAddresses($certClass, $domain);
-            $values['approveremails'] = $response['EMAIL'];
         }
+        $values['approveremails'] = $response['EMAIL'];
+
+        $values['approvalmethods'] = ['email'];
+        $dcvClasses = ['COMODO_ESSENTIAL', 'COMODO_POSITIVE', 'COMODO_SSL', 'GEOTRUST_QUICK', 'GEOTRUST_RAPID', 'THAWTE_SSL123'];
+        foreach ($dcvClasses as $dcvClass) {
+            if (strpos($certClass, $dcvClass) === 0) {
+                $values['approvalmethods'][] = 'dns-txt-token';
+                $values['approvalmethods'][] = 'file';
+                break;
+            }
+        }
+
         $contact = [];
         foreach (['', 'ADMINCONTACT', 'TECHCONTACT', 'BILLINGCONTACT'] as $contactType) {
             $contact[$contactType . 'ORGANIZATION'] = $params['orgname'];
@@ -270,20 +279,7 @@ function cnicssl_SSLStepTwo(array $params): array
             $contact[$contactType . 'PHONE'] = $params['phonenumber'];
             $contact[$contactType . 'FAX'] = $params['faxnumber'];
         }
-        switch ($params['servertype']) {
-            case 1001:
-                $serverType = 'APACHESSL';
-                break;
-            case 1002:
-                $serverType = 'APACHESSLEAY';
-                break;
-            case 1013:
-            case 1014:
-                $serverType = 'IIS';
-                break;
-            default:
-                $serverType = 'OTHER';
-        }
+        $serverType = SSLHelper::getServerType($params['servertype']);
         APIHelper::replaceCertificate($params['remoteid'], $certClass, $params['csr'], $serverType, $csr['CN'][0], $contact);
         DBHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
@@ -304,9 +300,38 @@ function cnicssl_SSLStepThree(array $params): array
         $orderId = $params['remoteid'];
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
 
-        APIHelper::updateCertificate($orderId, $certClass, $params['approveremail']);
+        $data = ['completiondate' => Carbon::now()];
+
+        $response = APIHelper::updateCertificate($orderId, $certClass, $params['approvalmethod'], $params['approveremail']);
+
+        $authData = null;
+        switch ($params['approvalmethod']) {
+            case 'dns-txt-token':
+                $validation = explode(" ", $response["VALIDATIONDNSRR"][0]);
+                $authData = [
+                    "method" => "dnsauth",
+                    "type" => strtoupper($validation[1]),
+                    "host" => explode(".", $validation[0])[0],
+                    "value" => explode(".", $validation[2])[0]
+                ];
+                break;
+            case 'file':
+                $path = parse_url($response["VALIDATIONURL"][0], PHP_URL_PATH);
+                if ($path) {
+                    $authData = [
+                        "method" => "fileauth",
+                        "path" => str_replace($path, "", $response["VALIDATIONURL"][0]),
+                        "name" => substr($path, 1),
+                        "contents" => $response["VALIDATIONURLCONTENT"][0]
+                    ];
+                }
+                break;
+        }
+        if ($authData) {
+            $data['authdata'] = json_encode($authData);
+        }
         APIHelper::executeOrder($orderId);
-        DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now()]);
+        DBHelper::updateOrder($params['serviceid'], $params['addonId'], $data);
         return [];
     } catch (Exception $e) {
         logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());

@@ -302,4 +302,23 @@ class SSLHelper
         }
         $GLOBALS['_LANG'] += $translations;
     }
+
+    /**
+     * @param int $serverType
+     * @return string
+     */
+    public static function getServerType(int $serverType): string
+    {
+        switch ($serverType) {
+            case 1001:
+                return "APACHESSL";
+            case 1002:
+                return "APACHESSLEAY";
+            case 1013:
+            case 1014:
+                return "IIS";
+            default:
+                return "OTHER";
+        }
+    }
 }
