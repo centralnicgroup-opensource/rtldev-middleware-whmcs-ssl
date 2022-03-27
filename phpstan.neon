@@ -12,16 +12,16 @@ parameters:
         - tests
     excludes_analyse:
         - node_modules
-        - modules/servers/ispapissl/vendor
+        - modules/servers/cnicssl/vendor
         - build
         - tests
     bootstrapFiles:
         - tests/_bootstrap.phpstan.php
-        - modules/servers/ispapissl/vendor/autoload.php
+        - modules/servers/cnicssl/vendor/autoload.php
     ignoreErrors:
         -
             message: '#Access to an undefined property [a-zA-Z0-9\\_]+::\$(autosetup|code|status|remoteid|id|gid)#'
             paths:
-                - modules/addons/ispapissl_addon/ispapissl_addon.php
-                - modules/servers/ispapissl/ispapissl.php
-                - modules/servers/ispapissl/lib/SSLHelper.php
+                - modules/addons/cnicssl_addon/cnicssl_addon.php
+                - modules/servers/cnicssl/cnicssl.php
+                - modules/servers/cnicssl/lib/SSLHelper.php

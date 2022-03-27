@@ -7,7 +7,7 @@ if (!defined('WHMCS')) {
 }
 
 // Include the WHMCS module.
-require_once __DIR__ . '/../servers/ispapissl/ispapissl.php';
+require_once __DIR__ . '/../servers/cnicssl/cnicssl.php';
 
 /**
  * Mock logModuleCall function for testing purposes.
