@@ -46,6 +46,7 @@
   ],
   "devDependencies": {
     "@hexonet/semantic-release-github-whmcs-config": "^2.0.0",
+    "cz-conventional-changelog": "^3.3.0",
     "end-of-stream-promise": "^1.0.0",
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
@@ -59,5 +60,10 @@
     "codeFix": "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor modules tests",
     "phpStan": "./modules/servers/ispapissl/vendor/bin/phpstan analyse --memory-limit 2G",
     "test": "phpunit"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
