@@ -1,3 +1,20 @@
+# [10.0.0](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.5...v10.0.0) (2022-03-27)
+
+
+### Code Refactoring
+
+* **php-sdk:** adapt to newest php-sdk package ([b338b0b](https://github.com/hexonet/whmcs-ispapi-ssl/commit/b338b0bb169972a53e46fa75dd94dbde56f0f777))
+
+
+### Features
+
+* **logging:** log API requests to WHMCS Module Log ([cfd81ba](https://github.com/hexonet/whmcs-ispapi-ssl/commit/cfd81ba33144da968977dd74607bc26fe1dfd236))
+
+
+### BREAKING CHANGES
+
+* **php-sdk:** Requires ISPAPI Registrar Module v8.0 or greater
+
 ## [9.3.5](https://github.com/hexonet/whmcs-ispapi-ssl/compare/v9.3.4...v9.3.5) (2022-03-08)
 
 
