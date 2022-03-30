@@ -78,7 +78,7 @@ class DBHelper
     {
         $configData = DB::table('tblsslorders')
             ->where('remoteid', '=', $remoteId)
-            ->where('module', '=', 'ispapissl')
+            ->where('module', '=', 'cnicssl')
             ->value('configdata');
         return json_decode($configData, true);
     }
