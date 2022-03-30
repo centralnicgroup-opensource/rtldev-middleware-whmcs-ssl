@@ -5,7 +5,7 @@
 
     <div class="tld-import-step top-margin-10">
 
-        <form action="addonmodules.php?module=ispapissl_addon" id="frmTldImport" class="form-horizontal" method="POST">
+        <form action="addonmodules.php?module=cnicssl_addon" id="frmTldImport" class="form-horizontal" method="POST">
             <div class="admin-tabs-v2">
                 <div class="form-group">
                     <label for="inputMarginType" class="col-md-4 col-sm-6 control-label">
