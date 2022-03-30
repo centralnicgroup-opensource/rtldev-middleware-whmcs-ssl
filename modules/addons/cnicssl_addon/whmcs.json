@@ -1,15 +1,15 @@
 {
   "schema": "1.0",
   "type": "whmcs-addons",
-  "name": "ispapissl-addon",
+  "name": "cnicssl-addon",
   "license": "MIT",
   "category": "digitalservices",
   "description": {
-    "name": "ISPAPI SSL Addon v10.0.0",
+    "name": "CentralNic SSL Addon v10.0.0",
     "tagline": "Import and synchronize SSL products",
     "long": "",
     "features": [
-      "Resell all certificate classes offered by HEXONET",
+      "Resell all certificate classes offered by HEXONET and RRPproxy",
       "Import products with pricing and profit margins",
       "Create, renew and revoke certificates",
       "Support for testing environment"
@@ -19,15 +19,15 @@
     "filename": "logo.png"
   },
   "support": {
-    "homepage": "https:\/\/www.hexonet.net\/",
-    "learn_more": "https:\/\/github.com\/hexonet\/whmcs-ispapi-ssl\/blob\/master\/README.md",
-    "support_url": "https:\/\/github.com\/hexonet\/whmcs-ispapi-ssl\/wiki\/Contact-Us",
-    "docs_url": "https:\/\/github.com\/hexonet\/whmcs-ispapi-ssl\/wiki\/Usage-Guide"
+    "homepage": "https:\/\/www.centralnic.com\/",
+    "learn_more": "https:\/\/github.com\/centralnic-reseller\/whmcs-ssl\/blob\/master\/README.md",
+    "support_url": "https:\/\/github.com\/centralnic-reseller\/whmcs-ssl\/wiki\/Contact-Us",
+    "docs_url": "https:\/\/github.com\/centralnic-reseller\/whmcs-ssl\/wiki\/Usage-Guide"
   },
   "authors": [
     {
-      "name": "HEXONET",
-      "homepage": "https:\/\/www.hexonet.net\/"
+      "name": "CentralNic Reseller",
+      "homepage": "https:\/\/www.centralnic.com\/"
     }
   ]
 }

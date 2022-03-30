@@ -250,7 +250,7 @@ class DBHelper
     {
         return DB::table('tblproducts')
             ->where('configoption1', '=', $certificateClass)
-            ->where('servertype', '=', 'cnicssl')
+            ->whereIn('servertype', ['cnicssl', 'ispapissl'])
             ->first();
     }
 
@@ -326,13 +326,17 @@ class DBHelper
                         'gid' => $productGroupId,
                         'autosetup' => $autoSetup,
                         'name' => $productName,
-                        'description' => $productDescription
+                        'description' => $productDescription,
+                        'servertype' => 'cnicssl'
                     ]
                 );
         }
         return DB::table('tblproducts')
             ->where('id', '=', $productId)
-            ->update(['autosetup' => $autoSetup]);
+            ->update([
+                'autosetup' => $autoSetup,
+                'servertype' => 'cnicssl'
+            ]);
     }
 
     /**
