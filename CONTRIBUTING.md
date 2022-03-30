@@ -7,7 +7,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 ## Pull Request Process
 
-Read [here](https://github.com/hexonet/whmcs-ispapi-ssl/wiki/Development-Guide#pull-request-pr-procedure).
+Read [here](https://github.com/centralnic-reseller/whmcs-ssl/wiki/Development-Guide#pull-request-pr-procedure).
 
 ## Code of Conduct
 

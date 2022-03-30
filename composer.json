@@ -1,5 +1,5 @@
 {
-  "name": "hexonet/whmcs-ispapi-ssl",
+  "name": "centralnic-reseller/whmcs-ssl",
   "description": "CentralNic SSL Provisioning & Addon Modules for WHMCS",
   "type": "project",
   "license": "MIT",
