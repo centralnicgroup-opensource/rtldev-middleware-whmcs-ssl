@@ -66,9 +66,7 @@ function cnicssl_CreateAccount(array $params): string
             throw new Exception("An SSL Order already exists for this order");
         }
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
-        $response = APIHelper::createCertificate($certClass);
-        $orderId = $response['ORDERID'][0];
-        $sslOrderId = DBHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $orderId, $certClass);
+        $sslOrderId = DBHelper::createOrder($params['clientsdetails']['userid'], $params['serviceid'], $certClass);
         SSLHelper::sendConfigurationEmail($params['serviceid'], $sslOrderId);
     } catch (Exception $e) {
         logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
@@ -205,16 +203,16 @@ function cnicssl_Renew(array $params): string
  */
 function cnicssl_SSLStepOne(array $params): void
 {
-    try {
-        $order = APIHelper::getOrder($params['remoteid']);
-        if ($order['SSLCERTID'] > 0) {
-            DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now(), 'status' => 'Completed']);
-        } else {
-            DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => '', 'status' => 'Awaiting Configuration']);
-        }
-    } catch (Exception $e) {
-        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
-    }
+//    try {
+//        $order = APIHelper::getOrder($params['remoteid']);
+//        if ($order['SSLCERTID'] > 0) {
+//            DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => Carbon::now(), 'status' => 'Completed']);
+//        } else {
+//            DBHelper::updateOrder($params['serviceid'], $params['addonId'], ['completiondate' => '', 'status' => 'Awaiting Configuration']);
+//        }
+//    } catch (Exception $e) {
+//        logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
+//    }
 }
 
 /**
@@ -239,7 +237,6 @@ function cnicssl_SSLStepTwo(array $params): array
             'Country' => $csr['C'][0]
         ];
         array_walk($values['displaydata'], 'htmlspecialchars');
-        $values['approveremails'] = [];
 
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
 
@@ -263,24 +260,6 @@ function cnicssl_SSLStepTwo(array $params): array
             }
         }
 
-        $contact = [];
-        foreach (['', 'ADMINCONTACT', 'TECHCONTACT', 'BILLINGCONTACT'] as $contactType) {
-            $contact[$contactType . 'ORGANIZATION'] = $params['orgname'];
-            $contact[$contactType . 'FIRSTNAME'] = $params['firstname'];
-            $contact[$contactType . 'LASTNAME'] = $params['lastname'];
-            $contact[$contactType . 'NAME'] = $params['firstname'] . ' ' . $params['lastname'];
-            $contact[$contactType . 'JOBTITLE'] = $params['jobtitle'];
-            $contact[$contactType . 'EMAIL'] = $params['email'];
-            $contact[$contactType . 'STREET'] = $params['address1'];
-            $contact[$contactType . 'CITY'] = $params['city'];
-            $contact[$contactType . 'PROVINCE'] = $params['state'];
-            $contact[$contactType . 'ZIP'] = $params['postcode'];
-            $contact[$contactType . 'COUNTRY'] = $params['country'];
-            $contact[$contactType . 'PHONE'] = $params['phonenumber'];
-            $contact[$contactType . 'FAX'] = $params['faxnumber'];
-        }
-        $serverType = SSLHelper::getServerType($params['servertype']);
-        APIHelper::replaceCertificate($params['remoteid'], $certClass, $params['csr'], $serverType, $csr['CN'][0], $contact);
         DBHelper::updateHosting($params['serviceid'], ['domain' => $csr['CN'][0]]);
     } catch (Exception $e) {
         logModuleCall('cnicssl', __FUNCTION__, $params, $e->getMessage(), $e->getTraceAsString());
@@ -297,12 +276,26 @@ function cnicssl_SSLStepTwo(array $params): array
 function cnicssl_SSLStepThree(array $params): array
 {
     try {
-        $orderId = $params['remoteid'];
         $certClass = $params['configoptions']['Certificate Class'] ?? $params['configoption1'];
-
         $data = ['completiondate' => Carbon::now()];
-
-        $response = APIHelper::updateCertificate($orderId, $certClass, $params['approvalmethod'], $params['approveremail']);
+        $contact = [];
+        foreach (['', 'ADMINCONTACT', 'TECHCONTACT', 'BILLINGCONTACT'] as $contactType) {
+            $contact[$contactType . 'ORGANIZATION'] = $params['orgname'];
+            $contact[$contactType . 'FIRSTNAME'] = $params['firstname'];
+            $contact[$contactType . 'LASTNAME'] = $params['lastname'];
+            $contact[$contactType . 'NAME'] = $params['firstname'] . ' ' . $params['lastname'];
+            $contact[$contactType . 'JOBTITLE'] = $params['jobtitle'];
+            $contact[$contactType . 'EMAIL'] = $params['email'];
+            $contact[$contactType . 'STREET'] = $params['address1'];
+            $contact[$contactType . 'CITY'] = $params['city'];
+            $contact[$contactType . 'PROVINCE'] = $params['state'];
+            $contact[$contactType . 'ZIP'] = $params['postcode'];
+            $contact[$contactType . 'COUNTRY'] = $params['country'];
+            $contact[$contactType . 'PHONE'] = $params['phonenumber'];
+            $contact[$contactType . 'FAX'] = $params['faxnumber'];
+        }
+        $response = APIHelper::createCertificate($params['serviceid'], $certClass, $contact, $params['approvalmethod'], $params['approveremail']);
+        $data["remoteid"] = $response["SSLCERTID"][0];
 
         $authData = null;
         switch ($params['approvalmethod']) {
@@ -312,7 +305,7 @@ function cnicssl_SSLStepThree(array $params): array
                     "method" => "dnsauth",
                     "type" => strtoupper($validation[1]),
                     "host" => explode(".", $validation[0])[0],
-                    "value" => explode(".", $validation[2])[0]
+                    "value" => $validation[2]
                 ];
                 break;
             case 'file':
@@ -330,7 +323,6 @@ function cnicssl_SSLStepThree(array $params): array
         if ($authData) {
             $data['authdata'] = json_encode($authData);
         }
-        APIHelper::executeOrder($orderId);
         DBHelper::updateOrder($params['serviceid'], $params['addonId'], $data);
         return [];
     } catch (Exception $e) {
@@ -361,8 +353,6 @@ function cnicssl_ClientArea(array $params): array
             $tpl['md5certId'] = md5($order->id);
             $tpl['orderStatus'] = $order->status;
 
-            $response = APIHelper::getOrder($order->remoteid);
-
             $contactMappings = [
                 'firstname' => 'firstname',
                 'lastname' => 'lastname',
@@ -380,7 +370,7 @@ function cnicssl_ClientArea(array $params): array
                 $tpl['config'][$key] = htmlspecialchars($params['clientsdetails'][$item]);
             }
 
-            $certId = $response['SSLCERTID'];
+            $certId = $order->remoteid;
             if ($certId > 0) {
                 $status = APIHelper::getCertStatus($certId);
                 foreach ($status as $key => $val) {

@@ -23,74 +23,26 @@ class APIHelper
 
     /**
      * Create certificate
+     * @param int $serviceId
      * @param string $certClass
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function createCertificate(string $certClass): array
-    {
-        $command = [
-            'COMMAND' => 'CreateSSLCert',
-            'ORDER' => 'CREATE',
-            'SSLCERTCLASS' => $certClass,
-            'PERIOD' => 1
-        ];
-        return self::getResponse($command);
-    }
-
-    /**
-     * Replace certificate
-     * @param int $orderId
-     * @param string $certClass
-     * @param string $csr
-     * @param string $serverType
-     * @param string $domain
      * @param array<string, mixed> $contact
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function replaceCertificate(int $orderId, string $certClass, string $csr, string $serverType, string $domain, array $contact): array
-    {
-        $command = [
-            'COMMAND' => 'CreateSSLCert',
-            'ORDER' => 'REPLACE',
-            'SSLCERTCLASS' => $certClass,
-            'PERIOD' => 1,
-            'ORDERID' => $orderId,
-            'CSR' => explode(PHP_EOL, $csr),
-            'SERVERSOFTWARE' => $serverType,
-            'SSLCERTDOMAIN' => $domain
-        ];
-        $command = array_merge($command, $contact);
-        return self::getResponse($command);
-    }
-
-    /**
-     * Update certificate
-     * @param int $orderId
-     * @param string $certClass
      * @param string $approvalMethod
      * @param string $email
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function updateCertificate(int $orderId, string $certClass, string $approvalMethod, string $email): array
+    public static function createCertificate(int $serviceId, string $certClass, array $contact, string $approvalMethod, string $email): array
     {
-        $configData = DBHelper::getOrderConfigData($orderId);
-        $subject = openssl_csr_get_subject($configData["csr"]);
+        $configData = DBHelper::getOrderConfigData($serviceId);
         $serverType = SSLHelper::getServerType($configData['servertype']);
         $command = [
             'COMMAND' => 'CreateSSLCert',
-            'ORDER' => 'REPLACE',
             'SSLCERTCLASS' => $certClass,
             'PERIOD' => 1,
-            'ORDERID' => $orderId,
             'CSR' => explode(PHP_EOL, $configData["csr"]),
             'SERVERSOFTWARE' => $serverType
         ];
-        if ($subject) {
-            $command["SSLCERTDOMAIN"] = $subject["CN"];
-        }
+        $command = array_merge($command, $contact);
         switch ($approvalMethod) {
             case 'dns-txt-token':
                 $command["VALIDATION0"] = "DNSZONE";
