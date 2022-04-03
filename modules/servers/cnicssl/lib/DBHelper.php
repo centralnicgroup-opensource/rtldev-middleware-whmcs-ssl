@@ -71,13 +71,13 @@ class DBHelper
     }
 
     /**
-     * @param int $remoteId
+     * @param int $serviceId
      * @return array<string, mixed>
      */
-    public static function getOrderConfigData(int $remoteId): array
+    public static function getOrderConfigData(int $serviceId): array
     {
         $configData = DB::table('tblsslorders')
-            ->where('remoteid', '=', $remoteId)
+            ->where('serviceid', '=', $serviceId)
             ->where('module', '=', 'cnicssl')
             ->value('configdata');
         return json_decode($configData, true);
@@ -87,16 +87,14 @@ class DBHelper
      * Create an SSL order
      * @param int $userId
      * @param int $serviceId
-     * @param int $orderId
      * @param string $certClass
      * @return int
      */
-    public static function createOrder(int $userId, int $serviceId, int $orderId, string $certClass): int
+    public static function createOrder(int $userId, int $serviceId, string $certClass): int
     {
         return DB::table('tblsslorders')->insertGetId([
             'userid' => $userId,
             'serviceid' => $serviceId,
-            'remoteid' => $orderId,
             'module' => 'cnicssl',
             'certtype' => $certClass,
             'status' => 'Awaiting Configuration'
