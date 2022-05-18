@@ -11,5 +11,6 @@ if (file_exists($configFile)) {
 require_once $whmcsPath . '/vendor/autoload.php';
 require_once $whmcsPath . '/includes/functions.php';
 require_once $whmcsPath . '/modules/registrars/ispapi/lib/Ispapi.php';
+require_once $whmcsPath . '/modules/registrars/keysystems/lib/APIClient.php';
 
 //stream_wrapper_restore('phar');

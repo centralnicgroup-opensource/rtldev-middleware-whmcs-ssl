@@ -1,0 +1,374 @@
+{
+  "SYMANTEC_SECURESITE": {
+    "provider": "DigiCert",
+    "name": "Secure Site",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "SYMANTEC_SECURESITE_EV": {
+    "provider": "DigiCert",
+    "name": "Secure Site EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "SYMANTEC_SECURESITE_PRO": {
+    "provider": "DigiCert",
+    "name": "Secure Site Pro",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "SYMANTEC_SECURESITE_PRO_EV": {
+    "provider": "DigiCert",
+    "name": "Secure Site Pro EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "GEOTRUST_QUICKSSL": {
+    "provider": "GeoTrust",
+    "name": "Quick SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "GEOTRUST_QUICKSSLPREMIUM": {
+    "provider": "GeoTrust",
+    "name": "Quick SSL Premium",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "GEOTRUST_QUICKSSLPREMIUM_SAN": {
+    "provider": "GeoTrust",
+    "name": "Quick SSL Premium SAN Package",
+    "features": {
+      "type": "DV",
+      "wildcard": false,
+      "subdomains": "4"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "GEOTRUST_TRUEBIZID": {
+    "provider": "GeoTrust",
+    "name": "True Business ID",
+    "features": {
+      "type": "OV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "GEOTRUST_TRUEBIZID_SAN": {
+    "provider": "GeoTrust",
+    "name": "True Business ID SAN Package",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "4 - 100"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "GEOTRUST_TRUEBIZID_EV": {
+    "provider": "GeoTrust",
+    "name": "True Business ID EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "GEOTRUST_TRUEBIZID_EV_SAN": {
+    "provider": "GeoTrust",
+    "name": "True Business ID EV SAN Package",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "4 - 100"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "GEOTRUST_TRUEBIZID_WILDCARD": {
+    "provider": "GeoTrust",
+    "name": "True Business ID Wildcard",
+    "features": {
+      "type": "OV",
+      "wildcard": true
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "GEOTRUST_RAPIDSSL": {
+    "provider": "RapidSSL",
+    "name": "Rapid SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "GEOTRUST_RAPIDSSL_WILDCARD": {
+    "provider": "RapidSSL",
+    "name": "Rapid SSL Wildcard",
+    "features": {
+      "type": "DV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "COMODO_ESSENTIALSSL": {
+    "provider": "Sectigo",
+    "name": "Essential SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "COMODO_ESSENTIALSSL_WILDCARD": {
+    "provider": "Sectigo",
+    "name": "Essential SSL Wildcard",
+    "features": {
+      "type": "DV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "COMODO_SSL_EV": {
+    "provider": "Sectigo",
+    "name": "EV SSL",
+    "features": {
+      "type": "EV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "COMODO_INSTANTSSL": {
+    "provider": "Sectigo",
+    "name": "Instant SSL",
+    "features": {
+      "type": "OV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "COMODO_INSTANTSSL_PREMIUM": {
+    "provider": "Sectigo",
+    "name": "Instant SSL Premium",
+    "features": {
+      "type": "OV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "COMODO_INSTANTSSL_PRO": {
+    "provider": "Sectigo",
+    "name": "Instant SSL Pro",
+    "features": {
+      "type": "OV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "COMODO_POSITIVESSL": {
+    "provider": "Sectigo",
+    "name": "Positive SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "COMODO_PREMIUMSSL": {
+    "provider": "Sectigo",
+    "name": "Premium SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "COMODO_PREMIUMSSL_WILDCARD": {
+    "provider": "Sectigo",
+    "name": "Premium SSL Wildcard",
+    "features": {
+      "type": "DV",
+      "wildcard": true
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "COMODO_SSL": {
+    "provider": "Sectigo",
+    "name": "DV SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "COMODO_SSL_WILDCARD": {
+    "provider": "Sectigo",
+    "name": "DV SSL Wildcard",
+    "features": {
+      "type": "DV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "COMODO_UCC": {
+    "provider": "Sectigo",
+    "name": "UCC SSL",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "THAWTE_SSL123": {
+    "provider": "thawte",
+    "name": "SSL 123",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "THAWTE_SSLWEBSERVER": {
+    "provider": "thawte",
+    "name": "SSL Webserver",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "THAWTE_SSLWEBSERVER_EV": {
+    "provider": "thawte",
+    "name": "SSL Webserver EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "THAWTE_SSLWEBSERVER_WILDCARD": {
+    "provider": "thawte",
+    "name": "SSL Webserver Wildcard",
+    "features": {
+      "type": "OV",
+      "wildcard": true
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "TRUSTWAVE_DOMAINVETTEDSSL": {
+    "provider": "Trustwave",
+    "name": "Domain vetted SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "TRUSTWAVE_PREMIUMSSL": {
+    "provider": "Trustwave",
+    "name": "Premium SSL",
+    "features": {
+      "type": "OV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "TRUSTWAVE_PREMIUMSSL_SAN": {
+    "provider": "Trustwave",
+    "name": "Premium SSL SAN Package",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 5"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "TRUSTWAVE_PREMIUMSSL_EV": {
+    "provider": "Trustwave",
+    "name": "Premium SSL EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "TRUSTWAVE_PREMIUMSSL_EV_SAN": {
+    "provider": "Trustwave",
+    "name": "Premium SSL EV SAN Package",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 5"
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  },
+  "TRUSTWAVE_PREMIUMSSL_WILDCARD": {
+    "provider": "Trustwave",
+    "name": "Premium SSL Wildcard",
+    "features": {
+      "type": "OV",
+      "wildcard": true
+    },
+    "dnsAuth": false,
+    "fileAuth": false
+  }
+}
