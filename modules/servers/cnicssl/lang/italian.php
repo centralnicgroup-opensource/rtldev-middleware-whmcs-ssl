@@ -17,4 +17,5 @@ $_LANG = [
     'techContact' => 'Contatto tecnico',
     'updated' => 'Aggiornato',
     'vendorId' => 'ID ordine fornitore',
+    'webServerType' => 'Tipo Web Server'
 ];

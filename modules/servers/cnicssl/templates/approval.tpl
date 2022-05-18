@@ -7,8 +7,7 @@
     <h2>{$LANG.sslcertapproveremail}</h2>
     <p>{$LANG.sslcertapproveremaildetails}</p>
 
-    <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails">
-        <input type="hidden" name="id" value="{$id}" />
+    <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails&amp;id={$id}">
         <label for="customApproverEmail">{$LANG.sslcertapproveremail}</label>
         <input type="text" name="customApproverEmail" id="customApproverEmail" />
         <br />

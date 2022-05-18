@@ -26,117 +26,101 @@ class SSLHelper
     }
 
     /**
-     * Get available SSL products from HEXONET
-     * @return array<int|string, array<string, mixed>>
-     * @throws Exception
+     * @return array<string, mixed>|null
      */
-    public static function getProducts(): array
+    public static function getProviders(): ?array
     {
-        $user = APIHelper::getUserStatus();
-        $currencies = self::getCurrencies();
-        $defaultCurrency = DBHelper::getDefaultCurrency();
-        $exchangeRates = APIHelper::getExchangeRates();
-
-        $pattern = '/PRICE_CLASS_SSLCERT_(.*_.*)_ANNUAL1?$/';
-        $products = [];
-        $certs = preg_grep($pattern, $user['RELATIONTYPE']);
-        if (!is_array($certs)) {
-            return $products;
-        }
-
-        $file = file_get_contents(__DIR__ . '/../../../addons/cnicssl_addon/products.json');
+        $file = realpath(__DIR__ . '/../../../addons/cnicssl_addon/resources/providers.json');
         if ($file === false) {
-            return $products;
+            return null;
         }
-        $json = json_decode($file, true);
-        $defs = array_column($json['certificates'], 'class');
+        $json = file_get_contents($file);
+        if ($json === false) {
+            return null;
+        }
+        return json_decode($json, true);
+    }
 
-        foreach ($certs as $key => $val) {
-            preg_match($pattern, $val, $matches);
-            $productKey = $matches[1];
+    /**
+     * @param string $provider
+     * @return array<string, mixed>|null
+     */
+    public static function getCertificates(string $provider): ?array
+    {
+        $file = realpath(__DIR__ . '/../../../addons/cnicssl_addon/resources/' . strtolower($provider) . '.json');
+        if ($file === false) {
+            return null;
+        }
+        $json = file_get_contents($file);
+        if ($json === false) {
+            return null;
+        }
+        return json_decode($json, true);
+    }
 
-            $price = $user['RELATIONVALUE'][$key];
-            $currencyKey = array_search("PRICE_CLASS_SSLCERT_{$productKey}_CURRENCY", $user['RELATIONTYPE']);
-            if ($currencyKey === false) {
-                continue;
-            }
-            $currency = $user['RELATIONVALUE'][$currencyKey];
-
-            $arrayKey = array_search($currency, array_column($currencies, 'code'));
-            if ($arrayKey === false) {
-                if (in_array($currency, $exchangeRates['CURRENCYFROM'])) {
-                    // Product currency is same as ISPAPI base currency
-                    $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
-                    if ($exchangeKey === false) {
-                        continue;
-                    }
-                    $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
-                } else {
-                    // Convert to ISPAPI base currency
-                    $exchangeKey = array_search($currency, $exchangeRates['CURRENCYTO']);
-                    if ($exchangeKey === false) {
-                        continue;
-                    }
-                    $price = round($price / $exchangeRates['RATE'][$exchangeKey], 2);
-                    if ($defaultCurrency->code != $exchangeRates['CURRENCYFROM'][$exchangeKey]) {
-                        // Convert to WHMCS default currency
-                        $exchangeKey = array_search($defaultCurrency->code, $exchangeRates['CURRENCYTO']);
-                        $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
-                    }
+    /**
+     * @param float $price
+     * @param string $currency
+     * @param string $defaultCurrency
+     * @param array<string, array<string, mixed>> $exchangeRates
+     * @return float|null
+     */
+    public static function getPrice(float $price, string $currency, string $defaultCurrency, array $exchangeRates): ?float
+    {
+        $currencies = self::getCurrencies();
+        $arrayKey = array_search($currency, array_column($currencies, 'code'));
+        if ($arrayKey === false) {
+            if (in_array($currency, $exchangeRates['CURRENCYFROM'])) {
+                // Product currency is same as ISPAPI base currency
+                $exchangeKey = array_search($defaultCurrency, $exchangeRates['CURRENCYTO']);
+                if ($exchangeKey === false) {
+                    return null;
                 }
+                $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
             } else {
-                $price = round($price / $currencies[$arrayKey]['rate'], 2);
+                // Convert to ISPAPI base currency
+                $exchangeKey = array_search($currency, $exchangeRates['CURRENCYTO']);
+                if ($exchangeKey === false) {
+                    return null;
+                }
+                $price = round($price / $exchangeRates['RATE'][$exchangeKey], 2);
+                if ($defaultCurrency != $exchangeRates['CURRENCYFROM'][$exchangeKey]) {
+                    // Convert to WHMCS default currency
+                    $exchangeKey = array_search($defaultCurrency, $exchangeRates['CURRENCYTO']);
+                    $price = round($price * $exchangeRates['RATE'][$exchangeKey], 2);
+                }
             }
-
-            $defKey = array_search($productKey, $defs);
-            if (!$defKey) {
-                continue;
-            }
-
-            $products[$productKey] = [
-                'id' => 0,
-                'Provider' => $json['certificates'][$defKey]['provider'],
-                'Name' => $json['certificates'][$defKey]['name'],
-                'Cost' => number_format($price, 2),
-                'Price' => 0,
-                'Margin' => 0,
-                'AutoSetup' => false
-            ];
-
-            $existingProduct = DBHelper::getProduct($productKey);
-            if ($existingProduct) {
-                $products[$productKey]['id'] = $existingProduct->id;
-                $products[$productKey]['AutoSetup'] = (bool)$existingProduct->autosetup;
-                $products[$productKey]['Price'] = DBHelper::getProductPricing($existingProduct->id, $defaultCurrency->id);
-                $products[$productKey]['Margin'] = round(((($products[$productKey]['Price'] / $products[$productKey]['Cost']) * 100) - 100), 2);
-            }
+        } else {
+            $price = round($price / $currencies[$arrayKey]['rate'], 2);
         }
-        return $products;
+        return $price;
     }
 
     /**
      * Import the SSL products
      * @throws Exception
      */
-    public static function importProducts(): void
+    public static function importProducts(string $registrar): void
     {
         $currencies = self::getCurrencies();
-        $json = self::loadDefinitionFile();
-        $providers = array_column($json['providers'], 'name');
-        $certs = array_column($json['certificates'], 'class');
+        $providers = self::getProviders();
+        $certs = self::getCertificates($registrar);
         $assetHelper = \DI::make("asset"); // @phpstan-ignore-line
         $webRoot = $assetHelper->getWebRoot();
 
+        if ($providers === null || $certs === null) {
+            return;
+        }
+
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
-            $key = array_search($certificateClass, $certs);
-            $product = $json['certificates'][$key];
+            $product = $certs[$certificateClass];
+            $provider = $providers[$product["provider"]];
             $productName = $product['name'];
             $existingProduct = DBHelper::getProduct($certificateClass);
 
             $productDescription = '';
             if ($_POST['ProductDescriptions']) {
-                $providerKey = array_search($product['provider'], $providers);
-                $logo = $json['providers'][$providerKey]['logo'];
+                $logo = $provider['logo'];
                 $productDescription = '<img src="' . $webRoot . '/modules/addons/cnicssl_addon/logos/' . $logo . '" />';
                 if (!isset($product['features']['domains'])) {
                     $product['features']['domains'] = null;
@@ -184,7 +168,7 @@ class SSLHelper
             }
 
             if (!$existingProduct) {
-                $productId = DBHelper::createProduct($productName, $productDescription, $productGroupId, $certificateClass, $_POST['AutoSetup']);
+                $productId = DBHelper::createProduct($registrar, $productName, $productDescription, $productGroupId, $certificateClass, $_POST['AutoSetup']);
             } else {
                 $productId = $existingProduct->id;
                 DBHelper::updateProduct($productId, $productName, $productDescription, $productGroupId, $_POST['AutoSetup']);
@@ -219,6 +203,7 @@ class SSLHelper
                 DBHelper::createPricing($productId, $currency['id'], $productPrices[$currency['id']]);
             }
         }
+        DBHelper::migrateOrders();
     }
 
     /**
@@ -227,28 +212,18 @@ class SSLHelper
      */
     public static function importProductGroups(): void
     {
-        $json = self::loadDefinitionFile();
-        foreach ($json['providers'] as $provider) {
-            $productGroupId = DBHelper::getProductGroupId($provider['name']);
+        $providers = self::getProviders();
+        if ($providers === null) {
+            return;
+        }
+        foreach ($providers as $name => $provider) {
+            $productGroupId = DBHelper::getProductGroupId($name);
             if ($productGroupId) {
-                DBHelper::updateProductGroup($productGroupId, $provider);
+                DBHelper::updateProductGroup($productGroupId, $name, $provider);
             } else {
-                DBHelper::createProductGroup($provider);
+                DBHelper::createProductGroup($name, $provider);
             }
         }
-    }
-
-    /**
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function loadDefinitionFile(): array
-    {
-        $file = file_get_contents(__DIR__ . '/../../../addons/cnicssl_addon/products.json');
-        if ($file === false) {
-            throw new Exception("Unable to parse products definition file");
-        }
-        return json_decode($file, true);
     }
 
     /**
@@ -320,5 +295,37 @@ class SSLHelper
             default:
                 return "OTHER";
         }
+    }
+
+    /**
+     * @param string $csr
+     * @return array<string, string>
+     * @throws Exception
+     */
+    public static function parseCSR(string $csr): array
+    {
+        $subject = openssl_csr_get_subject($csr);
+        if ($subject === false) {
+            throw new Exception("Invalid CSR");
+        }
+        return array_change_key_case($subject, CASE_UPPER);
+    }
+
+    /**
+     * @param string $domain
+     * @return array<string>
+     */
+    public static function getValidationEmails(string $domain): array
+    {
+        $domain = preg_replace("/^\*\./", '', $domain);
+        $domainObj = new \Utopia\Domains\Domain($domain);
+        $mainDomain = $domainObj->getRegisterable() ?: $domain;
+        return [
+            "admin@" . $mainDomain,
+            "administrator@" . $mainDomain,
+            "hostmaster@" . $mainDomain,
+            "postmaster@" . $mainDomain,
+            "webmaster@" . $mainDomain,
+        ];
     }
 }

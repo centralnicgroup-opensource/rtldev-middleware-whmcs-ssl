@@ -3,26 +3,40 @@
 namespace CNIC\WHMCS\SSL;
 
 use Exception;
-use WHMCS\Module\Registrar\Ispapi\Ispapi;
-use CNIC\HEXONET\ResponseParser as RP;
 
 class APIHelper
 {
     /**
      * Get user status
-     * @return array<string, mixed>
+     * @param string $registrar
+     * @return array<string, array<string, mixed>>
      * @throws Exception
      */
-    public static function getUserStatus(): array
+    public static function getProducts(string $registrar): array
     {
-        $command = [
-            'COMMAND' => 'StatusUser'
-        ];
-        return self::getResponse($command);
+        if ($registrar === "RRPproxy") {
+            $products = RRPproxy::getProducts();
+        } else {
+            $products = ISPAPI::getProducts();
+        }
+
+        $defaultCurrency = DBHelper::getDefaultCurrency();
+        foreach ($products as $productKey => $product) {
+            $existingProduct = DBHelper::getProduct($productKey);
+            if ($existingProduct) {
+                $products[$productKey]['id'] = $existingProduct->id;
+                $products[$productKey]['AutoSetup'] = (bool)$existingProduct->autosetup;
+                $products[$productKey]['Price'] = DBHelper::getProductPricing($existingProduct->id, $defaultCurrency->id);
+                $products[$productKey]['Margin'] = round(((($products[$productKey]['Price'] / $products[$productKey]['Cost']) * 100) - 100), 2);
+            }
+        }
+
+        return $products;
     }
 
     /**
      * Create certificate
+     * @param string $registrar
      * @param int $serviceId
      * @param string $certClass
      * @param array<string, mixed> $contact
@@ -31,264 +45,104 @@ class APIHelper
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function createCertificate(int $serviceId, string $certClass, array $contact, string $approvalMethod, string $email): array
+    public static function createCertificate(string $registrar, int $serviceId, string $certClass, array $contact, string $approvalMethod, string $email): array
     {
         $configData = DBHelper::getOrderConfigData($serviceId);
         $serverType = SSLHelper::getServerType($configData['servertype']);
-        $command = [
-            'COMMAND' => 'CreateSSLCert',
-            'SSLCERTCLASS' => $certClass,
-            'PERIOD' => 1,
-            'CSR' => explode(PHP_EOL, $configData["csr"]),
-            'SERVERSOFTWARE' => $serverType
-        ];
-        $command = array_merge($command, $contact);
-        switch ($approvalMethod) {
-            case 'dns-txt-token':
-                $command["VALIDATION0"] = "DNSZONE";
-//                $command["INTERNALDNS"] = 1;
-                break;
-            case 'file':
-                $command["VALIDATION0"] = "URL";
-                break;
-            default:
-                $command["EMAIL"] = $email;
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::createCertificate($certClass, $contact, $approvalMethod, $email, $serverType, $configData["csr"]);
         }
-
-        return self::getResponse($command);
+        return ISPAPI::createCertificate($certClass, $contact, $approvalMethod, $email, $serverType, $configData["csr"]);
     }
 
     /**
      * Renew certificate
-     * @param int $orderId
+     * @param string $registrar
+     * @param string $certId
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function renewCertificate(int $orderId): array
+    public static function renewCertificate(string $registrar, string $certId): array
     {
-        $order = self::getOrder($orderId);
-        $command = [
-            'COMMAND' => 'RenewSSLCert',
-            'SSLCERTID' => $order['SSLCERTID']
-        ];
-        return self::getResponse($command);
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::renewCertificate($certId);
+        }
+        return ISPAPI::renewCertificate($certId);
     }
 
     /**
      * Reissue certificate
-     * @param int $orderId
+     * @param string $registrar
+     * @param string $certId
      * @param string $csr
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function reissueCertificate(int $orderId, string $csr): array
+    public static function reissueCertificate(string $registrar, string $certId, string $csr): array
     {
-        $order = self::getOrder($orderId);
-        $command = [
-            'COMMAND' => 'ReissueSSLCert',
-            'SSLCERTID' => $order['SSLCERTID'],
-            'CSR' => explode(PHP_EOL, $csr)
-        ];
-        return self::getResponse($command);
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::reissueCertificate($certId, $csr);
+        }
+        return ISPAPI::reissueCertificate($certId, $csr);
     }
 
     /**
      * Revoke certificate
-     * @param int $orderId
+     * @param string $registrar
+     * @param string $certId
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function revokeCertificate(int $orderId): array
+    public static function revokeCertificate(string $registrar, string $certId): array
     {
-        $order = self::getOrder($orderId);
-        $command = [
-            'COMMAND' => 'RevokeSSLCert',
-            'SSLCERTID' => $order['SSLCERTID'],
-            'REASON' => 'WHMCS'
-        ];
-        return self::getResponse($command);
-    }
-
-    /**
-     * Get order
-     * @param int $orderId
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function getOrder(int $orderId): array
-    {
-        $command = [
-            'COMMAND' => 'QueryOrderList',
-            'ORDERID' => $orderId
-        ];
-        $response = self::getResponse($command);
-
-        $sslCertId = 0;
-        if (isset($response['LASTRESPONSE'][0])) {
-            $lastResponse = RP::parse(urldecode($response['LASTRESPONSE'][0]));
-            $sslCertId = $lastResponse['PROPERTY']['SSLCERTID'][0];
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::revokeCertificate($certId);
         }
-        $response['SSLCERTID'] = $sslCertId;
-
-        $orderCommand = [];
-        if (isset($response['ORDERCOMMAND'][0])) {
-            $orderCommand = RP::parse(urldecode($response['ORDERCOMMAND'][0]));
-        }
-        $response['COMMAND'] = $orderCommand;
-
-        $csr = [];
-        $i = 0;
-        while (isset($response['COMMAND']['CSR' . $i])) {
-            if (strlen($response['COMMAND']['CSR' . $i])) {
-                $csr[] = $response['COMMAND']['CSR' . $i];
-            }
-            $i++;
-        }
-        $response['CSR'] = implode(PHP_EOL, $csr);
-
-        return $response;
-    }
-
-    /**
-     * Execute order
-     * @param int $orderId
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function executeOrder(int $orderId): array
-    {
-        $command = [
-            'COMMAND' => 'ExecuteOrder',
-            'ORDERID' => $orderId
-        ];
-        return self::getResponse($command);
-    }
-
-    /**
-     * Parse CSR
-     * @param string $csr
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function parseCSR(string $csr): array
-    {
-        $command = [
-            'COMMAND' => 'ParseSSLCertCSR',
-            'CSR' => explode(PHP_EOL, $csr)
-        ];
-        return self::getResponse($command);
+        return ISPAPI::revokeCertificate($certId);
     }
 
     /**
      * Get certificate status
-     * @param int $certId
+     * @param string $registrar
+     * @param string $certId
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function getCertStatus(int $certId): array
+    public static function getCertStatus(string $registrar, string $certId): array
     {
-        $command = [
-            'COMMAND' => 'StatusSSLCert',
-            'SSLCERTID' => $certId
-        ];
-        return self::getResponse($command);
-    }
-
-    /**
-     * Get e-mail addreses for certificate
-     * @param int $certId
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function getCertEmail(int $certId): array
-    {
-        $command = [
-            'COMMAND' => 'QuerySSLCertDCVEmailAddressList',
-            'SSLCERTID' => $certId
-        ];
-        return self::getResponse($command);
-    }
-
-    /**
-     * Get e-mail addresses for CSR
-     * @param string $certClass
-     * @param string $csr
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function getEmailAddress(string $certClass, string $csr): array
-    {
-        $command = [
-            'COMMAND' => 'QuerySSLCertDCVEmailAddressList',
-            'SSLCERTCLASS' => $certClass,
-            'CSR' => explode(PHP_EOL, $csr)
-        ];
-        return self::getResponse($command);
-    }
-
-    /**
-     * Get email addresses for domain
-     * @param string $certClass
-     * @param string $domain
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function getValidationAddresses(string $certClass, string $domain): array
-    {
-        $command = [
-            'COMMAND' => 'QuerySSLCertDCVEMailAddressList',
-            'SSLCERTCLASS' => $certClass,
-            'DOMAIN' => $domain
-        ];
-        return self::getResponse($command);
-    }
-
-    /**
-     * Resend SSL activation e-mail
-     * @param int $certId
-     * @param string $email
-     * @return array<string, mixed>
-     * @throws Exception
-     */
-    public static function resendEmail(int $certId, string $email): array
-    {
-        $command = [
-            'COMMAND' => 'ResendSSLCertEmail',
-            'SSLCERTID' => $certId,
-            'EMAIL' => $email
-        ];
-        return self::getResponse($command);
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::getCertStatus($certId);
+        }
+        return ISPAPI::getCertStatus($certId);
     }
 
     /**
      * Get current exchange rates
+     * @param string $registrar
      * @return array<string, mixed>
      * @throws Exception
      */
-    public static function getExchangeRates()
+    public static function getExchangeRates(string $registrar): array
     {
-        $command = [
-            'COMMAND' => 'QueryExchangeRates'
-        ];
-        return self::getResponse($command);
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::getExchangeRates();
+        }
+        return ISPAPI::getExchangeRates();
     }
 
     /**
-     * Make an API call and process the response
-     * @param array<string, mixed> $command
+     * Resend validation e-mail
+     * @param string $registrar
+     * @param string $certId
+     * @param string $approverEmail
      * @return array<string, mixed>
      * @throws Exception
      */
-    private static function getResponse(array $command): array
+    public static function resendEmail(string $registrar, string $certId, string $approverEmail): array
     {
-        if (!class_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi')) {
-            throw new Exception("The ISPAPI Registrar Module is required. Please install it and activate it.");
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::resendEmail($certId, $approverEmail);
         }
-        $response = Ispapi::call($command);
-        logModuleCall('cnicssl', $command['COMMAND'], $command, $response);
-        if ($response['CODE'] != 200) {
-            throw new Exception($response['CODE'] . ' ' . $response['DESCRIPTION']);
-        }
-        return isset($response['PROPERTY']) ? $response['PROPERTY'] : [];
+        return ISPAPI::resendEmail($certId, $approverEmail);
     }
 }

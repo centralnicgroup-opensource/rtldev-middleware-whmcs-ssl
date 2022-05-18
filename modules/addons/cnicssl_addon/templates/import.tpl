@@ -191,7 +191,7 @@
                     <td class="text-center tld-pricing-td register-pricing">
                         {if $product.id}
                         <span class="tld-pricing inline-block">
-                            <span class="current-pricing">{$product.Price|number_format:2}</span><br>
+                            <span class="current-pricing">{$product.Price|number_format:2:".":""}</span><br>
                             <span class="remote-pricing">{$product.Cost}</span>
                         </span>
                         <span class="tld-margin">

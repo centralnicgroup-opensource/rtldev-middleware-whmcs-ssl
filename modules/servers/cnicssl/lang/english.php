@@ -17,4 +17,5 @@ $_LANG = [
     'techContact' => 'Tech Contact',
     'updated' => 'Updated',
     'vendorId' => 'Vendor Order ID',
+    'webServerType' => 'Web Server Type'
 ];

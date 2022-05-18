@@ -42,6 +42,19 @@ class DBHelper
     }
 
     /**
+     * Check if order was already processed
+     * @param int $serviceId
+     * @return bool
+     */
+    public static function orderProcessed(int $serviceId): bool
+    {
+        return (bool) DB::table('tblsslorders')
+            ->where('serviceid', '=', $serviceId)
+            ->where('module', '=', 'cnicssl')
+            ->value('remoteid');
+    }
+
+    /**
      * Get the Order ID for the given Service ID
      * @param int $serviceId
      * @return int|null
@@ -62,11 +75,13 @@ class DBHelper
      */
     public static function getOrder(int $serviceId, int $addonId)
     {
-        return DB::table('tblsslorders')
-            ->where('serviceid', '=', $serviceId)
-            ->where('addon_id', '=', $addonId)
-            ->where('module', '=', 'cnicssl')
-            ->select(['id', 'remoteid', 'status'])
+        return DB::table('tblsslorders AS s')
+            ->join('tblhosting AS h', 'h.id', '=', 's.serviceid')
+            ->join('tblproducts AS p', 'p.id', '=', 'h.packageid')
+            ->where('s.serviceid', '=', $serviceId)
+            ->where('s.addon_id', '=', $addonId)
+            ->where('s.module', '=', 'cnicssl')
+            ->select(['s.id', 's.remoteid', 's.status', 'p.configoption2 AS registrar'])
             ->first();
     }
 
@@ -114,6 +129,16 @@ class DBHelper
             ->where('addon_id', '=', $addonId)
             ->where('module', '=', 'cnicssl')
             ->update($data);
+    }
+
+    /**
+     * @return void
+     */
+    public static function migrateOrders(): void
+    {
+        DB::table('tblsslorders')
+            ->where('module', '=', 'ispapissl')
+            ->update(['module' => 'cnicssl']);
     }
 
     /**
@@ -172,14 +197,14 @@ class DBHelper
      * @param array<string, mixed> $provider
      * @return int
      */
-    public static function createProductGroup(array $provider): int
+    public static function createProductGroup(string $providerName, array $provider): int
     {
         $ts = date('Y-m-d H:i:s');
         $groupOrder = DB::table('tblproductgroups')->max('order') + 1;
 
         $productGroupId = DB::table('tblproductgroups')
             ->insertGetId([
-                'name' => $provider['name'] . ' SSL Certificates',
+                'name' => $providerName . ' SSL Certificates',
                 'slug' => strtolower($provider['name'] . '-ssl'),
                 'headline' => $provider['headline'],
                 'tagline' => $provider['tagline'],
@@ -197,15 +222,16 @@ class DBHelper
     /**
      * Update product group based on provider info
      * @param int $productGroupId
+     * @param string $providerName
      * @param array<string, mixed> $provider
      */
-    public static function updateProductGroup(int $productGroupId, array $provider): void
+    public static function updateProductGroup(int $productGroupId, string $providerName, array $provider): void
     {
         DB::table('tblproductgroups')
             ->where('id', '=', $productGroupId)
             ->update([
-                'name' => $provider['name'] . ' SSL Certificates',
-                'slug' => strtolower($provider['name'] . '-ssl'),
+                'name' => $providerName . ' SSL Certificates',
+                'slug' => strtolower($providerName . '-ssl'),
                 'headline' => $provider['headline'],
                 'tagline' => $provider['tagline'],
                 'updated_at' => date('Y-m-d H:i:s')
@@ -302,7 +328,7 @@ class DBHelper
      * @param string $autoSetup
      * @return int
      */
-    public static function createProduct(string $productName, string $productDescription, int $productGroupId, string $certificateClass, string $autoSetup): int
+    public static function createProduct(string $registrar, string $productName, string $productDescription, int $productGroupId, string $certificateClass, string $autoSetup): int
     {
         return DB::table('tblproducts')
             ->insertGetId([
@@ -314,6 +340,7 @@ class DBHelper
                 'autosetup' => $autoSetup,
                 'servertype' => 'cnicssl',
                 'configoption1' => $certificateClass,
+                'configoption2' => $registrar,
                 'tax' => 1
             ]);
     }

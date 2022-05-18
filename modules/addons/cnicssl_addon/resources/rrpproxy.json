@@ -1,0 +1,255 @@
+{
+  "securesite": {
+    "provider": "DigiCert",
+    "name": "Secure Site",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "securesiteev": {
+    "provider": "DigiCert",
+    "name": "Secure Site EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "securesitepro": {
+    "provider": "DigiCert",
+    "name": "Secure Site Pro",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "securesiteproev": {
+    "provider": "DigiCert",
+    "name": "Secure Site Pro EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "quicksslpremium": {
+    "provider": "GeoTrust",
+    "name": "QuickSSL Premium",
+    "features": {
+      "type": "DV",
+      "wildcard": false,
+      "domains": "up to 4"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "truebizid": {
+    "provider": "GeoTrust",
+    "name": "True Business ID",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "truebizidev": {
+    "provider": "GeoTrust",
+    "name": "True Business ID EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "truebizidwc": {
+    "provider": "GeoTrust",
+    "name": "True Business ID Wildcard",
+    "features": {
+      "type": "OV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "rapidssl": {
+    "provider": "RapidSSL",
+    "name": "Certificate",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "rapidsslwc": {
+    "provider": "RapidSSL",
+    "name": "Wildcard Certificate",
+    "features": {
+      "type": "DV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "extendedvalidatedssl": {
+    "provider": "Sectigo",
+    "name": "SSL EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "instantssl": {
+    "provider": "Sectigo",
+    "name": "Instant SSL",
+    "features": {
+      "type": "OV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "multidomainev": {
+    "provider": "Sectigo",
+    "name": "SSL EV Multi-Domain",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "multidomainov": {
+    "provider": "Sectigo",
+    "name": "Enterprise SSL Pro Multi-Domain",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "positivessl": {
+    "provider": "Sectigo",
+    "name": "Positive SSL",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "positivewildcardssl": {
+    "provider": "Sectigo",
+    "name": "Positive SSL Wildcard",
+    "features": {
+      "type": "DV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "premiumssl": {
+    "provider": "Sectigo",
+    "name": "Premium SSL",
+    "features": {
+      "type": "OV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "sgcwildcardssl": {
+    "provider": "Sectigo",
+    "name": "SGC Wildcard SSL",
+    "features": {
+      "type": "OV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "unifiedcommunicationsdv": {
+    "provider": "Sectigo",
+    "name": "SSL UCC",
+    "features": {
+      "type": "DV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "unifiedcommunicationsov": {
+    "provider": "Sectigo",
+    "name": "Instant SSL UCC",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "ssl123": {
+    "provider": "thawte",
+    "name": "SSL 123",
+    "features": {
+      "type": "DV",
+      "wildcard": false
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "sslwebserver": {
+    "provider": "thawte",
+    "name": "SSL Webserver",
+    "features": {
+      "type": "OV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "sslwebserverev": {
+    "provider": "thawte",
+    "name": "SSL Webserver EV",
+    "features": {
+      "type": "EV",
+      "wildcard": false,
+      "domains": "up to 24"
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  },
+  "sslwebserverwc": {
+    "provider": "thawte",
+    "name": "SSL Webserver Wildcard",
+    "features": {
+      "type": "OV",
+      "wildcard": true
+    },
+    "dnsAuth": true,
+    "fileAuth": true
+  }
+}
