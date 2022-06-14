@@ -1,3 +1,24 @@
+# [11.0.0](https://github.com/centralnic-reseller/whmcs-ssl/compare/v10.0.0...v11.0.0) (2022-06-14)
+
+
+### Code Refactoring
+
+* rename module to cnicssl ([a6080e0](https://github.com/centralnic-reseller/whmcs-ssl/commit/a6080e0b565fac6f3d7a35c3e94290f0eaffc321))
+
+
+### Features
+
+* **rrpproxy:** implement RRPproxy support ([7029389](https://github.com/centralnic-reseller/whmcs-ssl/commit/7029389ade0022da2a9f9281cf6ae1dd757f4365))
+* **validation:** implement DNS and File-based validation ([9580262](https://github.com/centralnic-reseller/whmcs-ssl/commit/9580262ea06538867f7369366f5dc17e10e55693))
+* **validation:** implement dns- and file-based validation ([13c0360](https://github.com/centralnic-reseller/whmcs-ssl/commit/13c03605543bfe33d48b1f69d4864d6a6861bfc1))
+
+
+### BREAKING CHANGES
+
+* **rrpproxy:** configuration files have a new format
+* due to module rename, old ispapissl must be uninstalled and cnicssl configured
+fresh, and product import run again to update configurations
+
 # [10.0.0](https://github.com/centralnic-reseller/whmcs-ssl/compare/v9.3.5...v10.0.0) (2022-03-27)
 
 

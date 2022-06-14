@@ -28,7 +28,7 @@ function cnicssl_addon_config(): array
         "description" => "Quickly add and configure SSL Certificates",
         "author" => '<a href="https://www.centralnicgroup.com/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="CentralNic" /></a>',
         "language" => "english",
-        "version" => "10.0.0",
+        "version" => "11.0.0",
         "fields" => [
             "registrar" => [
                 "FriendlyName" => "Registrar",
