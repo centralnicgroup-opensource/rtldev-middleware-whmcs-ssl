@@ -67,4 +67,13 @@ interface IRegistrar
      * @throws Exception
      */
     public static function resendEmail(string $certId, string $email): array;
+
+    /**
+     * Change validation method
+     * @param string $certId
+     * @param string $method
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function changeValidationMethod(string $certId, string $method): array;
 }

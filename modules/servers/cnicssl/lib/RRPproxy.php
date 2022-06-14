@@ -255,6 +255,20 @@ class RRPproxy implements IRegistrar
     }
 
     /**
+     * @inheritDoc
+     */
+    public static function changeValidationMethod(string $certId, string $method): array
+    {
+        $command = [
+            'CERTIFICATE' => $certId,
+//            'SUB' => null,
+//            'APPROVEREMAIL' => $email,
+            'AUTHMETHOD' => $method
+        ];
+        return self::getResponse("ModifyCertificate", $command);
+    }
+
+    /**
      * Make an API call and process the response
      * @param string $command
      * @param array<string, mixed> $args

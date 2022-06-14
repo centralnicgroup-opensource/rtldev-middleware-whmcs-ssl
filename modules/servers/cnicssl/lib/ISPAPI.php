@@ -233,6 +233,14 @@ class ISPAPI implements IRegistrar
     }
 
     /**
+     * @inheritDoc
+     */
+    public static function changeValidationMethod(string $certId, string $method): array
+    {
+        return [];
+    }
+
+    /**
      * Make an API call and process the response
      * @param array<string, mixed> $command
      * @return array<string, mixed>

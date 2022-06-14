@@ -64,7 +64,25 @@
         {/if}
         <div class="row py-2 dcv">
             <div class="col-md-4">{$LANG.ssl.dcv}</div>
-            <div class="col-md-8">{$cert.validation}</div>
+            <div class="col-md-8">
+                <form method="post" action="{$smarty.server.PHP_SELF}?action=productdetails&amp;id={$id}">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">{$cert.validation}</span>
+                        </div>
+                        <div class="input-group-append">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dcv-dropdown" data-toggle="dropdown" aria-expanded="false">
+                                Change
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dcv-dropdown">
+                                {if $cert.validation neq "EMAIL"}<button class="dropdown-item" name="validate-email" type="submit">EMAIL</button>{/if}
+                                {if $cert.validation neq "URL" and $cert.validation neq "FILE"}<button class="dropdown-item" name="validate-file" type="submit">FILE</button>{/if}
+                                {if $cert.validation neq "DNSZONE" and $cert.validation neq "DNS"}<button class="dropdown-item" name="validate-dns" type="submit">DNS</button>{/if}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
         {if $cert.validation == "EMAIL"}
             <div class="row py-2">

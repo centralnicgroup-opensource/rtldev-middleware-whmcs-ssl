@@ -414,6 +414,19 @@ function cnicssl_ClientArea(array $params): array
                             "vars" => $tpl
                         ];
                     }
+                } elseif (isset($_REQUEST["validate-email"])) {
+                    $tpl["approverEmails"] = SSLHelper::getValidationEmails($status["SSLCERTCN"][0]);
+                    $tpl["changeApprovalMethod"] = true;
+                    return [
+                        "templatefile" => "templates/approval.tpl",
+                        "vars" => $tpl
+                    ];
+                } elseif (isset($_REQUEST["validate-file"])) {
+                    APIHelper::changeValidationMethod($registrar, $certId, "FILE");
+                    $tpl["successMessage"] = "File Validation";
+                } elseif (isset($_REQUEST["validate-dns"])) {
+                    APIHelper::changeValidationMethod($registrar, $certId, "DNS");
+                    $tpl["successMessage"] = "DNS Validation";
                 }
             } elseif (extension_loaded("openssl") && $params["domain"]) {
                 $dn = [

@@ -145,4 +145,20 @@ class APIHelper
         }
         return ISPAPI::resendEmail($certId, $approverEmail);
     }
+
+    /**
+     * Change validation method
+     * @param string $registrar
+     * @param string $certId
+     * @param string $method
+     * @return array<string, mixed>
+     * @throws Exception
+     */
+    public static function changeValidationMethod(string $registrar, string $certId, string $method): array
+    {
+        if ($registrar === "RRPproxy") {
+            return RRPproxy::changeValidationMethod($certId, $method);
+        }
+        return ISPAPI::changeValidationMethod($certId, $method);
+    }
 }
