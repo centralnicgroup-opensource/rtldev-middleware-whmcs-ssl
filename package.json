@@ -47,14 +47,13 @@
     "registration",
     "application"
   ],
-  "overrides":{
-		"glob-parent":"^6.0.2",
-    "shelljs":"^0.8.5",
-    "minimist":"^1.2.6"
-	},
+  "overrides": {
+    "glob-parent": "^6.0.2",
+    "shelljs": "^0.8.5",
+    "minimist": "^1.2.6"
+  },
   "devDependencies": {
     "@hexonet/semantic-release-github-whmcs-config": "^3.0.1",
-    "cz-conventional-changelog": "^3.3.0",
     "end-of-stream-promise": "^1.0.0",
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
@@ -70,8 +69,5 @@
     "test": "composer run-script test"
   },
   "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
   }
 }
