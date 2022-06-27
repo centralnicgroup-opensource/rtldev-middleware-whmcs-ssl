@@ -67,7 +67,5 @@
     "codeFix": "composer run-script codefix",
     "phpStan": "composer run-script phpstan",
     "test": "composer run-script test"
-  },
-  "config": {
   }
 }
