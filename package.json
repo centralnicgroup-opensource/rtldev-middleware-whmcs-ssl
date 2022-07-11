@@ -62,7 +62,6 @@
     "semantic-release": "^19.0.3"
   },
   "scripts": {
-    "phpCompatibility": "composer run-script compatibility",
     "codeCheck": "composer run-script codecheck",
     "codeFix": "composer run-script codefix",
     "phpStan": "composer run-script phpstan",
