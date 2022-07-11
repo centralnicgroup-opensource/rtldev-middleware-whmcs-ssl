@@ -29,7 +29,6 @@ async function doLint() {
   // these shouldn't fail
   try {
     await exec(`${cfg.phpcschkcmd}`);
-    await exec(`${cfg.phpcomptcmd}`);
     await exec(`${cfg.phpstancmd}`);
   } catch (e) {
     await Promise.reject(e.message);

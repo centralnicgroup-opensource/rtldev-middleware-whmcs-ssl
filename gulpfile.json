@@ -1,7 +1,6 @@
 {
   "phpcsfixcmd": "composer run-script codefix",
   "phpcschkcmd": "composer run-script codecheck",
-  "phpcomptcmd": "composer run-script compatibility",
   "phpstancmd": "composer run-script phpstan",
   "archiveFileName": "whmcs-cnic-ssl",
   "archiveBuildPath": "build",
