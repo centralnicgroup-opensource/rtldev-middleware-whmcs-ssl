@@ -1,23 +1,22 @@
 {
-    "phpcsfixcmd": "composer run-script codefix",
-    "phpcschkcmd": "composer run-script codecheck",
-    "phpcomptcmd": "composer run-script compatibility",
-    "phpstancmd": "composer run-script phpstan",
-    "archiveFileName": "whmcs-cnic-ssl",
-    "archiveBuildPath": "build",
-    "filesForArchive": [
-        "README.md",
-        "CONTRIBUTING.md",
-        "HISTORY.md",
-        "LICENSE",
-        "modules/addons/cnicssl_addon/**",
-        "modules/servers/cnicssl/**"
-    ],
-    "filesForCleanup": [
-        "templates_c",
-        "composer.lock",
-        ".phpunit.result.cache",
-        "package-lock.json",
-        "tmp"
-    ]
+  "phpcsfixcmd": "composer run-script codefix",
+  "phpcschkcmd": "composer run-script codecheck",
+  "phpcomptcmd": "composer run-script compatibility",
+  "phpstancmd": "composer run-script phpstan",
+  "archiveFileName": "whmcs-cnic-ssl",
+  "archiveBuildPath": "build",
+  "filesForArchive": [
+    "README.md",
+    "CONTRIBUTING.md",
+    "HISTORY.md",
+    "LICENSE",
+    "modules/addons/cnicssl_addon/**",
+    "modules/servers/cnicssl/**"
+  ],
+  "filesForCleanup": [
+    "templates_c",
+    "composer.lock",
+    ".phpunit.result.cache",
+    "tmp"
+  ]
 }
