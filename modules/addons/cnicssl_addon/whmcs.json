@@ -9,7 +9,7 @@
     "tagline": "Import and synchronize SSL products",
     "long": "",
     "features": [
-      "Resell all certificate classes offered by HEXONET and RRPproxy",
+      "Resell all certificate classes offered by HEXONET and CentralNic Reseller",
       "Import products with pricing and profit margins",
       "Create, renew and revoke certificates",
       "Support for testing environment"
@@ -19,15 +19,15 @@
     "filename": "logo.png"
   },
   "support": {
-    "homepage": "https:\/\/www.centralnic.com\/",
-    "learn_more": "https:\/\/github.com\/centralnic-reseller\/whmcs-ssl\/blob\/master\/README.md",
-    "support_url": "https:\/\/github.com\/centralnic-reseller\/whmcs-ssl\/wiki\/Contact-Us",
-    "docs_url": "https:\/\/github.com\/centralnic-reseller\/whmcs-ssl\/wiki\/Usage-Guide"
+    "homepage": "https://www.centralnic.com/",
+    "learn_more": "https://github.com/centralnic-reseller/whmcs-ssl/blob/master/README.md",
+    "support_url": "https://github.com/centralnic-reseller/whmcs-ssl/wiki/Contact-Us",
+    "docs_url": "https://github.com/centralnic-reseller/whmcs-ssl/wiki/Usage-Guide"
   },
   "authors": [
     {
       "name": "CentralNic Reseller",
-      "homepage": "https:\/\/www.centralnic.com\/"
+      "homepage": "https://www.centralnic.com/"
     }
   ]
 }

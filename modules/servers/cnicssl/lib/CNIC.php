@@ -2,10 +2,9 @@
 
 namespace CNIC\WHMCS\SSL;
 
-use CNIC\WHMCS\SSL\Model\Contact;
 use Exception;
 
-class RRPproxy implements IRegistrar
+class CNIC implements IRegistrar
 {
     /**
      * @return array<string, array<string, mixed>>
@@ -22,7 +21,7 @@ class RRPproxy implements IRegistrar
             "INACTIVE" => 0
         ]);
 
-        $certificates = SSLHelper::getCertificates("rrpproxy");
+        $certificates = SSLHelper::getCertificates("cnic");
 
         foreach ($services["TYPE"] as $n => $productKey) {
             if ($services["DEPENDENCY"][$n]) {
@@ -247,7 +246,7 @@ class RRPproxy implements IRegistrar
     {
         $command = [
             'CERTIFICATE' => $certId,
-//            'SUB' => null,
+            //            'SUB' => null,
             'APPROVEREMAIL' => $email,
             'AUTHMETHOD' => 'EMAIL'
         ];
@@ -263,16 +262,16 @@ class RRPproxy implements IRegistrar
      */
     private static function getResponse(string $command, array $args = []): array
     {
-        if (!class_exists('\WHMCS\Module\Registrar\RRPproxy\APIClient')) {
+        if (!class_exists('\WHMCS\Module\Registrar\Keysystems\APIClient')) {
             $vendor = realpath(__DIR__ . '/../../../registrars/keysystems/vendor/autoload.php');
             if ($vendor && file_exists($vendor)) {
                 require_once $vendor;
             } else {
-                throw new Exception("The RRPproxy Registrar Module is required. Please install it and activate it.");
+                throw new Exception("The CentralNic Reseller Registrar Module is required. Please install it and activate it.");
             }
         }
 
-        $api = new \WHMCS\Module\Registrar\RRPproxy\APIClient();
+        $api = new \WHMCS\Module\Registrar\Keysystems\APIClient();
         $api->args = $args;
         $api->call($command);
 

@@ -97,21 +97,41 @@ class SSLHelper
     }
 
     /**
+     * get product type for given type value
+     * @param string $featVal
+     * @return string
+     */
+    public static function getProductType($featVal)
+    {
+        static $map = [
+            "DV" => "domain",
+            "EV" => "extended",
+            "OV" => "organization"
+        ];
+        if (isset($map[$featVal])) {
+            return $map[$featVal];
+        }
+        return "unknown";
+    }
+
+    /**
      * Import the SSL products
      * @throws Exception
+     * @returns int
      */
-    public static function importProducts(string $registrar): void
+    public static function importProducts(string $registrar)
     {
         $currencies = self::getCurrencies();
         $providers = self::getProviders();
         $certs = self::getCertificates($registrar);
-        $assetHelper = \DI::make("asset"); // @phpstan-ignore-line
+        $assetHelper = \DI::make("asset");
         $webRoot = $assetHelper->getWebRoot();
 
         if ($providers === null || $certs === null) {
             return;
         }
 
+        $imported = 0;
         foreach ($_POST['SelectedCertificate'] as $certificateClass => $val) {
             $product = $certs[$certificateClass];
             $provider = $providers[$product["provider"]];
@@ -128,19 +148,7 @@ class SSLHelper
                 foreach ($product['features'] as $featKey => $featVal) {
                     switch ($featKey) {
                         case 'type':
-                            switch ($featVal) {
-                                case 'DV':
-                                    $productType = 'domain';
-                                    break;
-                                case 'EV':
-                                    $productType = 'extended';
-                                    break;
-                                case 'OV':
-                                    $productType = 'organization';
-                                    break;
-                                default:
-                                    $productType = 'unknown';
-                            }
+                            $productType = self::getProductType($featVal);
                             $productDescription .= PHP_EOL . 'validation: ' . $productType;
                             break;
                         case 'wildcard':
@@ -154,6 +162,7 @@ class SSLHelper
                             break;
                         default:
                             $productDescription .= PHP_EOL . $featKey . ': ' . $featVal;
+                            break;
                     }
                 }
             }
@@ -202,8 +211,9 @@ class SSLHelper
                 }
                 DBHelper::createPricing($productId, $currency['id'], $productPrices[$currency['id']]);
             }
+            $imported++;
         }
-        DBHelper::migrateOrders();
+        return $imported;
     }
 
     /**

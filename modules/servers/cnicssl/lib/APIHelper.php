@@ -14,11 +14,8 @@ class APIHelper
      */
     public static function getProducts(string $registrar): array
     {
-        if ($registrar === "RRPproxy") {
-            $products = RRPproxy::getProducts();
-        } else {
-            $products = ISPAPI::getProducts();
-        }
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        $products = $class::getProducts();
 
         $defaultCurrency = DBHelper::getDefaultCurrency();
         foreach ($products as $productKey => $product) {
@@ -49,10 +46,8 @@ class APIHelper
     {
         $configData = DBHelper::getOrderConfigData($serviceId);
         $serverType = SSLHelper::getServerType($configData['servertype']);
-        if ($registrar === "RRPproxy") {
-            return RRPproxy::createCertificate($certClass, $contact, $approvalMethod, $email, $serverType, $configData["csr"]);
-        }
-        return ISPAPI::createCertificate($certClass, $contact, $approvalMethod, $email, $serverType, $configData["csr"]);
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        return $class::createCertificate($certClass, $contact, $approvalMethod, $email, $serverType, $configData["csr"]);
     }
 
     /**
@@ -64,10 +59,8 @@ class APIHelper
      */
     public static function renewCertificate(string $registrar, string $certId): array
     {
-        if ($registrar === "RRPproxy") {
-            return RRPproxy::renewCertificate($certId);
-        }
-        return ISPAPI::renewCertificate($certId);
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        return $class::renewCertificate($certId);
     }
 
     /**
@@ -80,10 +73,8 @@ class APIHelper
      */
     public static function reissueCertificate(string $registrar, string $certId, string $csr): array
     {
-        if ($registrar === "RRPproxy") {
-            return RRPproxy::reissueCertificate($certId, $csr);
-        }
-        return ISPAPI::reissueCertificate($certId, $csr);
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        return $class::reissueCertificate($certId, $csr);
     }
 
     /**
@@ -95,10 +86,8 @@ class APIHelper
      */
     public static function revokeCertificate(string $registrar, string $certId): array
     {
-        if ($registrar === "RRPproxy") {
-            return RRPproxy::revokeCertificate($certId);
-        }
-        return ISPAPI::revokeCertificate($certId);
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        return $class::revokeCertificate($certId);
     }
 
     /**
@@ -110,10 +99,8 @@ class APIHelper
      */
     public static function getCertStatus(string $registrar, string $certId): array
     {
-        if ($registrar === "RRPproxy") {
-            return RRPproxy::getCertStatus($certId);
-        }
-        return ISPAPI::getCertStatus($certId);
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        return $class::getCertStatus($certId);
     }
 
     /**
@@ -124,10 +111,8 @@ class APIHelper
      */
     public static function getExchangeRates(string $registrar): array
     {
-        if ($registrar === "RRPproxy") {
-            return RRPproxy::getExchangeRates();
-        }
-        return ISPAPI::getExchangeRates();
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        return $class::getExchangeRates();
     }
 
     /**
@@ -140,9 +125,7 @@ class APIHelper
      */
     public static function resendEmail(string $registrar, string $certId, string $approverEmail): array
     {
-        if ($registrar === "RRPproxy") {
-            return RRPproxy::resendEmail($certId, $approverEmail);
-        }
-        return ISPAPI::resendEmail($certId, $approverEmail);
+        $class = "\\CNIC\\WHMCS\\SSL\\" . strtoupper($registrar);
+        return $class::resendEmail($certId, $approverEmail);
     }
 }

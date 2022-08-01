@@ -1,7 +1,7 @@
 {
   "phpcsfixcmd": "composer run-script codefix",
   "phpcschkcmd": "composer run-script codecheck",
-  "phpstancmd": "composer run-script phpstan",
+  "phpstancmd": "phpstan analyze -c phpstan.neon",
   "archiveFileName": "whmcs-cnic-ssl",
   "archiveBuildPath": "build",
   "filesForArchive": [

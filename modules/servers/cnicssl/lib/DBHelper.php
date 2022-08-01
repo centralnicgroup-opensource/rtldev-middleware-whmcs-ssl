@@ -10,6 +10,37 @@ use Illuminate\Support\Collection;
 
 class DBHelper
 {
+    public static function processUpgradeSteps($installedVersion): void
+    {
+        if ($installedVersion < 11) {
+            DB::table('tblsslorders')
+                ->where('module', '=', 'ispapissl')
+                ->update(['module' => 'cnicssl']);
+        }
+
+        /// Perform SQL schema changes required by the upgrade to version 1.1 of your module
+        if ($installedVersion < 12) {
+            // Rebranding RRPproxy to CentralNic Reseller
+            DB::table('tbladdon_modules')
+                ->where([
+                    "module" => "cnicssl_addon",
+                    "setting" => "registrar",
+                    "value" => "RRPproxy"
+                ])
+                ->update([
+                    "value" => "CNIC"
+                ]);
+
+            DB::table('tblproducts')
+                ->where([
+                    "configoption2" => "RRPproxy"
+                ])
+                ->update([
+                    "configoption2" => "CNIC"
+                ]);
+        }
+    }
+
     /**
      * Create SSL configuration e-mail template if required
      */
@@ -129,16 +160,6 @@ class DBHelper
             ->where('addon_id', '=', $addonId)
             ->where('module', '=', 'cnicssl')
             ->update($data);
-    }
-
-    /**
-     * @return void
-     */
-    public static function migrateOrders(): void
-    {
-        DB::table('tblsslorders')
-            ->where('module', '=', 'ispapissl')
-            ->update(['module' => 'cnicssl']);
     }
 
     /**

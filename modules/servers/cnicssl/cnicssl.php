@@ -3,7 +3,7 @@
 /**
  * CentralNic SSL Module for WHMCS
  *
- * SSL Certificates Registration using WHMCS & HEXONET or RRPproxy
+ * SSL Certificates Registration using WHMCS & HEXONET or CNR
  *
  * For more information, please refer to the online documentation.
  * @see https://centralnic-reseller.github.io/centralnic-reseller/docs/cnic/whmcs/whmcs-ssl/
@@ -53,7 +53,7 @@ function cnicssl_ConfigOptions(): array
         ],
         'Registrar' => [
             'Type' => 'dropdown',
-            'Options' => 'ISPAPI,RRPproxy',
+            'Options' => 'ISPAPI,CNIC',
             'Description' => 'Ensure the corresponding registrar module is installed and configured'
         ]
     ];

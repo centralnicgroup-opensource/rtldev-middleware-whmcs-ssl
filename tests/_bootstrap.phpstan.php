@@ -8,9 +8,17 @@ if (file_exists($configFile)) {
     include($configFile);
 }
 
-require_once $whmcsPath . '/vendor/autoload.php';
-require_once $whmcsPath . '/includes/functions.php';
-require_once $whmcsPath . '/modules/registrars/ispapi/lib/Ispapi.php';
-require_once $whmcsPath . '/modules/registrars/keysystems/lib/APIClient.php';
+$files = [
+    '/vendor/autoload.php',
+    '/includes/functions.php',
+    '/modules/registrars/ispapi/lib/Ispapi.php',
+    '/modules/registrars/keysystems/lib/APIClient.php'
+];
+foreach ($files as $file) {
+    if (file_exists($whmcsPath . $file)) {
+        require_once($whmcsPath . $file);
+    }
+}
+
 
 //stream_wrapper_restore('phar');

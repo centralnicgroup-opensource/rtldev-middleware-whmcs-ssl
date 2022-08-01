@@ -1,6 +1,6 @@
 <div class="pull-right" style="margin-top: -42px;">
-    <a href="https://www.hexonet.net/" target="_blank">
-        <img src="{$logo}" width="250" title="Powered by HEXONET" alt="HEXONET" />
+    <a href="https://www.centralnicreseller.com/" target="_blank">
+        <img src="{$logo}" width="250" title="Powered by CentralNic Reseller" alt="CentralNic Reseller" />
     </a>
 </div>
 

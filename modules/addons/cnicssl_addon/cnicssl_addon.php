@@ -3,7 +3,7 @@
 /**
  * CentralNic SSL Addon for WHMCS
  *
- * SSL Certificates Registration using WHMCS & HEXONET or RRPproxy
+ * SSL Certificates Registration using WHMCS & HEXONET or CNR
  *
  * For more information, please refer to the online documentation.
  * @see https://centralnic-reseller.github.io/centralnic-reseller/docs/cnic/whmcs/whmcs-ssl/
@@ -15,7 +15,6 @@ require_once(__DIR__ . '/../../servers/cnicssl/vendor/autoload.php');
 use CNIC\WHMCS\SSL\APIHelper;
 use CNIC\WHMCS\SSL\DBHelper;
 use CNIC\WHMCS\SSL\SSLHelper;
-use WHMCS\Module\Registrar\Ispapi\Ispapi;
 
 /**
  * Configuration of the addon module.
@@ -26,14 +25,14 @@ function cnicssl_addon_config(): array
     return [
         "name" => "CNIC SSL",
         "description" => "Quickly add and configure SSL Certificates",
-        "author" => '<a href="https://www.centralnicgroup.com/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="CentralNic" /></a>',
+        "author" => '<a href="https://www.centralnicreseller.com/" target="_blank"><img style="max-width:100px" src="' . SSLHelper::getLogo() . '" alt="CentralNic Reseller" /></a>',
         "language" => "english",
         "version" => "11.0.0",
         "fields" => [
             "registrar" => [
                 "FriendlyName" => "Registrar",
                 "Type" => "radio",
-                "Options" => "ISPAPI,RRPproxy",
+                "Options" => "ISPAPI,CNIC",
                 "Default" => "ISPAPI",
                 "Description" => "Please note, the corresponding registrar module must be installed!"
             ],
@@ -60,6 +59,16 @@ function cnicssl_addon_deactivate(): array
 }
 
 /**
+ * This function will be called when upgrading the add-on module.
+ * @param array<string, mixed> $vars
+ * @return void
+ */
+function cnicssl_addon_upgrade($vars)
+{
+    DBHelper::processUpgradeSteps($vars['version']);
+}
+
+/**
  * Module interface functionality
  * @param array<string, mixed> $vars
  */
@@ -67,28 +76,45 @@ function cnicssl_addon_output(array $vars): void
 {
     global $templates_compiledir;
 
-    if ($vars["registrar"] === "RRPproxy") {
-        if (!class_exists('\WHMCS\Module\Registrar\RRPproxy\APIClient')) {
-            $vendor = realpath(__DIR__ . '/../../registrars/keysystems/vendor/autoload.php');
-            if ($vendor && file_exists($vendor)) {
-                require_once $vendor;
-            } else {
-                echo "The RRPproxy Registrar Module is required. Please install it and activate it.";
-                return;
-            }
-        }
-        //TODO should we implement checkAuth in the RRPproxy module?
-    } else {
-        if (!class_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi')) {
-            echo "The ISPAPI Registrar Module is required. Please install it and activate it.";
+    $registrarid = strtolower($vars["registrar"]);
+    $label = "ISPAPI";
+    $class = "\WHMCS\Module\Registrar\Ispapi\Ispapi";
+    $fn = "checkAuth";
+    $productregistrarid = "ISPAPI";
+    if ($registrarid !== "ispapi") {
+        $registrarid = "keysystems";
+        $productregistrarid = "CNIC";
+        $label = "CentralNic Reseller";
+        $class = "\WHMCS\Module\Registrar\Keysystems\APIClient";
+        $fn = null;
+    }
+
+    $registrar = new \WHMCS\Module\Registrar();
+    if (
+        !$registrar->load($registrarid)
+        || !$registrar->isActivated()
+    ) {
+        // unable to load the registrar module
+        echo "The " . $label . " Registrar Module is missing or not activated.";
+        return;
+    }
+
+    if (!class_exists($class)) {
+        echo "Class not found ${class}.";
+        return;
+        //$vendor = realpath(__DIR__ . '/../../registrars/keysystems/vendor/autoload.php');
+        //if ($vendor && file_exists($vendor)) {
+        //    require_once $vendor;
+        //}
+        //TODO should we implement checkAuth in the CentralNic Reseller module?
+    }
+    if (!is_null($fn)) {
+        if (!method_exists($class, $fn)) {
+            echo "The " . $label . " Registrar Module is outdated. Please upgrade.";
             return;
         }
-        if (!method_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi', 'checkAuth')) {
-            echo "The ISPAPI Registrar Module is outdated. Please update it.";
-            return;
-        }
-        if (!Ispapi::checkAuth()) {
-            echo "The ISPAPI Registrar Module authentication failed! Please verify your registrar credentials and try again.";
+        if (!$class::$fn()) {
+            echo "The " . $label . " Registrar Module authentication failed! Please verify your registrar credentials and try again.";
             return;
         }
     }
@@ -104,11 +130,11 @@ function cnicssl_addon_output(array $vars): void
             if (@$_POST['ProductGroups']) {
                 SSLHelper::importProductGroups();
             }
-            SSLHelper::importProducts($vars["registrar"]);
-            $smarty->assign('success', count($_POST['SelectedCertificate']) . ' products have been imported');
+            $countImported = SSLHelper::importProducts($productregistrarid);
+            $smarty->assign('success', $countImported . ' products have been imported');
         }
         $smarty->assign('logo', SSLHelper::getLogo());
-        $smarty->assign('products', APIHelper::getProducts($vars["registrar"]));
+        $smarty->assign('products', APIHelper::getProducts($productregistrarid));
         $smarty->assign('currency', DBHelper::getDefaultCurrency()->code);
     } catch (Exception $ex) {
         $smarty->assign('error', $ex->getMessage());
