@@ -15,7 +15,6 @@ require_once(__DIR__ . '/../../servers/cnicssl/vendor/autoload.php');
 use CNIC\WHMCS\SSL\APIHelper;
 use CNIC\WHMCS\SSL\DBHelper;
 use CNIC\WHMCS\SSL\SSLHelper;
-use WHMCS\Module\Registrar\Ispapi\Ispapi;
 
 /**
  * Configuration of the addon module.
@@ -79,15 +78,16 @@ function cnicssl_addon_output(array $vars): void
         }
         //TODO should we implement checkAuth in the RRPproxy module?
     } else {
-        if (!class_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi')) {
+        $className = "\\WHMCS\\Module\\Registrar\\Ispapi\\Ispapi";
+        if (!class_exists($className)) {
             echo "The ISPAPI Registrar Module is required. Please install it and activate it.";
             return;
         }
-        if (!method_exists('\WHMCS\Module\Registrar\Ispapi\Ispapi', 'checkAuth')) {
+        if ((new $className())->checkAuth() instanceof $className) {
             echo "The ISPAPI Registrar Module is outdated. Please update it.";
             return;
         }
-        if (!Ispapi::checkAuth()) {
+        if (!$className::checkAuth()) {
             echo "The ISPAPI Registrar Module authentication failed! Please verify your registrar credentials and try again.";
             return;
         }

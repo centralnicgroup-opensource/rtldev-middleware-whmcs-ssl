@@ -17,9 +17,9 @@ require_once __DIR__ . '/../servers/cnicssl/cnicssl.php';
  *
  * @param string $module
  * @param string $action
- * @param string|array $request
- * @param string|array $response
- * @param string|array $data
+ * @param string|array<int, mixed> $request
+ * @param string|array<int, mixed> $response
+ * @param string|array<int, mixed> $data
  * @param array $variablesToMask
  *
  * @return void|false
