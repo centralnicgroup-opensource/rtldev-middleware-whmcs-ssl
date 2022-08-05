@@ -247,7 +247,7 @@ class RRPproxy implements IRegistrar
     {
         $command = [
             'CERTIFICATE' => $certId,
-//            'SUB' => null,
+            //            'SUB' => null,
             'APPROVEREMAIL' => $email,
             'AUTHMETHOD' => 'EMAIL'
         ];
@@ -263,13 +263,11 @@ class RRPproxy implements IRegistrar
      */
     private static function getResponse(string $command, array $args = []): array
     {
-        if (!class_exists('\WHMCS\Module\Registrar\RRPproxy\APIClient')) {
-            $vendor = realpath(__DIR__ . '/../../../registrars/keysystems/vendor/autoload.php');
-            if ($vendor && file_exists($vendor)) {
-                require_once $vendor;
-            } else {
-                throw new Exception("The RRPproxy Registrar Module is required. Please install it and activate it.");
-            }
+        $registrarid = 'keysystems'; // e.g. ispapi or keysystems
+        $registrar = new \WHMCS\Module\Registrar();
+        if (!$registrar->load($registrarid)) {
+            // unable to load the registrar module
+            throw new Exception("The RRPproxy Registrar Module is required. Please install it and activate it.");
         }
 
         $api = new \WHMCS\Module\Registrar\RRPproxy\APIClient();
