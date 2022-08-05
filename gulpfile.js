@@ -7,36 +7,6 @@ const eosp = require("end-of-stream-promise");
 const cfg = require("./gulpfile.json");
 
 /**
- * Perform composer update
- * @return stream
- */
-async function doComposerUpdate() {
-  try {
-    await exec(`rm -rf modules/servers/cnicssl/vendor`);
-  } catch (e) {}
-  await eosp(composer("update --no-dev"));
-}
-
-/**
- * Perform PHP Linting
- */
-async function doLint() {
-  // these may fail, it's fine
-  try {
-    await exec(`${cfg.phpcsfixcmd}`);
-  } catch (e) {}
-
-  // these shouldn't fail
-  try {
-    await exec(`${cfg.phpcschkcmd}`);
-    await exec(`${cfg.phpstancmd}`);
-  } catch (e) {
-    await Promise.reject(e.message);
-  }
-  await Promise.resolve();
-}
-
-/**
  * cleanup old build folder / archive
  * @return stream
  */
@@ -90,18 +60,10 @@ function doZip() {
     .pipe(dest("./pkg"));
 }
 
-exports.lint = series(doComposerUpdate, doLint);
-
 exports.copy = series(doDistClean, doCopyFiles);
 
-exports.prepare = series(exports.lint, exports.copy);
+exports.prepare = series(doFullClean, exports.copy);
 
 exports.archives = series(doGitZip, doZip);
 
-exports.default = series(exports.prepare, exports.archives, doFullClean);
-exports.release = series(
-  doComposerUpdate,
-  exports.copy,
-  exports.archives,
-  doFullClean
-);
+exports.release = exports.default = series(exports.prepare, exports.archives);

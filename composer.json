@@ -11,12 +11,9 @@
   ],
   "config": {
     "platform": {
-      "php": "7.4.0"
+      "php": "7.3.0"
     },
-    "vendor-dir": "modules/servers/cnicssl/vendor",
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true
-    }
+    "vendor-dir": "modules/servers/cnicssl/vendor"
   },
   "autoload": {
     "psr-4": {
@@ -24,14 +21,6 @@
     }
   },
   "scripts": {
-    "phpstan": [
-      "@composer update",
-      "phpstan analyze -c phpstan.neon --memory-limit 2G"
-    ],
-    "codecheck": [
-      "@composer update",
-      "phpcs --standard=PSR12 -q -n --colors --ignore=node_modules,vendor,templates_c modules tests"
-    ],
     "codefix": [
       "@composer update",
       "phpcbf --standard=PSR12 -q --ignore=node_modules,vendor,templates_c modules tests"
@@ -42,14 +31,12 @@
     ]
   },
   "require": {
-    "php": "^7.4",
+    "php": "^7.3",
     "ext-openssl": "*",
     "ext-json": "*",
     "utopia-php/domains": "^1.1"
   },
   "require-dev": {
-    "phpstan/phpstan": "^1.7.1",
-    "dealerdirect/phpcodesniffer-composer-installer": "^v0.7.2",
     "roave/security-advisories": "dev-master",
     "squizlabs/php_codesniffer": "^3.6.2"
   }

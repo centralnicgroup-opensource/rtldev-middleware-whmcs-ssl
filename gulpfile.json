@@ -1,7 +1,4 @@
 {
-  "phpcsfixcmd": "composer run-script codefix",
-  "phpcschkcmd": "composer run-script codecheck",
-  "phpstancmd": "composer run-script phpstan",
   "archiveFileName": "whmcs-cnic-ssl",
   "archiveBuildPath": "build",
   "filesForArchive": [
@@ -14,7 +11,6 @@
   ],
   "filesForCleanup": [
     "templates_c",
-    "composer.lock",
     ".phpunit.result.cache",
     "tmp"
   ]
