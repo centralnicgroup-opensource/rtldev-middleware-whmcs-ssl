@@ -59,7 +59,7 @@
     "gulp-clean": "^0.4.0",
     "gulp-composer": "^0.4.5",
     "gulp-zip": "^5.0.2",
-    "semantic-release": "^19.0.3"
+    "semantic-release": "^19.0.4"
   },
   "scripts": {
     "codeCheck": "composer run-script codecheck",
