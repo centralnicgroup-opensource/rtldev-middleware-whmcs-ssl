@@ -194,6 +194,7 @@ class DBHelper
 
     /**
      * Create product group based on provider info
+     * @param string $providerName
      * @param array<string, mixed> $provider
      * @return int
      */
@@ -205,7 +206,7 @@ class DBHelper
         $productGroupId = DB::table('tblproductgroups')
             ->insertGetId([
                 'name' => $providerName . ' SSL Certificates',
-                'slug' => strtolower($provider['name'] . '-ssl'),
+                'slug' => strtolower($providerName . '-ssl'),
                 'headline' => $provider['headline'],
                 'tagline' => $provider['tagline'],
                 'orderfrmtpl' => 'supreme_comparison',
