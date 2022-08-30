@@ -1,3 +1,10 @@
+## [11.0.1](https://github.com/centralnic-reseller/whmcs-ssl/compare/v11.0.0...v11.0.1) (2022-08-30)
+
+
+### Bug Fixes
+
+* **import:** fix creating invalid slugs in newly added product groups ([c448f19](https://github.com/centralnic-reseller/whmcs-ssl/commit/c448f1984a2198ca9dd30c49745aacc1587f9c46))
+
 # [11.0.0](https://github.com/centralnic-reseller/whmcs-ssl/compare/v10.0.0...v11.0.0) (2022-06-14)
 
 
