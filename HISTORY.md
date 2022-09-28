@@ -1,3 +1,10 @@
+## [11.0.2](https://github.com/centralnic-reseller/whmcs-ssl/compare/v11.0.1...v11.0.2) (2022-09-28)
+
+
+### Bug Fixes
+
+* **slug:** also generate product slugs ([38bdcd2](https://github.com/centralnic-reseller/whmcs-ssl/commit/38bdcd2844a6dae28518f0a8a45cbec3fbebd38b))
+
 ## [11.0.1](https://github.com/centralnic-reseller/whmcs-ssl/compare/v11.0.0...v11.0.1) (2022-08-30)
 
 
