@@ -267,19 +267,6 @@ class DBHelper
     }
 
     /**
-     * Get the product ID based on the certificate class
-     * @param string $certificateClass
-     * @return int|null
-     */
-    public static function getProductId(string $certificateClass): ?int
-    {
-        return DB::table('tblproducts')
-            ->where('configoption1', '=', $certificateClass)
-            ->where('servertype', '=', 'cnicssl')
-            ->value('id');
-    }
-
-    /**
      * Get the product based on the certificate class
      * @param string $certificateClass
      * @return Builder|Model|object|null
@@ -322,6 +309,7 @@ class DBHelper
 
     /**
      * Create a product
+     * @param string $registrar
      * @param string $productName
      * @param string $productDescription
      * @param int $productGroupId
@@ -331,7 +319,7 @@ class DBHelper
      */
     public static function createProduct(string $registrar, string $productName, string $productDescription, int $productGroupId, string $certificateClass, string $autoSetup): int
     {
-        return DB::table('tblproducts')
+        $productId = DB::table('tblproducts')
             ->insertGetId([
                 'type' => 'other',
                 'gid' => $productGroupId,
@@ -344,6 +332,8 @@ class DBHelper
                 'configoption2' => $registrar,
                 'tax' => 1
             ]);
+        self::createOrUpdateProductSlug($productId, $productGroupId, $productName);
+        return $productId;
     }
 
     /**
@@ -358,6 +348,7 @@ class DBHelper
     public static function updateProduct(int $productId, string $productName, string $productDescription, int $productGroupId, string $autoSetup): int
     {
         if ($productDescription) {
+            self::createOrUpdateProductSlug($productId, $productGroupId, $productName);
             return DB::table('tblproducts')
                 ->where('id', '=', $productId)
                 ->update(
@@ -375,6 +366,52 @@ class DBHelper
             ->update([
                 'autosetup' => $autoSetup,
                 'servertype' => 'cnicssl'
+            ]);
+    }
+
+    /**
+     * @param int $productId
+     * @param int $productGroup
+     * @param string $productName
+     * @return void
+     */
+    private static function createOrUpdateProductSlug(int $productId, int $productGroup, string $productName): void
+    {
+        $groupSlug = DB::table('tblproductgroups')
+            ->where('id', '=', $productGroup)
+            ->value('slug');
+        $slug = preg_replace("/[^a-z0-9\-]+/", "", strtolower(str_replace(" ", "-", $productName)));
+        $isDuplicate = DB::table('tblproducts_slugs')
+            ->where('product_id', '!=', $productId)
+            ->where('slug', '=', $slug)
+            ->exists();
+        if ($isDuplicate) {
+            return;
+        }
+        $exists = DB::table('tblproducts_slugs')
+            ->where('product_id', '=', $productId)
+            ->exists();
+        if (!$exists) {
+            DB::table('tblproducts_slugs')
+                ->insert([
+                    'product_id' => $productId,
+                    'group_id' => $productGroup,
+                    'group_slug' => $groupSlug,
+                    'slug' => $slug,
+                    'active' => 1,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            return;
+        }
+        DB::table('tblproducts_slugs')
+            ->where('product_id', '=', $productId)
+            ->update([
+                'group_id' => $productGroup,
+                'group_slug' => $groupSlug,
+                'slug' => $slug,
+                'active' => 1,
+                'updated_at' => date('Y-m-d H:i:s')
             ]);
     }
 
