@@ -7,6 +7,7 @@ use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use WHMCS\Database\Capsule;
 
 class DBHelper
 {
@@ -377,6 +378,9 @@ class DBHelper
      */
     private static function createOrUpdateProductSlug(int $productId, int $productGroup, string $productName): void
     {
+        if (!Capsule::schema()->hasTable('tblproducts_slugs')) {
+            return;
+        }
         $groupSlug = DB::table('tblproductgroups')
             ->where('id', '=', $productGroup)
             ->value('slug');
