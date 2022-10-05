@@ -1,3 +1,10 @@
+## [11.0.3](https://github.com/centralnic-reseller/whmcs-ssl/compare/v11.0.2...v11.0.3) (2022-10-05)
+
+
+### Bug Fixes
+
+* **slugs:** restore compatibility with older whmcs versions 8.0-8.2 ([a03db53](https://github.com/centralnic-reseller/whmcs-ssl/commit/a03db53d9eb12ffbc559ada3f7deda3f12aedae3))
+
 ## [11.0.2](https://github.com/centralnic-reseller/whmcs-ssl/compare/v11.0.1...v11.0.2) (2022-09-28)
 
 

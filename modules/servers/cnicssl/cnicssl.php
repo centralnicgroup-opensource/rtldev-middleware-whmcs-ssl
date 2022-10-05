@@ -34,7 +34,7 @@ function cnicssl_MetaData(): array
         "APIVersion" => "1.1",
         "RequiresServer" => false,
         "AutoGenerateUsernameAndPassword" => false,
-        "MODULEVersion" => "11.0.2" // custom meta data
+        "MODULEVersion" => "11.0.3" // custom meta data
     ];
 }
 
