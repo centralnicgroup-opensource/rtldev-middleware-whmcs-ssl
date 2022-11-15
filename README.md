@@ -7,6 +7,8 @@
 
 This Repository covers the WHMCS SSL Module of CentralNic's Reseller Division. Download the ZIP archive including the latest release version [here](https://github.com/centralnic-reseller/whmcs-ssl/raw/master/whmcs-cnic-ssl-latest.zip).
 
+> NOTE: This repository has been deprecated in favor of the [CentralNic Software Bundle for WHMCS](https://github.com/centralnicgroup-opensource/rtldev-middleware-whmcs). Please follow our [Installation / Upgrade Guide](https://centralnic-reseller.github.io/centralnic-reseller/docs/hexonet/whmcs/whmcs-ispapi-registrar#installation--upgrade). Compatibility: WHMCS 7.8++, PHP 7.2++.
+
 ## Resources ##
 
 * [Documentation](https://centralnic-reseller.github.io/centralnic-reseller/docs/cnic/whmcs/whmcs-ssl/)
